@@ -6,15 +6,19 @@ import Selector from "../views/Selector.vue";
 import Registro from "../views/Registro.vue";
 import Movimientos from "../views/Movimientos.vue";
 import Reportes from "../views/Reportes.vue";
+import Configuracion from "../views/Configuracion.vue";
+import RegistrarProducto from "../views/Registrarproducto.vue";
 
 const routes = [
   { path: "/", component: Selector },
   { path: "/login", component: Login },
   { path: "/registro", component: Registro },
+  { path: "/registrar-producto", component: RegistrarProducto },
   { path: "/dashboard", component: Dashboard },
   { path: "/productos", component: Productos },
   { path: "/movimientos", component: Movimientos },
-  { path: "/reportes", component: Reportes }
+  { path: "/reportes", component: Reportes },
+  { path: "/configuracion", component: Configuracion }
 ];
 
 const router = createRouter({

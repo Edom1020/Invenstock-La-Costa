@@ -1,65 +1,96 @@
 <template>
+  <!--
+    ============================================================
+    Sidebar.vue
+    Barra lateral de navegación.
+    Acepta un prop "tema" para cambiar el logo entre
+    modo claro (logoclaro.png) y modo oscuro (logooscuro.png).
+    ============================================================
+  -->
   <aside class="sidebar">
 
+    <!-- Logo: cambia según el tema -->
     <div class="logo-area">
-      <img src="/images/logoclaro.png" class="logo-img" />
+      <img
+        :src="tema === 'oscuro' ? '/images/logooscuro.png' : '/images/logoclaro.png'"
+        class="logo-img"
+        alt="Logo INVENSTOCK La Costa"
+      />
     </div>
 
-<nav class="nav">
-  <router-link to="/dashboard" class="nav-item" active-class="active">
-    <img src="/images/images-dashboard/dashboardicon.png" class="nav-icon" />
-    Dashboard
-  </router-link>
+    <!-- Menú de navegación -->
+    <nav class="nav">
 
-  <router-link to="/productos" class="nav-item" active-class="active">
-    <img src="/images/images-dashboard/inventarioicon.png" class="nav-icon" />
-    Inventario
-  </router-link>
+      <router-link to="/dashboard" class="nav-item" active-class="active">
+        <img src="/images/images-dashboard/dashboardicon.png" class="nav-icon" />
+        Dashboard
+      </router-link>
 
-  <router-link to="/movimientos" class="nav-item" active-class="active">
-    <img src="/images/images-dashboard/movimientosicon.png" class="nav-icon" />
-    Movimientos
-  </router-link>
+      <router-link to="/productos" class="nav-item" active-class="active">
+        <img src="/images/images-dashboard/inventarioicon.png" class="nav-icon" />
+        Inventario
+      </router-link>
 
-  <router-link to="/reportes" class="nav-item" active-class="active">
-    <img src="/images/images-dashboard/reportesicon.png" class="nav-icon" />
-    Reportes
-  </router-link>
+      <router-link to="/movimientos" class="nav-item" active-class="active">
+        <img src="/images/images-dashboard/movimientosicon.png" class="nav-icon" />
+        Movimientos
+      </router-link>
 
-  <div class="nav-item">
-    <img src="/images/images-dashboard/ajustesicon.png" class="nav-icon" />
-    Ajustes
-  </div>
-</nav>
+      <router-link to="/reportes" class="nav-item" active-class="active">
+        <img src="/images/images-dashboard/reportesicon.png" class="nav-icon" />
+        Reportes
+      </router-link>
 
+      <!-- Enlace a la página de Configuración -->
+      <router-link to="/configuracion" class="nav-item" active-class="active">
+        <img src="/images/images-dashboard/ajustesicon.png" class="nav-icon" />
+        Configuración
+      </router-link>
+
+    </nav>
+
+    <!-- Botón de cerrar sesión -->
     <div class="logout" @click="cerrarSesion">
-     <img src="/images/images-dashboard/logouticon.png" class="nav-icon" />
+      <img src="/images/images-dashboard/logouticon.png" class="nav-icon" />
       Cerrar sesión
     </div>
 
   </aside>
 </template>
 
+
 <script setup>
-import { useRouter } from "vue-router";
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+// ── Props: recibimos el tema desde la vista padre ──
+// Si no se pasa ningún valor, el tema por defecto es 'claro'
+const props = defineProps({
+  tema: {
+    type: String,
+    default: 'claro'
+  }
+})
 
+const router = useRouter()
+
+// Redirige al usuario a la pantalla de login al cerrar sesión
 const cerrarSesion = () => {
-  router.push("/");
-};
+  router.push('/')
+}
 </script>
-<style>
 
+
+<style>
 /* ── SIDEBAR ── */
 .sidebar {
   width: 210px;
   min-width: 210px;
-  background: #ffffff;
+  background: var(--bg-sidebar, #ffffff);
   display: flex;
   flex-direction: column;
   padding: 20px 0;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--borde, #e5e7eb);
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .logo-area {
@@ -74,24 +105,6 @@ const cerrarSesion = () => {
   height: 100px;
   border-radius: 50px;
   object-fit: contain;
-}
-
-.logo-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.logo-text .brand {
-  font-weight: 700;
-  font-size: 13px;
-  color: #1e7fc2;
-  line-height: 1.2;
-}
-
-.logo-text .sub {
-  font-size: 9px;
-  color: #64748b;
-  line-height: 1.3;
 }
 
 .nav {
@@ -111,7 +124,7 @@ const cerrarSesion = () => {
   cursor: pointer;
   font-size: 13.5px;
   color: #475569;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.3s;
   text-decoration: none;
 }
 
@@ -138,6 +151,7 @@ const cerrarSesion = () => {
   font-size: 13px;
   color: #64748b;
   cursor: pointer;
+  transition: color 0.2s;
 }
 
 .logout:hover { color: #ef4444; }

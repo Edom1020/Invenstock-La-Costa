@@ -40,7 +40,7 @@
             <h1>Catálogo de Inventario</h1>
             <p>Gestiona y monitorea el stock de tus productos de electrónica, hogar y comida.</p>
           </div>
-          <button class="btn-nuevo" @click="$router.push('/productos/nuevo')">
+          <button class="btn-nuevo" @click="irARegistrar">
             + Nuevo Producto
           </button>
         </div>
@@ -177,8 +177,13 @@
 <script setup>
 import Sidebar from "../components/Sidebar.vue";
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 
+const irARegistrar = () => {
+  router.push('/registrar-producto')
+}
 
 
 
