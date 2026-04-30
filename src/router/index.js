@@ -7,7 +7,7 @@ import Registro from "../views/Registro.vue";
 import Movimientos from "../views/Movimientos.vue";
 import Reportes from "../views/Reportes.vue";
 import Configuracion from "../views/Configuracion.vue";
-import RegistrarProducto from "../views/Registrarproducto.vue";
+import RegistrarProducto from "../views/RegistrarProducto.vue";
 
 const routes = [
   { path: "/", component: Selector },
