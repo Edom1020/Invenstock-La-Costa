@@ -82,15 +82,44 @@ const cerrarSesion = () => {
 
 <style>
 /* ── SIDEBAR ── */
+
+/* Sidebar oscuro */
+.dark-mode .sidebar         { background: var(--bg-sidebar); border-right-color: var(--borde); }
+.dark-mode .nav-item        { color: var(--txt-suave); }
+.dark-mode .nav-item:hover  { background: #334155; }
+.dark-mode .nav-item.active { background: #1e3a5f; color: var(--azul); }
+.dark-mode .logout          { color: var(--txt-suave); }
+.dark-mode .topbar       { background: var(--bg-topbar); border-bottom-color: var(--borde); }
+.dark-mode .search-wrap  { background: var(--bg-input); }
+.dark-mode .search-wrap input { color: var(--txt-normal); }
+.dark-mode .notif-btn    { background: var(--bg-input); }
+
 .sidebar {
   width: 210px;
   min-width: 210px;
-  background: var(--bg-sidebar, #ffffff);
+  background: var(--bg-card);
   display: flex;
   flex-direction: column;
   padding: 20px 0;
-  border-right: 1px solid var(--borde, #e5e7eb);
+  border-right: 1px solid var(--borde);
   transition: background 0.3s, border-color 0.3s;
+}
+
+.dark-mode .sidebar {
+  background: var(--bg-card);
+}
+
+.dark-mode .nav-item {
+  color: var(--txt-suave);
+}
+
+.dark-mode .nav-item:hover {
+  background: var(--bg-input);
+}
+
+.dark-mode .nav-item.active {
+  background: #1e3a5f; /* Color azul oscuro de selección */
+  color: var(--azul);
 }
 
 .logo-area {
@@ -115,6 +144,7 @@ const cerrarSesion = () => {
   padding: 0 10px;
 }
 
+/* Estilos base (Modo Claro) */
 .nav-item {
   display: flex;
   align-items: center;
@@ -123,9 +153,9 @@ const cerrarSesion = () => {
   border-radius: 8px;
   cursor: pointer;
   font-size: 13.5px;
-  color: #475569;
-  transition: background 0.15s, color 0.3s;
+  color: var(--txt-normal); /* Usar variable */
   text-decoration: none;
+  transition: all 0.2s;
 }
 
 .nav-item:hover { background: #f1f5f9; }
@@ -149,10 +179,10 @@ const cerrarSesion = () => {
   gap: 8px;
   padding: 16px 20px;
   font-size: 13px;
-  color: #64748b;
+  color: var(--txt-suave);
   cursor: pointer;
   transition: color 0.2s;
 }
 
-.logout:hover { color: #ef4444; }
+.dark-mode .logout:hover { color: var(--txt-danger); }
 </style>

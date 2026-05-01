@@ -1,7 +1,7 @@
 <template>
-  <div class="layout">
+  <div class="layout" :class="{ 'dark-mode': temaStore.temaActual === 'oscuro' }">
 
-    <sidebar />
+    <Sidebar :tema="temaStore.temaActual" />
 
   
     <!-- MAIN -->
@@ -127,6 +127,8 @@
 import Sidebar from "../components/Sidebar.vue";
 import { ref } from 'vue'
 
+import { useTemaStore } from '../stores/tema'
+const temaStore = useTemaStore()
 
 const profilePhoto = ref(null)
 const fileInput = ref(null)
@@ -160,18 +162,61 @@ const movimientos = ref([
 ])
 </script>
 
-<style>
+<style scoped>
+/* ── VARIABLES TEMA CLARO ── */
+.layout {
+  --bg-pag:      #f0f2f5;
+  --bg-card:     #ffffff;
+  --bg-input:    #f1f5f9;
+  --borde:       #e5e7eb;
+  --txt-titulo:  #0f172a;
+  --txt-normal:  #334155;
+  --txt-suave:   #64748b;
+  --txt-muted:   #94a3b8;
+  --txt-danger:  #ef4444;
+  --azul:        #38BDF8;
+  --cat-elec:    #e0f2fe;
+  --cat-hogar:   #fef3c7;
+  --cat-comida:  #dcfce7;
+  --entrada-bg:  #dcfce7;
+  --entrada-txt: #15803d;
+  --salida-bg:   #fee2e2;
+  --salida-txt:  #dc2626;
+  --prod-name:    #0f172a;
+}
+
+/* ── VARIABLES TEMA OSCURO ── */
+.layout.dark-mode {
+  --bg-pag:      #0f172a;
+  --bg-card:     #1e293b;
+  --bg-input:    #334155;
+  --borde:       #475569;
+  --txt-titulo:  #f1f5f9;
+  --txt-normal:  #cbd5e1;
+  --txt-suave:   #94a3b8;
+  --txt-muted:   #64748b;
+  --txt-danger:  #f87171;
+  --azul:        #38BDF8;
+  --cat-elec:    #1e3a5f;
+  --cat-hogar:   #3d2e0a;
+  --cat-comida:  #0f2e1a;
+  --entrada-bg:  #14532d;
+  --entrada-txt: #86efac;
+  --salida-bg:   #450a0a;
+  --salida-txt:  #fca5a5;
+  --prod-name:    #ffffff;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 .layout {
   display: flex;
   height: 100vh;
-  background: #F2F2F2;
+  background: var(--bg-pag);
   font-family: 'Segoe UI', sans-serif;
+  transition: background 0.3s;
 }
 
-
-/* ── TOPBAR ── */
 .main {
   flex: 1;
   display: flex;
@@ -179,107 +224,88 @@ const movimientos = ref([
   overflow: hidden;
 }
 
+/* ── TOPBAR ── */
 .topbar {
-  background: #ffffff;
+  background: var(--bg-card);
   padding: 14px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--borde);
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .search-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f1f5f9;
+  background: var(--bg-input);
   border-radius: 8px;
   padding: 7px 14px;
   width: 260px;
+  transition: background 0.3s;
 }
 
-.search-icon {
-  width: 15px;
-  height: 15px;
-  object-fit: contain;
-}
+.search-icon { width: 15px; height: 15px; object-fit: contain; }
 
 .search-wrap input {
   border: none;
   background: transparent;
   outline: none;
   font-size: 13px;
-  color: #475569;
+  color: var(--txt-normal);
   width: 100%;
 }
 
-.search-wrap input::placeholder { color: #94a3b8; }
+.search-wrap input::placeholder { color: var(--txt-muted); }
 
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
+.topbar-right { display: flex; align-items: center; gap: 14px; }
 
 .notif-btn {
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border-radius: 50%;
-  background: #f1f5f9;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  font-size: 16px;
+  background: var(--bg-input);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; font-size: 16px;
+  transition: background 0.3s;
 }
 
 .notif-dot {
-  width: 8px;
-  height: 8px;
+  width: 8px; height: 8px;
   background: #ef4444;
   border-radius: 50%;
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  border: 1.5px solid #ffffff;
+  position: absolute; top: 6px; right: 6px;
+  border: 1.5px solid var(--bg-card);
 }
 
 .avatar-btn {
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border-radius: 50%;
   background: #0ea5e9;
   border: 2px solid #38BDF8;
-  cursor: pointer;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 14px;
+  cursor: pointer; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  color: #ffffff; font-weight: 600; font-size: 14px;
 }
 
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ── CONTENT ── */
 .content {
   flex: 1;
   overflow-y: auto;
   padding: 28px;
+  background: var(--bg-pag);
+  transition: background 0.3s;
 }
 
 .page-title {
   font-size: 20px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--txt-titulo);
   margin-bottom: 22px;
+  transition: color 0.3s;
 }
 
 /* ── KPI CARDS ── */
@@ -291,70 +317,69 @@ const movimientos = ref([
 }
 
 .kpi-card {
-  background: #ffffff;
+  background: var(--bg-card);
   border-radius: 14px;
   padding: 22px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--borde);
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .kpi-label {
   font-size: 11px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--txt-suave);
   letter-spacing: 0.5px;
   margin-bottom: 8px;
+  transition: color 0.3s;
 }
 
 .kpi-value {
   font-size: 38px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--txt-titulo);
   line-height: 1;
   margin-bottom: 6px;
+  transition: color 0.3s;
 }
 
-.kpi-value.danger { color: #ef4444; }
+.kpi-value.danger { color: var(--txt-danger); }
 
 .kpi-sub {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--txt-muted);
+  transition: color 0.3s;
 }
 
 .kpi-alert {
   font-size: 12px;
-  color: #ef4444;
+  color: var(--txt-danger);
   font-weight: 600;
 }
 
 .kpi-icon-wrap {
-  width: 64px;
-  height: 64px;
+  width: 64px; height: 64px;
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  transition: background 0.3s;
 }
 
 .kpi-icon-wrap.blue  { background: #e0f2fe; }
 .kpi-icon-wrap.red   { background: #fee2e2; }
 .kpi-icon-wrap.teal  { background: #ccfbf1; }
 
-.kpi-img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
-}
+.kpi-img { width: 36px; height: 36px; object-fit: contain; }
 
 /* ── TABLE CARD ── */
 .table-card {
-  background: #ffffff;
+  background: var(--bg-card);
   border-radius: 14px;
   padding: 24px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--borde);
+  transition: background 0.3s, border-color 0.3s;
 }
 
 .table-header {
@@ -362,112 +387,113 @@ const movimientos = ref([
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  background: var(--bg-card); 
 }
+
 
 .table-header h2 {
   font-size: 16px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--txt-titulo);
+  transition: color 0.3s;
 }
+
 
 .filter-btn {
   font-size: 13px;
-  color: #38BDF8;
+  color: var(--azul);
   font-weight: 600;
   background: none;
   border: none;
   cursor: pointer;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+table { width: 100%; border-collapse: collapse; }
 
 thead tr th {
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
+  font-size: 11px; font-weight: 700;
+  color: var(--txt-muted);
   letter-spacing: 0.5px;
   padding: 0 0 12px 0;
   text-align: left;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--borde);
+  transition: color 0.3s, border-color 0.3s;
 }
 
-tbody tr {
-  border-bottom: 1px solid #f8fafc;
-}
-
+tbody tr { border-bottom: 1px solid var(--borde); }
 tbody tr:last-child { border-bottom: none; }
-
 tbody tr td {
   padding: 14px 0;
   font-size: 13.5px;
-  color: #334155;
+  color: var(--txt-normal);
   vertical-align: middle;
+  transition: color 0.3s;
 }
 
 .fecha-cell {
-  color: #94a3b8 !important;
-  font-size: 13px !important;
+  color: var(--txt-muted);
+  font-size: 13px;
 }
 
-.prod-cell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.prod-cell { display: flex; align-items: center; gap: 10px; }
 
 .cat-icon {
-  width: 28px;
-  height: 28px;
+  width: 28px; height: 28px;
   border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  transition: background 0.3s;
 }
 
-.cat-icon.electronica { background: #e0f2fe; }
-.cat-icon.hogar       { background: #fef3c7; }
-.cat-icon.comida      { background: #dcfce7; }
+.cat-icon.electronica { background: var(--cat-elec); }
+.cat-icon.hogar       { background: var(--cat-hogar); }
+.cat-icon.comida      { background: var(--cat-comida); }
 
-.cat-img {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-}
+.cat-img { width: 16px; height: 16px; object-fit: contain; }
 
 .prod-name {
-  color: #38BDF8;
+  color: var(--prod-name-color);
   font-weight: 500;
 }
 
 .badge {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 12px; font-weight: 600;
   padding: 3px 10px;
   border-radius: 20px;
+  transition: background 0.3s, color 0.3s;
 }
 
-.badge.entrada { background: #dcfce7; color: #15803d; }
-.badge.salida  { background: #fee2e2; color: #dc2626; }
+.badge.entrada { background: var(--entrada-bg); color: var(--entrada-txt); }
+.badge.salida  { background: var(--salida-bg);  color: var(--salida-txt);  }
 
 .qty {
   font-weight: 600;
-  color: #38BDF8;
+  color: #ffffff;
 }
 
 .see-all {
   text-align: center;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--borde);
   font-size: 13px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--txt-titulo);
   cursor: pointer;
+  transition: color 0.3s;
 }
 
-.see-all:hover { color: #38BDF8; }
+.see-all:hover { color: var(--azul); }
+
+/* 2. Corregir el color de los textos que se quedan en negro */
+.layout.dark-mode .page-title,
+.layout.dark-mode .table-header h2,
+.layout.dark-mode .kpi-value:not(.danger),
+.layout.dark-mode tbody tr td {
+  color: var(--txt-titulo);
+}
+
+.dark-mode tbody tr:hover {
+  background-color: var(--bg-hover) 
+}
 </style>

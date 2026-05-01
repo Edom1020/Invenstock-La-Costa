@@ -1,0 +1,54 @@
+/* src/assets/variables.css */
+
+:root {
+  /* ── VARIABLES TEMA CLARO ── */
+  --bg-pag:      #f0f2f5;
+  --bg-card:     #ffffff;
+  --bg-input:    #f1f5f9;
+  --borde:       #e5e7eb;
+  --txt-titulo:  #0f172a;
+  --txt-normal:  #334155;
+  --txt-suave:   #64748b;
+  --txt-muted:   #94a3b8;
+  --txt-danger:  #ef4444;
+  --azul:        #38BDF8;
+  --bg-hover: #f8fafc; /* Gris muy clarito para modo claro */
+  
+  /* Tu nueva variable global */
+  --prod-name-color: #0369a1; 
+  
+  --cat-elec:    #e0f2fe;
+  --cat-hogar:   #fef3c7;
+  --cat-comida:  #dcfce7;
+  --entrada-bg:  #dcfce7;
+  --entrada-txt: #15803d;
+  --salida-bg:   #fee2e2;
+  --salida-txt:  #dc2626;
+}
+
+/* ── VARIABLES TEMA OSCURO ── */
+/* Usamos [data-theme='oscuro'] o .dark-mode dependiendo de tu Store */
+.dark-mode {
+  --bg-pag:      #0f172a;
+  --bg-card:     #1e293b;
+  --bg-input:    #334155;
+  --borde:       #475569;
+  --txt-titulo:  #f1f5f9;
+  --txt-normal:  #cbd5e1;
+  --txt-suave:   #94a3b8;
+  --txt-muted:   #64748b;
+  --txt-danger:  #f87171;
+  --azul:        #38BDF8;
+  --bg-hover: #2d3a4f; /* Gris azulado sutil para modo oscuro */
+  
+  /* Cambia a blanco en modo oscuro */
+  --prod-name-color: #ffffff; 
+
+  --cat-elec:    #1e3a5f;
+  --cat-hogar:   #3d2e0a;
+  --cat-comida:  #0f2e1a;
+  --entrada-bg:  #14532d;
+  --entrada-txt: #86efac;
+  --salida-bg:   #450a0a;
+  --salida-txt:  #fca5a5;
+}

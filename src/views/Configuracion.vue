@@ -1,8 +1,8 @@
 <template>
-  <div class="layout" :class="{ 'dark-mode': temaActual === 'oscuro' }">
+  <div class="layout" :class="{ 'dark-mode': temaStore.temaActual === 'oscuro' }">
 
     <!-- SIDEBAR -->
-    <Sidebar :tema="temaActual" />
+    <Sidebar :tema="temaStore.temaActual" />
 
     <!-- ÁREA PRINCIPAL -->
     <div class="main">
@@ -86,15 +86,15 @@
             </div>
 
             <div class="conf-theme-row">
-              <button class="conf-theme-btn" :class="{ active: temaActual === 'claro' }" @click="cambiarTema('claro')">
+              <button class="conf-theme-btn" :class="{ active: temaStore.temaActual === 'claro' }" @click="temaStore.cambiarTema('claro')">
                 <img src="/images/images-config/lighticon.png" style="width:16px;height:16px;object-fit:contain;" />
                 <span>Claro</span>
               </button>
-              <button class="conf-theme-btn" :class="{ active: temaActual === 'oscuro' }" @click="cambiarTema('oscuro')">
+              <button class="conf-theme-btn" :class="{ active: temaStore.temaActual === 'oscuro' }" @click="temaStore.cambiarTema('oscuro')">
                 <img src="/images/images-config/darkicon.png" style="width:16px;height:16px;object-fit:contain;" />
                 <span>Oscuro</span>
               </button>
-              <button class="conf-theme-btn" :class="{ active: temaActual === 'sistema' }" @click="cambiarTema('sistema')">
+              <button class="conf-theme-btn" :class="{ active: temaStore.temaActual === 'sistema' }" @click="temaStore.cambiarTema('sistema')">
                 <img src="/images/images-config/sistemicon.png" style="width:16px;height:16px;object-fit:contain;" />
                 <span>Sistema</span>
               </button>
@@ -256,11 +256,8 @@ const perfil = reactive({
 
 const inventario = reactive({ stockMinimo: 15, unidadMedida: 'u' })
 
-const temaActual = ref(localStorage.getItem('tema-invenstock') || 'claro')
-const cambiarTema = (t) => {
-  temaActual.value = t
-  localStorage.setItem('tema-invenstock', t)
-}
+import { useTemaStore } from '../stores/tema'
+const temaStore = useTemaStore()
 
 const notif = reactive({ email: true, escritorio: false, reportes: true })
 
@@ -341,7 +338,7 @@ const guardarCambios = () => {
   --thumb:      #f1f5f9;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+
 
 /* ── LAYOUT PRINCIPAL ── */
 .layout {
@@ -353,12 +350,7 @@ const guardarCambios = () => {
   transition: background 0.3s;
 }
 
-/* Sidebar oscuro */
-.dark-mode .sidebar         { background: var(--bg-sidebar); border-right-color: var(--borde); }
-.dark-mode .nav-item        { color: var(--txt-suave); }
-.dark-mode .nav-item:hover  { background: #334155; }
-.dark-mode .nav-item.active { background: #1e3a5f; color: var(--azul); }
-.dark-mode .logout          { color: var(--txt-suave); }
+
 
 /* ── COLUMNA PRINCIPAL ── */
 .main {
@@ -380,10 +372,7 @@ const guardarCambios = () => {
   flex-shrink: 0;
   transition: background 0.3s, border-color 0.3s;
 }
-.dark-mode .topbar       { background: var(--bg-topbar); border-bottom-color: var(--borde); }
-.dark-mode .search-wrap  { background: var(--bg-input); }
-.dark-mode .search-wrap input { color: var(--txt-normal); }
-.dark-mode .notif-btn    { background: var(--bg-input); }
+
 
 .search-wrap {
   display: flex; align-items: center; gap: 7px;
