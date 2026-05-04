@@ -1,8 +1,8 @@
 <template>
-  <div class="layout">
+  <div class="layout" :class="{ 'dark-mode': temaStore.temaActual === 'oscuro' }">
  
     <!-- SIDEBAR -->
-    <Sidebar />
+    <Sidebar :tema="temaStore.temaActual"/>
  
     <!-- ÁREA PRINCIPAL -->
     <div class="main">
@@ -40,11 +40,7 @@
             <!-- Información General -->
             <div class="card-info">
               <div class="card-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
+                <img src="/images/images-registroproducto/infoicon.png" style="width:16px;height:16px;object-fit:contain;" />
                 Información General
               </div>
  
@@ -100,10 +96,7 @@
             <!-- Inventario y Costos -->
             <div class="card-inventario">
               <div class="card-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="2" y="7" width="20" height="14" rx="2"/>
-                  <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-                </svg>
+                <img src="/images/images-registroproducto/costosicon.png" style="width:16px;height:16px;object-fit:contain;" />
                 Inventario y Costos
               </div>
  
@@ -147,11 +140,7 @@
             <!-- Imagen del Producto -->
             <div class="card-imagen">
               <div class="card-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
-                </svg>
+                <img src="/images/images-registroproducto/imgicon.png" style="width:16px;height:16px;object-fit:contain;" />
                 Imagen del Producto
               </div>
  
@@ -189,11 +178,7 @@
             <!-- Guía de Registro -->
             <div class="guia-card">
               <div class="guia-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
+                <img src="/images/images-registroproducto/guiaicon.png" style="width:14px;height:14px;object-fit:contain;" />
                 GUÍA DE REGISTRO
               </div>
               <div class="guia-item">
@@ -227,6 +212,10 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
+
+//DARK MODE o modo oscuro
+import { useTemaStore } from '../stores/tema'
+const temaStore = useTemaStore()
  
 const router = useRouter()
  
@@ -267,24 +256,54 @@ const cancelar = () => {
  
  
 <style scoped>
-/* ════════════════════════════════════════
-   VARIABLES (heredadas del layout global)
-   ════════════════════════════════════════ */
+/* ── VARIABLES TEMA CLARO ── */
 .layout {
-  --bg-pag:    #f0f2f5;
-  --bg-card:   #ffffff;
-  --bg-input:  #f1f5f9;
-  --borde:     #e5e7eb;
-  --txt:       #0f172a;
-  --txt2:      #334155;
-  --txt3:      #64748b;
-  --txt4:      #94a3b8;
-  --azul:      #38bdf8;
-  --azul-dark: #1e4e78;
+  --bg-pag:        #f0f2f5;
+  --bg-card:       #ffffff;
+  --bg-input:      #f1f5f9;
+  --borde:         #e5e7eb;
+  --txt:           #0f172a;
+  --txt2:          #334155;
+  --txt3:          #64748b;
+  --txt4:          #94a3b8;
+  --azul:          #38bdf8;
+  --azul-dark:     #1e4e78;
+  --guia-bg:       #f0f6ff;
+  --guia-borde:    #bfdbfe;
+  --guia-titulo:   #1e4e78;
+  --guia-num:      #93c5fd;
+  --guia-txt:      #334155;
+  --stock-min-bg:  #fff5f5;
+  --stock-min-borde: #fecaca;
+  --stock-min-txt: #ef4444;
+  --preview-bg:    #f8fafc;
 }
- 
+
+/* ── VARIABLES TEMA OSCURO ── */
+.layout.dark-mode {
+  --bg-pag:        #0f172a;
+  --bg-card:       #1e293b;
+  --bg-input:      #334155;
+  --borde:         #475569;
+  --txt:           #f1f5f9;
+  --txt2:          #cbd5e1;
+  --txt3:          #94a3b8;
+  --txt4:          #64748b;
+  --azul:          #38bdf8;
+  --azul-dark:     #378ADD;
+  --guia-bg:       #1e3a5f;
+  --guia-borde:    #1e4d7b;
+  --guia-titulo:   #7dd3fc;
+  --guia-num:      #38bdf8;
+  --guia-txt:      #cbd5e1;
+  --stock-min-bg:  #450a0a;
+  --stock-min-borde: #7f1d1d;
+  --stock-min-txt: #f87171;
+  --preview-bg:    #334155;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
- 
+
 /* ── LAYOUT ── */
 .layout {
   display: flex;
@@ -292,8 +311,9 @@ const cancelar = () => {
   overflow: hidden;
   background: var(--bg-pag);
   font-family: 'Segoe UI', sans-serif;
+  transition: background 0.3s;
 }
- 
+
 .main {
   flex: 1;
   display: flex;
@@ -301,22 +321,24 @@ const cancelar = () => {
   overflow: hidden;
   min-width: 0;
 }
- 
+
 /* ── TOPBAR ── */
 .topbar {
-  background: #fff;
+  background: var(--bg-card);
   padding: 10px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--borde);
   flex-shrink: 0;
+  transition: background 0.3s, border-color 0.3s;
 }
- 
+
 .search-wrap {
   display: flex; align-items: center; gap: 8px;
   background: var(--bg-input); border-radius: 20px;
   padding: 7px 16px; width: 280px;
+  transition: background 0.3s;
 }
 .search-icon { width: 14px; height: 14px; object-fit: contain; }
 .search-wrap input {
@@ -324,19 +346,19 @@ const cancelar = () => {
   font-size: 13px; color: var(--txt2); width: 100%;
 }
 .search-wrap input::placeholder { color: var(--txt4); }
- 
+
 .topbar-right { display: flex; align-items: center; gap: 10px; }
- 
+
 .notif-btn {
   width: 32px; height: 32px; border-radius: 50%;
   background: var(--bg-input); border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  position: relative;
+  position: relative; transition: background 0.3s;
 }
 .notif-dot {
   width: 7px; height: 7px; background: #ef4444; border-radius: 50%;
   position: absolute; top: 5px; right: 5px;
-  border: 1.5px solid #fff;
+  border: 1.5px solid var(--bg-card);
 }
 .avatar-btn {
   width: 32px; height: 32px; border-radius: 50%;
@@ -344,10 +366,9 @@ const cancelar = () => {
   overflow: hidden; display: flex; align-items: center; justify-content: center;
 }
 .avatar-img { width: 100%; height: 100%; object-fit: cover; }
- 
+
 /* ── CONTENT ── */
 .content {
-  display: flex;
   overflow-y: auto;
   padding: 20px 24px 24px;
   display: flex;
@@ -355,42 +376,41 @@ const cancelar = () => {
   align-items: center;
   gap: 20px;
   width: 100%;
+  background: var(--bg-pag);
+  transition: background 0.3s;
 }
- /* ── CABECERA DE PÁGINA ──
-   El max-width debe coincidir con el de .rp-grid para mantener la alineación */  
+
 .page-header {
   width: 100%;
-  max-width: 1400px; /* Debe ser el mismo max-width que usaste en .rp-grid */
-  text-align: left;  /* Alinea el texto a la izquierda */
-  margin: 0 auto 25px auto; /* El 'auto' a los lados lo centra como bloque, pero el texto adentro va a la izquierda */
+  max-width: 1400px;
+  text-align: left;
+  margin: 0 auto 25px auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Alinea los elementos internos (título/subtítulo) a la izquierda */
+  align-items: flex-start;
 }
 
 .page-title {
   font-size: 26px;
   font-weight: 700;
   color: var(--txt);
-  margin-bottom: 4px; /* Espacio pequeño entre título y subtítulo */
+  margin-bottom: 4px;
+  transition: color 0.3s;
 }
 .page-subtitle {
   font-size: 13px;
   color: var(--txt3);
-  max-width: 600px; /* Evita que el subtítulo se estire demasiado en pantallas anchas */
+  max-width: 600px;
+  transition: color 0.3s;
 }
 
-
- 
-/* ── GRID PRINCIPAL ──
-   align-items: start evita que las columnas se estiren
-*/
+/* ── GRID PRINCIPAL ── */
 .rp-grid {
   display: grid;
-  grid-template-columns: 1fr 300px; 
-  gap: 24px;         
-  width: 95%;        
-  max-width: 1400px; 
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  width: 95%;
+  max-width: 1400px;
   margin: 0 auto;
   align-items: start;
 }
@@ -400,92 +420,66 @@ const cancelar = () => {
   flex-direction: column;
   gap: 14px;
 }
- 
+
 /* ── CARDS ── */
-.card-info{
-  background: #fff;
-  border: 1px solid var(--borde);
-  border-radius: 24px; /* Un poco menos que los 48px de configuración para que se vea más técnico */
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  transition: background 0.3s, border-color 0.3s;
-  min-height: 300px;
-  width: 100%;
-}
-
-.card-inventario {
-  background: #fff;
-  border: 1px solid var(--borde);
-  border-radius: 24px; 
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  transition: background 0.3s, border-color 0.3s;
-  width: 100%;
-  min-height: 300px;
-}
-
+.card-info,
+.card-inventario,
 .card-imagen {
-  background: #fff;
+  background: var(--bg-card);
   border: 1px solid var(--borde);
-  border-radius: 24px; 
+  border-radius: 24px;
   padding: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: background 0.3s, border-color 0.3s;
+  width: 100%;
 }
 
-.card {
-  background: var(--bg-card);
-  border-radius: 14px;
-  padding: 18px 20px;
-  border: 1px solid var(--borde);
-}
+.card-info      { min-height: 300px; }
+.card-inventario { min-height: 300px; }
 
- 
 .card-title {
   display: flex; align-items: center; gap: 8px;
   font-size: 14px; font-weight: 600;
   color: var(--txt); margin-bottom: 18px;
+  transition: color 0.3s;
 }
 .card-title svg { color: var(--txt3); flex-shrink: 0; }
- 
+
 /* ── CAMPOS ── */
 .field-group { display: flex; flex-direction: column; }
- 
+
 .field-label {
   font-size: 10px; font-weight: 700; color: var(--txt4);
   letter-spacing: 0.5px; text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 6px; transition: color 0.3s;
 }
- 
+
 .field-input {
   width: 100%; padding: 10px 14px;
   border-radius: 9px; border: 1.5px solid var(--borde);
   background: var(--bg-input); color: var(--txt2);
   font-size: 13px; font-family: inherit; outline: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
-.field-input:focus { border-color: var(--azul); background: #fff; }
+.field-input:focus { border-color: var(--azul); background: var(--bg-card); }
 .field-input::placeholder { color: var(--txt4); }
- 
-.field-sku {
-  font-weight: 700; color: var(--azul-dark);
-}
- 
-.field-textarea {
-  resize: none; height: 82px; line-height: 1.5;
-}
- 
+
+.field-sku { font-weight: 700; color: var(--azul-dark); }
+
+.field-textarea { resize: none; height: 82px; line-height: 1.5; }
+
 .field-stock-min {
-  color: #ef4444 !important;
+  color: var(--stock-min-txt) !important;
   font-weight: 700;
-  border-color: #fecaca !important;
-  background: #fff5f5 !important;
+  border-color: var(--stock-min-borde) !important;
+  background: var(--stock-min-bg) !important;
 }
-.field-stock-min:focus { border-color: #f87171 !important; }
- 
+.field-stock-min:focus { border-color: var(--stock-min-txt) !important; }
+
 /* ── GRIDS DE CAMPOS ── */
 .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
- 
+
 /* ── SELECT ── */
 .select-wrap { position: relative; }
 .custom-select {
@@ -494,7 +488,7 @@ const cancelar = () => {
   background: var(--bg-input); color: var(--txt2);
   font-size: 13px; font-family: inherit; outline: none;
   appearance: none; cursor: pointer;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.3s, color 0.3s;
 }
 .custom-select:focus { border-color: var(--azul); }
 .select-arrow {
@@ -502,45 +496,46 @@ const cancelar = () => {
   transform: translateY(-50%);
   color: var(--txt3); pointer-events: none; font-size: 13px;
 }
- 
+
 /* ── IMAGEN ── */
 .img-preview {
   width: 100%; height: 150px;
-  background: #f8fafc; border-radius: 10px;
+  background: var(--preview-bg); border-radius: 10px;
   border: 1px solid var(--borde);
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 12px; overflow: hidden;
+  transition: background 0.3s, border-color 0.3s;
 }
 .img-preview-img { width: 100%; height: 100%; object-fit: contain; }
 .img-placeholder  { display: flex; align-items: center; justify-content: center; }
- 
+
 .upload-area {
   border: 2px dashed var(--borde);
   border-radius: 10px; padding: 18px;
   display: flex; flex-direction: column;
   align-items: center; gap: 5px;
-  cursor: pointer; transition: border-color 0.2s;
+  cursor: pointer; transition: border-color 0.2s, color 0.2s;
   color: var(--txt3);
 }
 .upload-area:hover { border-color: var(--azul); }
-.upload-label {
-  font-size: 13px; font-weight: 600; color: var(--txt2);
-}
+.upload-label { font-size: 13px; font-weight: 600; color: var(--txt2); transition: color 0.3s; }
 .upload-hint {
   font-size: 10px; font-weight: 700;
-  color: var(--txt4); letter-spacing: 0.4px;
+  color: var(--txt4); letter-spacing: 0.4px; transition: color 0.3s;
 }
- 
+
 /* ── GUÍA ── */
 .guia-card {
-  background: #f0f6ff; border: 1px solid #bfdbfe;
+  background: var(--guia-bg);
+  border: 1px solid var(--guia-borde);
   border-radius: 14px; padding: 16px 18px;
+  transition: background 0.3s, border-color 0.3s;
 }
 .guia-title {
   display: flex; align-items: center; gap: 7px;
   font-size: 11px; font-weight: 700;
-  color: var(--azul-dark); letter-spacing: 0.5px;
-  margin-bottom: 14px;
+  color: var(--guia-titulo); letter-spacing: 0.5px;
+  margin-bottom: 14px; transition: color 0.3s;
 }
 .guia-item {
   display: flex; gap: 10px;
@@ -549,12 +544,14 @@ const cancelar = () => {
 .guia-item:last-child { margin-bottom: 0; }
 .guia-num {
   font-size: 11px; font-weight: 700;
-  color: #93c5fd; flex-shrink: 0; margin-top: 1px;
+  color: var(--guia-num); flex-shrink: 0; margin-top: 1px;
+  transition: color 0.3s;
 }
 .guia-texto {
-  font-size: 12px; color: #334155; line-height: 1.5;
+  font-size: 12px; color: var(--guia-txt);
+  line-height: 1.5; transition: color 0.3s;
 }
- 
+
 /* ── BOTONES ── */
 .btn-guardar {
   width: 100%; background: var(--azul-dark); color: #fff;
@@ -563,7 +560,7 @@ const cancelar = () => {
   margin-bottom: 10px; transition: background 0.2s;
 }
 .btn-guardar:hover { background: #163d5e; }
- 
+
 .btn-cancelar {
   width: 100%; background: transparent; color: var(--txt3);
   border: none; font-size: 13px; font-weight: 600;
