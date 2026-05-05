@@ -22,12 +22,9 @@
             <img src="/images/images-movimientos/notif.png" style="width:18px;height:18px;object-fit:contain;" />
             <span class="notif-dot"></span>
           </button>
-          <div class="avatar-btn" @click="triggerFileInput" title="Cambiar foto de perfil">
-            <img v-if="profilePhoto" :src="profilePhoto" class="avatar-img" />
-            <span v-else>{{ userInitials }}</span>
+          <div class="avatar-btn">
+            <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
-          <input ref="fileInput" type="file" accept="image/*"
-            style="display:none" @change="handlePhotoChange" />
         </div>
       </header>
 
@@ -192,21 +189,15 @@ const irARegistrar = () => {
   router.push('/registrar-producto')
 }
 
+// Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
+import { useUsuarioStore } from '../stores/usuario'
+const usuarioStore = useUsuarioStore()
 
 
-const profilePhoto = ref(null)
-const fileInput = ref(null)
-const userInitials = 'JD'
 const busqueda = ref('')
 const categoriaActiva = ref('todas')
 const paginaActual = ref(1)
 const porPagina = 10
-
-const triggerFileInput = () => fileInput.value.click()
-const handlePhotoChange = (e) => {
-  const file = e.target.files[0]
-  if (file) profilePhoto.value = URL.createObjectURL(file)
-}
 
 const categorias = [
   { key: 'electronica', nombre: 'Electrónica' },
@@ -360,28 +351,7 @@ const totalPaginas = computed(() =>
   transition: background 0.3s, border-color 0.3s;
 }
 
-.search-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg-input);
-  border-radius: 8px;
-  padding: 7px 14px;
-  width: 260px;
-  transition: background 0.3s;
-}
-
 .search-icon { width: 15px; height: 15px; object-fit: contain; }
-
-.search-wrap input {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 13px;
-  color: var(--txt-normal);
-  width: 100%;
-}
-
 .search-wrap input::placeholder { color: var(--txt-muted); }
 .topbar-right { display: flex; align-items: center; gap: 14px; }
 
@@ -404,16 +374,26 @@ const totalPaginas = computed(() =>
 }
 
 .avatar-btn {
-  width: 36px; height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #0ea5e9;
-  border: 2px solid #38BDF8;
-  cursor: pointer; overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  color: #ffffff; font-weight: 600; font-size: 14px;
+  background: var(--azul);
+  border: 2px solid #38bdf8;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  flex-shrink: 0;
+  transition: background 0.3s, border-color 0.3s;
 }
 
-.avatar-img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
 
 /* ── CONTENT ── */
 .content {

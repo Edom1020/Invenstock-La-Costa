@@ -1,15 +1,15 @@
 <template>
-  <div class="mov-layout">
+  <div class="mov-layout" :class="{ 'dark-mode': temaStore.temaActual === 'oscuro' }">
 
     <!-- SIDEBAR -->
-    <Sidebar/>
+    <Sidebar :tema="temaStore.temaActual"/>
 
     <!-- MAIN -->
     <div class="mov-main">
 
       <!-- TOPBAR -->
       <header class="mov-topbar">
-        <div class="mov-search-wrap">
+        <div class="search-wrap">
           <img src="/images/images-dashboard/lupaicon.png" class="mov-search-icon" />
           <input v-model="busqueda" type="text" placeholder="Buscar movimientos..." />
         </div>
@@ -18,6 +18,9 @@
             <img src="/images/images-movimientos/notif.png" style="width:18px;height:18px;object-fit:contain;" />
             <span class="mov-notif-dot"></span>
           </button>
+          <div class="mov-avatar-btn">
+            <img :src="usuarioStore.fotoPerfil" class="mov-avatar-img" />
+          </div>
         </div>
       </header>
 
@@ -192,8 +195,17 @@
 import { ref } from 'vue'
 import Sidebar from "../components/Sidebar.vue";
 
+// Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
+import { useUsuarioStore } from '../stores/usuario'
+const usuarioStore = useUsuarioStore()
+
+//DARK MODE o modo oscuro
+import { useTemaStore } from '../stores/tema'
+const temaStore = useTemaStore()
+
 const busqueda = ref('')
 const tipoActivo = ref('entrada')
+
 
 const form = ref({
   producto: '',
@@ -212,7 +224,7 @@ const productos = ref([
 const getCatIcon = (categoria) => {
   const icons = {
     electronica: '/images/images-dashboard/macbookicon.png',
-    hogar:       '/images/images-dashboard/sofaicon.png',
+    hogar:       '/images/images-dashboard/sofagrande.png',
     comida:      '/images/images-dashboard/manzanaicon.png',
   }
   return icons[categoria] || '/images/images-dashboard/macbookicon.png'
@@ -236,40 +248,79 @@ const registrarMovimiento = () => {
 }
 </script>
 
-<style>
-/* ============================================
-   PALETA DE COLORES — Movimientos.vue
-   ============================================
-   Azul primario oscuro  : #1e4d7b
-   Azul primario medio   : #185a96
-   Azul cielo (acento)   : #38BDF8
-   Azul claro (hover)    : #e0f2fe
-   Azul info texto       : #0369a1
+<style scoped>
+/* ── VARIABLES TEMA CLARO ── */
+.mov-layout {
+  --bg-pag:        #f0f2f5;
+  --bg-card:       #ffffff;
+  --bg-input:      #f1f5f9;
+  --bg-input2:     #f1f5f9;
+  --borde:         #e5e7eb;
+  --borde-suave:   #f1f5f9;
+  --txt-titulo:    #0f172a;
+  --txt-normal:    #475569;
+  --txt-suave:     #64748b;
+  --txt-muted:     #94a3b8;
+  --txt-placeholder: #cbd5e1;
+  --azul:          #38BDF8;
+  --azul-dark:     #1e4d7b;
+  --azul-hover:    #185a96;
+  --azul-txt:      #0369a1;
+  --entrada-bg:    #f0fdf4;
+  --entrada-borde: #16a34a;
+  --entrada-txt:   #15803d;
+  --salida-bg:     #fef2f2;
+  --salida-borde:  #dc2626;
+  --salida-txt:    #dc2626;
+  --badge-entrada-bg:  #d1fae5;
+  --badge-entrada-txt: #065f46;
+  --badge-salida-bg:   #ffe4e6;
+  --badge-salida-txt:  #9f1239;
+  --prod-thumb-bg: #f1f5f9;
+  --stat-green:    #1e4d7b;
+  --stat-red:      #dc2626;
+  --stat-gray:     #475569;
+}
 
-   Verde entrada fondo   : #d1fae5
-   Verde entrada texto   : #065f46
-   Verde stat círculo    : #1e4d7b  
-
-   Rojo salida fondo     : #ffe4e6
-   Rojo salida texto     : #9f1239
-   Rojo stat círculo     : #dc2626
-
-   Gris fondo página     : #f0f2f5
-   Gris fondo input      : #f8fafc
-   Gris borde            : #e5e7eb
-   Gris texto secundario : #64748b
-   Gris texto muted      : #94a3b8
-   Gris stat círculo     : #475569
-
-   Texto principal       : #0f172a
-   Blanco                : #ffffff
-   ============================================ */
+/* ── VARIABLES TEMA OSCURO ── */
+.mov-layout.dark-mode {
+  --bg-pag:        #0f172a;
+  --bg-card:       #1e293b;
+  --bg-input:      #334155;
+  --bg-input2:     #334155;
+  --borde:         #475569;
+  --borde-suave:   #334155;
+  --txt-titulo:    #f1f5f9;
+  --txt-normal:    #cbd5e1;
+  --txt-suave:     #94a3b8;
+  --txt-muted:     #64748b;
+  --txt-placeholder: #475569;
+  --azul:          #38BDF8;
+  --azul-dark:     #378ADD;
+  --azul-hover:    #2563eb;
+  --azul-txt:      #7dd3fc;
+  --entrada-bg:    #0f2e1a;
+  --entrada-borde: #16a34a;
+  --entrada-txt:   #86efac;
+  --salida-bg:     #450a0a;
+  --salida-borde:  #dc2626;
+  --salida-txt:    #f87171;
+  --badge-entrada-bg:  #14532d;
+  --badge-entrada-txt: #86efac;
+  --badge-salida-bg:   #450a0a;
+  --badge-salida-txt:  #fca5a5;
+  --prod-thumb-bg: #334155;
+  --stat-green:    #1e4d7b;
+  --stat-red:      #dc2626;
+  --stat-gray:     #475569;
+}
 
 .mov-layout {
   display: flex;
   height: 100vh;
-  background: #f0f2f5;
+  background: var(--bg-pag);
   font-family: 'Segoe UI', sans-serif;
+  transition: background 0.3s;
 }
 
 /* ── MAIN ── */
@@ -282,54 +333,59 @@ const registrarMovimiento = () => {
 
 /* ── TOPBAR ── */
 .mov-topbar {
-  background: #ffffff;
+  background: var(--bg-card);
   padding: 12px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--borde);
+  transition: background 0.3s, border-color 0.3s;
 }
-.mov-search-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f1f5f9;
-  border-radius: 20px;
-  padding: 8px 16px;
-  width: 360px;
-}
+
+
+
 .mov-search-icon { width: 15px; height: 15px; object-fit: contain; }
-.mov-search-wrap input {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 13px;
-  color: #475569;
-  width: 100%;
-}
-.mov-search-wrap input::placeholder { color: #94a3b8; }
+.mov-search-wrap input::placeholder { color: var(--txt-muted); }
 .mov-topbar-right { display: flex; align-items: center; gap: 14px; }
+
 .mov-notif-btn {
   width: 36px; height: 36px;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: var(--bg-input2);
   border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   position: relative;
+  transition: background 0.3s;
 }
+
 .mov-notif-dot {
   width: 8px; height: 8px;
   background: #dc2626;
   border-radius: 50%;
   position: absolute; top: 6px; right: 6px;
-  border: 1.5px solid #ffffff;
+  border: 1.5px solid var(--bg-card);
 }
+
 .mov-avatar-btn {
-  width: 36px; height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #e5e7eb;
-  border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
+  background: var(--azul);
+  border: 2px solid #38bdf8;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  flex-shrink: 0;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.mov-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 /* ── CONTENT ── */
@@ -337,19 +393,25 @@ const registrarMovimiento = () => {
   flex: 1;
   overflow-y: auto;
   padding: 28px;
+  background: var(--bg-pag);
+  transition: background 0.3s;
 }
+
 .mov-page-title {
   font-size: 26px;
   font-weight: 700;
-  color: #1e4d7b;
+  color: var(--txt-titulo);
   margin-bottom: 4px;
+  transition: color 0.3s;
 }
+
 .mov-page-sub {
   font-size: 13px;
-  color: #64748b;
+  color: var(--txt-suave);
   margin-bottom: 24px;
   max-width: 600px;
   line-height: 1.5;
+  transition: color 0.3s;
 }
 
 /* ── GRID ── */
@@ -362,104 +424,134 @@ const registrarMovimiento = () => {
 
 /* ── CARD ── */
 .mov-card {
-  background: #ffffff;
+  background: var(--bg-card);
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--borde);
   padding: 22px;
+  transition: background 0.3s, border-color 0.3s;
 }
+
 .mov-card-title {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--txt-titulo);
   margin-bottom: 20px;
+  transition: color 0.3s;
 }
+
 .mov-title-icon { width: 20px; height: 20px; object-fit: contain; }
 
 /* ── FORMULARIO ── */
 .mov-field-label {
   font-size: 10px;
   font-weight: 700;
-  color: #94a3b8;
+  color: var(--txt-muted);
   letter-spacing: 0.8px;
   text-transform: uppercase;
   margin-bottom: 8px;
+  transition: color 0.3s;
 }
+
 .mov-tipo-row { display: flex; gap: 10px; margin-bottom: 18px; }
+
 .mov-tipo-btn {
   flex: 1;
   padding: 10px;
   border-radius: 8px;
-  border: 1.5px solid #e5e7eb;
-  background: #ffffff;
+  border: 1.5px solid var(--borde);
+  background: var(--bg-card);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
-  color: #94a3b8;
+  color: var(--txt-muted);
 }
-.mov-tipo-btn.entrada.active { border-color: #16a34a; background: #f0fdf4; color: #15803d; }
-.mov-tipo-btn.salida.active  { border-color: #dc2626; background: #fef2f2; color: #dc2626; }
+
+.mov-tipo-btn.entrada.active {
+  border-color: var(--entrada-borde);
+  background: var(--entrada-bg);
+  color: var(--entrada-txt);
+}
+
+.mov-tipo-btn.salida.active {
+  border-color: var(--salida-borde);
+  background: var(--salida-bg);
+  color: var(--salida-txt);
+}
 
 .mov-select {
   width: 100%;
   padding: 10px 14px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--borde);
   border-radius: 8px;
-  background: #f8fafc;
+  background: var(--bg-input);
   font-size: 13px;
-  color: #475569;
+  color: var(--txt-normal);
   outline: none;
   cursor: pointer;
   margin-bottom: 18px;
   appearance: none;
+  transition: background 0.3s, border-color 0.2s, color 0.3s;
 }
-.mov-select:focus { border-color: #38BDF8; }
 
-.mov-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.mov-select:focus { border-color: var(--azul); }
+
+.mov-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
 .mov-input-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--borde);
   border-radius: 8px;
   padding: 9px 12px;
-  background: #f8fafc;
+  background: var(--bg-input);
+  transition: background 0.3s, border-color 0.2s;
 }
+
 .mov-input-wrap input {
   border: none;
   background: transparent;
   outline: none;
   font-size: 13px;
-  color: #475569;
+  color: var(--txt-normal);
   width: 100%;
 }
-.mov-input-wrap input::placeholder { color: #cbd5e1; }
-.mov-input-wrap:focus-within { border-color: #38BDF8; }
+
+.mov-input-wrap input::placeholder { color: var(--txt-placeholder); }
+.mov-input-wrap:focus-within { border-color: var(--azul); }
 
 .mov-textarea {
   width: 100%;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--borde);
   border-radius: 8px;
   padding: 10px 12px;
-  background: #f8fafc;
+  background: var(--bg-input);
   font-size: 13px;
-  color: #475569;
+  color: var(--txt-normal);
   resize: none;
   outline: none;
   font-family: 'Segoe UI', sans-serif;
   margin-bottom: 20px;
   display: block;
+  transition: background 0.3s, border-color 0.2s, color 0.3s;
 }
-.mov-textarea::placeholder { color: #cbd5e1; }
-.mov-textarea:focus { border-color: #38BDF8; }
+
+.mov-textarea::placeholder { color: var(--txt-placeholder); }
+.mov-textarea:focus { border-color: var(--azul); }
 
 .mov-btn-registrar {
   width: 100%;
   padding: 13px;
-  background: #1e4d7b;
+  background: var(--azul-dark);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -468,7 +560,8 @@ const registrarMovimiento = () => {
   cursor: pointer;
   transition: background 0.15s;
 }
-.mov-btn-registrar:hover { background: #185a96; }
+
+.mov-btn-registrar:hover { background: var(--azul-hover); }
 
 /* ── HISTORIAL ── */
 .mov-historial-header {
@@ -477,50 +570,65 @@ const registrarMovimiento = () => {
   align-items: center;
   margin-bottom: 20px;
 }
+
 .mov-btn-filtrar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  font-size: 13px;
-  color: #0369a1;
-  font-weight: 600;
-  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none;
+  font-size: 13px; color: var(--azul-txt);
+  font-weight: 600; cursor: pointer;
+  transition: color 0.3s;
 }
 
 .mov-hist-table { width: 100%; border-collapse: collapse; }
+
 .mov-hist-table thead th {
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 0.7px;
-  text-transform: uppercase;
-  padding: 0 10px 12px 0;
-  text-align: left;
-  border-bottom: 1px solid #f1f5f9;
+  font-size: 10px; font-weight: 700;
+  color: var(--txt-muted);
+  letter-spacing: 0.7px; text-transform: uppercase;
+  padding: 0 10px 12px 0; text-align: left;
+  border-bottom: 1px solid var(--borde);
+  transition: color 0.3s, border-color 0.3s;
 }
-.mov-hist-table tbody tr { border-bottom: 1px solid #f8fafc; }
+
+.mov-hist-table tbody tr { border-bottom: 1px solid var(--borde-suave); }
 .mov-hist-table tbody tr:last-child { border-bottom: none; }
 .mov-hist-table tbody td { padding: 13px 10px 13px 0; vertical-align: middle; }
 
-.mov-fecha-col { font-size: 11px; color: #94a3b8; line-height: 1.5; min-width: 60px; }
+.mov-fecha-col {
+  font-size: 11px;
+  color: var(--txt-muted);
+  line-height: 1.5; min-width: 60px;
+  transition: color 0.3s;
+}
+
 .mov-prod-col  { display: flex; align-items: center; gap: 10px; }
+
 .mov-prod-thumb {
   width: 38px; height: 38px;
   border-radius: 8px;
-  background: #f1f5f9;
-  border: 1px solid #e5e7eb;
+  background: var(--prod-thumb-bg);
+  border: 1px solid var(--borde);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  transition: background 0.3s, border-color 0.3s;
 }
-.mov-prod-name { font-size: 13px; font-weight: 600; color: #0f172a; }
 
-.mov-badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
-.mov-badge.entrada { background: #d1fae5; color: #065f46; }
-.mov-badge.salida  { background: #ffe4e6; color: #9f1239; }
+.mov-prod-name {
+  font-size: 13px; font-weight: 600;
+  color: var(--txt-titulo);
+  transition: color 0.3s;
+}
 
-.mov-qty-col { font-size: 15px; font-weight: 700; color: #0f172a; text-align: right; }
+.mov-badge { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; transition: background 0.3s, color 0.3s; }
+.mov-badge.entrada { background: var(--badge-entrada-bg); color: var(--badge-entrada-txt); }
+.mov-badge.salida  { background: var(--badge-salida-bg);  color: var(--badge-salida-txt);  }
+
+.mov-qty-col {
+  font-size: 15px; font-weight: 700;
+  color: var(--txt-titulo);
+  text-align: right;
+  transition: color 0.3s;
+}
 
 .mov-hist-footer {
   display: flex;
@@ -528,21 +636,26 @@ const registrarMovimiento = () => {
   align-items: center;
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--borde);
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--txt-muted);
+  transition: border-color 0.3s, color 0.3s;
 }
+
 .mov-pag-arrows { display: flex; gap: 6px; }
+
 .mov-pag-arrow {
   width: 28px; height: 28px;
   border-radius: 50%;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
+  border: 1px solid var(--borde);
+  background: var(--bg-card);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: #475569;
+  font-size: 14px; color: var(--txt-normal);
+  transition: background 0.2s, border-color 0.2s;
 }
-.mov-pag-arrow:hover { background: #f1f5f9; }
+
+.mov-pag-arrow:hover { background: var(--bg-input2); }
 
 /* ── STATS FOOTER ── */
 .mov-stats-footer {
@@ -551,31 +664,40 @@ const registrarMovimiento = () => {
   gap: 16px;
   padding-bottom: 28px;
 }
+
 .mov-stat-card {
-  background: #ffffff;
+  background: var(--bg-card);
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--borde);
   padding: 18px 22px;
   display: flex;
   align-items: center;
   gap: 16px;
+  transition: background 0.3s, border-color 0.3s;
 }
+
 .mov-stat-circle {
   width: 50px; height: 50px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.mov-stat-circle.green { background: #1e4d7b; }
-.mov-stat-circle.red   { background: #dc2626; }
-.mov-stat-circle.gray  { background: #475569; }
+
+.mov-stat-circle.green { background: var(--stat-green); }
+.mov-stat-circle.red   { background: var(--stat-red);   }
+.mov-stat-circle.gray  { background: var(--stat-gray);  }
+
 .mov-stat-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 0.7px;
-  text-transform: uppercase;
+  font-size: 10px; font-weight: 700;
+  color: var(--txt-muted);
+  letter-spacing: 0.7px; text-transform: uppercase;
   margin-bottom: 4px;
+  transition: color 0.3s;
 }
-.mov-stat-value { font-size: 26px; font-weight: 700; color: #0f172a; }
+
+.mov-stat-value {
+  font-size: 26px; font-weight: 700;
+  color: var(--txt-titulo);
+  transition: color 0.3s;
+}
 </style>

@@ -19,7 +19,7 @@
             <span class="notif-dot"></span>
           </button>
           <div class="avatar-btn">
-            <img src="/images/Usericon.png" class="avatar-img" />
+            <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
         </div>
       </header>
@@ -212,6 +212,9 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
+
+import { useUsuarioStore } from '../stores/usuario'
+const usuarioStore = useUsuarioStore()
 
 //DARK MODE o modo oscuro
 import { useTemaStore } from '../stores/tema'

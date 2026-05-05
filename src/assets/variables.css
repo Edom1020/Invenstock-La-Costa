@@ -52,3 +52,27 @@
   --salida-bg:   #450a0a;
   --salida-txt:  #fca5a5;
 }
+
+
+/* Esto afectará a todas las barras de búsqueda de todas las pantallas */
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border-radius: 20px; /* Radio consistente */
+  padding: 8px 16px;   /* Altura consistente */
+  width: 100%;
+  max-width: 400px;
+  margin-right: auto;  /* Para mantenerla a la izquierda como querías */
+  transition: background 0.3s;
+}
+
+.search-wrap input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: var(--txt-normal);
+  width: 100%;
+}

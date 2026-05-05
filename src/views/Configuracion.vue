@@ -19,7 +19,7 @@
             <span class="notif-dot"></span>
           </button>
           <div class="avatar-btn">
-            <img :src="fotoPerfil" class="avatar-img" />
+            <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
         </div>
       </header>
@@ -44,8 +44,8 @@
 
             <div class="conf-profile">
               <div class="conf-avatar-wrap">
-                <img :src="fotoPerfil" class="conf-avatar" />
-                <button class="conf-cam-btn" @click="$refs.fileInput.click()">📷</button>
+                <img :src="usuarioStore.fotoPerfil" class="conf-avatar" />
+                <button class="conf-cam-btn" @click="$refs.fileInput.click()"><img src="/images/images-config/cameraicon.png" style="width:16px;height:16px;object-fit:contain;" /></button>
                 <input ref="fileInput" type="file" accept="image/*" style="display:none" @change="cambiarFoto" />
               </div>
 
@@ -188,38 +188,62 @@
               </div>
             </div>
           </div>
-
-          <!-- SEGURIDAD -->
+          
+                    <!-- SEGURIDAD -->
           <div class="config-card full">
-            <div class="conf-card-title">
-              <img src="/images/images-config/securityicon.png" style="width:16px;height:16px;object-fit:contain;" />
-              Cambiar Contraseña
+            <!-- BOTÓN (se ve cuando NO está expandido) -->
+            <div v-if="!mostrarPassword" class="seg-btn" @click="mostrarPassword = true">
+              <div class="seg-izquierda">
+                <div class="seg-icono">
+                  <img src="/images/images-config/securityicon.png" style="width:16px;height:16px;object-fit:contain;" />
+                </div>
+                <div>
+                  <div class="conf-notif-title">Seguridad</div>
+                  <div class="conf-notif-desc">Cambiar contraseña</div>
+                </div>
+              </div>
+              <span class="seg-arrow">›</span>
             </div>
-
-            <div class="conf-password-form">
-              <input 
-                v-model="password.actual" 
-                type="password" 
-                placeholder="Contraseña actual" 
-                class="conf-input-password" 
-              />
-              <input 
-                v-model="password.nueva" 
-                type="password" 
-                placeholder="Nueva contraseña" 
-                class="conf-input-password" 
-              />
-              <input 
-                v-model="password.confirmar" 
-                type="password" 
-                placeholder="Confirmar contraseña" 
-                class="conf-input-password" 
-              />
+          
+            <!-- FORMULARIO (se ve cuando está expandido) -->
+            <div v-else>
+              <div class="conf-card-title">
+                <img src="/images/images-config/securityicon.png" style="width:16px;height:16px;object-fit:contain;" />
+                Cambiar Contraseña
+              </div>
+          
+              <div class="conf-password-form">
+                <input
+                  v-model="password.actual"
+                  type="password"
+                  placeholder="Contraseña actual"
+                  class="conf-input-password"
+                />
+                <input
+                  v-model="password.nueva"
+                  type="password"
+                  placeholder="Nueva contraseña"
+                  class="conf-input-password"
+                />
+                <input
+                  v-model="password.confirmar"
+                  type="password"
+                  placeholder="Confirmar contraseña"
+                  class="conf-input-password"
+                />
+              </div>
+          
+              <div style="display:flex; gap:10px;">
+                <button class="conf-btn-update" @click="cambiarContraseña">
+                  Actualizar Contraseña
+                </button>
+                <button class="conf-btn-cancelar-pass" @click="mostrarPassword = false">
+                  Cancelar
+                </button>
+              </div>
             </div>
-
-            <button class="conf-btn-update" @click="cambiarContraseña">Actualizar Contraseña</button>
           </div>
-
+                    
         </div>
 
 
@@ -239,10 +263,17 @@
 import { ref, reactive } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 
-const fotoPerfil = ref('/images/Usericon.png')
+import { useUsuarioStore } from '../stores/usuario'
+const usuarioStore = useUsuarioStore()
+
+// Elimina: const fotoPerfil = ref(...)
+
 const cambiarFoto = (e) => {
-  const f = e.target.files[0]
-  if (f) fotoPerfil.value = URL.createObjectURL(f)
+  const file = e.target.files[0]
+  if (file) {
+    const url = URL.createObjectURL(file)
+    usuarioStore.cambiarFotoPerfil(url)  // ← Guarda en el store
+  }
 }
 
 const modoEdicion = ref(false)
@@ -285,6 +316,9 @@ const cambiarContraseña = () => {
 const abrirCambioContraseña = () => {
   alert('Cambio de contraseña próximamente.')
 }
+
+//Mostrar contraseña en formulario de seguridad
+const mostrarPassword = ref(false)
 
 const cancelar = () => {
   perfil.nombre    = 'Ricardo Alcaraz'
@@ -338,8 +372,6 @@ const guardarCambios = () => {
   --thumb:      #f1f5f9;
 }
 
-
-
 /* ── LAYOUT PRINCIPAL ── */
 .layout {
   display: flex;
@@ -349,8 +381,6 @@ const guardarCambios = () => {
   font-family: 'Segoe UI', sans-serif;
   transition: background 0.3s;
 }
-
-
 
 /* ── COLUMNA PRINCIPAL ── */
 .main {
@@ -373,17 +403,8 @@ const guardarCambios = () => {
   transition: background 0.3s, border-color 0.3s;
 }
 
-
-.search-wrap {
-  display: flex; align-items: center; gap: 7px;
-  background: var(--bg-input); border-radius: 8px;
-  padding: 6px 12px; width: 240px; transition: background 0.3s;
-}
 .search-icon { width: 14px; height: 14px; object-fit: contain; }
-.search-wrap input {
-  border: none; background: transparent; outline: none;
-  font-size: 13px; color: var(--txt-normal); width: 100%;
-}
+
 .search-wrap input::placeholder { color: var(--txt-muted); }
 
 .topbar-right { display: flex; align-items: center; gap: 12px; }
@@ -406,10 +427,7 @@ const guardarCambios = () => {
 }
 .avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
-/* ── CONTENT ──
-   overflow-y: auto permite scroll si el contenido no entra,
-   pero NO fuerza al grid a estirarse como hacía overflow: hidden.
-*/
+
 .content {
   flex: 1;
   overflow-y: auto;
@@ -453,8 +471,10 @@ const guardarCambios = () => {
 .config-card.full {
   grid-column: span 2;
   width: 100%;
-  height: auto;
-  min-height: 300px;
+  max-width: 400px;
+  margin-left: auto;
+  height: fit-content;
+  min-height: auto;
 }
 
 /* ── TÍTULOS DE CARD ── */
@@ -859,6 +879,57 @@ const guardarCambios = () => {
 
 .conf-input-password::placeholder {
   color: var(--txt-muted);
+}
+
+.seg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 14px;
+  transition: background 0.2s;
+}
+
+.seg-btn:hover { background: var(--bg-input); }
+
+.seg-izquierda {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.seg-icono {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--bg-input);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.seg-arrow {
+  font-size: 20px;
+  color: var(--txt-muted);
+}
+
+.conf-btn-cancelar-pass {
+  background: transparent;
+  color: var(--txt-suave);
+  border: 1.5px solid var(--borde);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.conf-btn-cancelar-pass:hover {
+  color: var(--txt-titulo);
+  border-color: var(--txt-normal);
 }
 
 .conf-btn-update {
