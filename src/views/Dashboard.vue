@@ -68,8 +68,39 @@
         <div class="table-card">
           <div class="table-header">
             <h2>Últimos Movimientos</h2>
-            <button class="filter-btn">Filtrar</button>
+             <button class="filter-btn" @click="mostrarFiltros = !mostrarFiltros">Filtrar</button>
           </div>
+
+            <!-- PANEL DE FILTROS (aparece al hacer clic) -->
+              <div v-if="mostrarFiltros" class="filtros-panel">
+                <div class="filtros-grupo">
+                  <div class="filtros-titulo">Tipo</div>
+                  <div class="filtros-opciones">
+                    <span
+                      v-for="tipo in ['Todos', 'Entrada', 'Salida']"
+                      :key="tipo"
+                      :class="['filtro-pill', filtroTipo === tipo ? 'active' : '']"
+                      @click="filtroTipo = tipo"
+                    >
+                      {{ tipo }}
+                    </span>
+                  </div>
+                </div>
+                <div class="filtros-grupo">
+                  <div class="filtros-titulo">Categoría</div>
+                  <div class="filtros-opciones">
+                    <span
+                      v-for="cat in ['Todas', 'electronica', 'hogar', 'comida']"
+                      :key="cat"
+                      :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
+                      @click="filtroCategoria = cat"
+                    >
+                      {{ cat === 'electronica' ? 'Electrónica' : cat === 'hogar' ? 'Hogar' : cat === 'comida' ? 'Comida' : cat }}
+                    </span>
+                  </div>
+                </div>
+                <button class="filtros-limpiar" @click="limpiarFiltros">Limpiar filtros</button>
+              </div>
 
           <table>
             <thead>
@@ -131,11 +162,14 @@ const usuarioStore = useUsuarioStore()
 const busqueda = ref('')
 
 // Para filtrar los movimientos según el término de búsqueda ingresado //
-const movimientosFiltrados = computed(() =>
-  movimientos.value.filter(m =>
-    m.producto.toLowerCase().includes(busqueda.value.toLowerCase())
-  )
-)
+const movimientosFiltrados = computed(() => {
+  return movimientos.value.filter(m => {
+    const porTipo = filtroTipo.value === 'Todos' || m.tipo === filtroTipo.value
+    const porCategoria = filtroCategoria.value === 'Todas' || m.categoria === filtroCategoria.value
+    const porBusqueda = m.producto.toLowerCase().includes(busqueda.value.toLowerCase())
+    return porTipo && porCategoria && porBusqueda
+  })
+})
 
 
 
@@ -154,6 +188,16 @@ const movimientos = ref([
   { id: 3, fecha: 'Mar 26, 12:15', producto: 'Airpods 4',                 categoria: 'electronica', tipo: 'Entrada', cantidad: 30 },
   { id: 4, fecha: 'Abr 26, 10:00', producto: 'Caja de manzanas grande x40', categoria: 'comida',   tipo: 'Salida',  cantidad: 20 },
 ])
+
+const mostrarFiltros = ref(false)
+const filtroTipo = ref('Todos')
+const filtroCategoria = ref('Todas')
+
+const limpiarFiltros = () => {
+  filtroTipo.value = 'Todos'
+  filtroCategoria.value = 'Todas'
+}
+
 </script>
 
 <style scoped>
@@ -395,6 +439,69 @@ const movimientos = ref([
   border: none;
   cursor: pointer;
 }
+
+
+/* -- Estilos para el panel de filtros desplegable -- */
+
+.filtros-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.filtros-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filtros-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--txt-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.filtros-opciones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filtro-pill {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--borde);
+  background: var(--bg-input);
+  color: var(--txt-normal);
+  transition: all 0.15s;
+}
+
+.filtro-pill:hover { border-color: #38BDF8; color: #0369a1; }
+.filtro-pill.active { border-color: #38BDF8; background: #e0f2fe; color: #0369a1; font-weight: 600; }
+
+.filtros-limpiar {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--txt-muted);
+  cursor: pointer;
+  text-align: left;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.filtros-limpiar:hover { color: #ef4444; }
 
 table { width: 100%; border-collapse: collapse; }
 
