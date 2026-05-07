@@ -117,7 +117,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="mov in historial" :key="mov.id">
+                <tr v-for="mov in historialFiltrado" :key="mov.id">
                   <td>
                     <div class="mov-fecha-col">{{ mov.fechaFormato }}</div>
                   </td>
@@ -190,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed} from 'vue'
 import Sidebar from "../components/Sidebar.vue";
 
 //Script para notificaciones//
@@ -206,6 +206,8 @@ const temaStore = useTemaStore()
 
 const busqueda = ref('')
 const tipoActivo = ref('entrada')
+
+
 
 
 const form = ref({
@@ -237,6 +239,12 @@ const historial = ref([
   { id: 3, fechaFormato: '13 Mar, 2024', producto: 'Caja Manzanas x40',    categoria: 'comida',      tipo: 'Entrada', cantidad: 500  },
   { id: 4, fechaFormato: '12 Mar, 2024', producto: 'Headphones Studio X',  categoria: 'electronica', tipo: 'Salida',  cantidad: 120  },
 ])
+
+const historialFiltrado = computed(() =>
+  historial.value.filter(m =>
+    m.producto.toLowerCase().includes(busqueda.value.toLowerCase())
+  )
+)
 
 const registrarMovimiento = () => {
   // Cuando conectes el backend:

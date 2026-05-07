@@ -9,10 +9,6 @@
 
       <!-- Barra superior -->
       <header class="topbar">
-        <div class="search-wrap">
-          <img src="/images/images-dashboard/lupaicon.png" class="search-icon" />
-          <input type="text" placeholder="Buscar productos..." />
-        </div>
         <div class="topbar-right">
           <Notificaciones />
           <div class="avatar-btn">
@@ -397,15 +393,11 @@ const guardarCambios = () => {
   padding: 10px 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   border-bottom: 1px solid var(--borde);
   flex-shrink: 0;
   transition: background 0.3s, border-color 0.3s;
 }
-
-.search-icon { width: 14px; height: 14px; object-fit: contain; }
-
-.search-wrap input::placeholder { color: var(--txt-muted); }
 
 .topbar-right { display: flex; align-items: center; gap: 12px; }
 

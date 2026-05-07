@@ -9,10 +9,6 @@
  
       <!-- Barra superior -->
       <header class="topbar">
-        <div class="search-wrap">
-          <img src="/images/images-dashboard/lupaicon.png" class="search-icon" />
-          <input type="text" placeholder="Buscar movimientos..." />
-        </div>
         <div class="topbar-right">
           <Notificaciones />
            <!-- Componente de notificaciones, se muestra en el topbar para acceso rápido a alertas y mensajes -->
@@ -332,24 +328,11 @@ const cancelar = () => {
   padding: 10px 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   border-bottom: 1px solid var(--borde);
   flex-shrink: 0;
   transition: background 0.3s, border-color 0.3s;
 }
-
-.search-wrap {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--bg-input); border-radius: 20px;
-  padding: 7px 16px; width: 280px;
-  transition: background 0.3s;
-}
-.search-icon { width: 14px; height: 14px; object-fit: contain; }
-.search-wrap input {
-  border: none; background: transparent; outline: none;
-  font-size: 13px; color: var(--txt2); width: 100%;
-}
-.search-wrap input::placeholder { color: var(--txt4); }
 
 .topbar-right { display: flex; align-items: center; gap: 10px; }
 
@@ -473,12 +456,12 @@ const cancelar = () => {
 .field-textarea { resize: none; height: 82px; line-height: 1.5; }
 
 .field-stock-min {
-  color: var(--stock-min-txt) !important;
+  color: var(--stock-min-txt);
   font-weight: 700;
-  border-color: var(--stock-min-borde) !important;
-  background: var(--stock-min-bg) !important;
+  border-color: var(--stock-min-borde);
+  background: var(--stock-min-bg);
 }
-.field-stock-min:focus { border-color: var(--stock-min-txt) !important; }
+.field-stock-min:focus { border-color: var(--stock-min-txt); }
 
 /* ── GRIDS DE CAMPOS ── */
 .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }

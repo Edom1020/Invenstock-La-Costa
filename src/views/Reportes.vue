@@ -9,7 +9,7 @@
        <header class="topbar">
   <div class="search-wrap">
     <img src="/images/images-dashboard/lupaicon.png" class="search-icon" />
-    <input type="text" placeholder="Buscar productos..." />
+    <input v-model="busqueda" type="text" placeholder="Buscar movimientos..." />
   </div>
   
   <div class="topbar-right">
@@ -131,7 +131,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in alertasStock" :key="item.id">
+              <tr v-for="item in alertasFiltradas" :key="item.id">
                 <td>
                   <div class="prod-cell">
                     <div class="prod-thumb">
@@ -159,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import Chart from 'chart.js/auto'
 import Sidebar from "../components/Sidebar.vue";
 
@@ -173,6 +173,15 @@ const temaStore = useTemaStore()
 // Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
+
+const busqueda = ref('')
+
+const alertasFiltradas = computed(() =>
+  alertasStock.value.filter(a =>
+    a.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
+    a.categoria.toLowerCase().includes(busqueda.value.toLowerCase())
+  )
+)
 
 // ── ICONO POR CATEGORIA ──
 const getCatIcon = (categoria) => {

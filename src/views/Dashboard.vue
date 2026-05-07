@@ -11,7 +11,7 @@
       <header class="topbar">
         <div class="search-wrap">
           <img src="/images/images-dashboard/lupaicon.png" class="search-icon" />
-          <input type="text" placeholder="Buscar productos..." />
+           <input v-model="busqueda" type="text" placeholder="Buscar productos..." />
         </div>
         <div class="topbar-right">
            <Notificaciones />
@@ -81,7 +81,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="mov in movimientos" :key="mov.id">
+              <tr v-for="mov in movimientosFiltrados" :key="mov.id">
                 <td class="fecha-cell">{{ mov.fecha }}</td>
                 <td>
                   <div class="prod-cell">
@@ -101,8 +101,8 @@
             </tbody>
           </table>
 
-          <div class="see-all">
-            <span>Ver todos los movimientos</span>
+          <div class="see-all" @click="$router.push('/movimientos')">
+              <span>Ver todos los movimientos</span>
           </div>
         </div>
 
@@ -114,7 +114,9 @@
 <script setup>
 
 import Sidebar from "../components/Sidebar.vue";
-import { ref } from 'vue'
+import { ref, computed} from 'vue'
+
+
 
 //Script para notificaciones//
 import Notificaciones from '../components/Notificaciones.vue'
@@ -124,6 +126,18 @@ const temaStore = useTemaStore()
 
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
+
+// Para el buscador de productos en el topbar //
+const busqueda = ref('')
+
+// Para filtrar los movimientos según el término de búsqueda ingresado //
+const movimientosFiltrados = computed(() =>
+  movimientos.value.filter(m =>
+    m.producto.toLowerCase().includes(busqueda.value.toLowerCase())
+  )
+)
+
+
 
 const getCatIcon = (categoria) => {
   const icons = {
