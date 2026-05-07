@@ -13,10 +13,8 @@
   </div>
   
   <div class="topbar-right">
-    <button class="notif-btn">
-      <img src="/images/images-movimientos/notif.png" style="width:18px;height:18px;object-fit:contain;" />
-      <span class="notif-dot"></span>
-    </button>
+    <Notificaciones />
+     <!-- Componente de notificaciones, se muestra en el topbar para acceso rápido a alertas y mensajes -->
 
     <div class="avatar-btn">
       <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
@@ -164,6 +162,9 @@
 import { ref, onMounted } from 'vue'
 import Chart from 'chart.js/auto'
 import Sidebar from "../components/Sidebar.vue";
+
+//Script para notificaciones//
+import Notificaciones from '../components/Notificaciones.vue'
 
 //DARK MODE o modo oscuro
 import { useTemaStore } from '../stores/tema'

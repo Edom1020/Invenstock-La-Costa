@@ -14,10 +14,8 @@
           <input type="text" placeholder="Buscar movimientos..." />
         </div>
         <div class="topbar-right">
-          <button class="notif-btn">
-            <img src="/images/images-movimientos/notif.png" style="width:16px;height:16px;object-fit:contain;" />
-            <span class="notif-dot"></span>
-          </button>
+          <Notificaciones />
+           <!-- Componente de notificaciones, se muestra en el topbar para acceso rápido a alertas y mensajes -->
           <div class="avatar-btn">
             <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
@@ -212,6 +210,9 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
+
+//Script para notificaciones//
+import Notificaciones from '../components/Notificaciones.vue'
 
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()

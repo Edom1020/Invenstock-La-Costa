@@ -14,10 +14,7 @@
           <input type="text" placeholder="Buscar productos..." />
         </div>
         <div class="topbar-right">
-          <button class="notif-btn">
-            <img src="/images/images-movimientos/notif.png" style="width:16px;height:16px;object-fit:contain;" />
-            <span class="notif-dot"></span>
-          </button>
+          <Notificaciones />
           <div class="avatar-btn">
             <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
@@ -263,11 +260,14 @@
 import { ref, reactive } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 
+// Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
 
-// Elimina: const fotoPerfil = ref(...)
+//Script para notificaciones//
+import Notificaciones from '../components/Notificaciones.vue'
 
+// Función para cambiar la foto de perfil, actualiza el store de usuario //
 const cambiarFoto = (e) => {
   const file = e.target.files[0]
   if (file) {

@@ -14,10 +14,7 @@
           <input type="text" placeholder="Buscar productos..." />
         </div>
         <div class="topbar-right">
-          <button class="notif-btn">
-            <img src="/images/images-movimientos/notif.png" style="width:18px;height:18px;object-fit:contain;" />
-            <span class="notif-dot"></span>
-          </button>
+           <Notificaciones />
           <div class="avatar-btn">
             <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
@@ -118,6 +115,9 @@
 
 import Sidebar from "../components/Sidebar.vue";
 import { ref } from 'vue'
+
+//Script para notificaciones//
+import Notificaciones from '../components/Notificaciones.vue'
 
 import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
