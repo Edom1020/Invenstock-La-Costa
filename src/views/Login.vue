@@ -13,7 +13,7 @@
         <div class="input-group">
           <label>Email</label>
           <div class="input-container">
-            <input type="email" />
+            <input v-model="email" type="email" />
           </div>
         </div>
 
@@ -22,7 +22,7 @@
           <label>Contraseña</label>
 
           <div class="input-container">
-            <input :type="showPassword ? 'text' : 'password'" />
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" />
             <img 
               src="/images/Ver-contraseña.png" 
               class="eye-icon"
@@ -36,7 +36,7 @@
       </div>
 
       <!-- BOTÓN -->
-      <button class="login-btn">Iniciar Sesión</button>
+      <button class="login-btn" @click="iniciarSesion">Iniciar Sesión</button>
 
     </div>
 
@@ -45,12 +45,27 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
+const email = ref("");
+const password = ref("");
 const showPassword = ref(false);
 
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };
+
+const iniciarSesion = () => {
+  if (!email.value || !password.value) { 
+    alert("Por favor, completa todos los campos.");
+    return;
+  }
+  router.push("/dashboard");
+
+}
+
+
 </script>
 
 <style>

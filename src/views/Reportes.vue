@@ -32,12 +32,46 @@
             <img src="/images/images-reportes/calendaricon.png" style="width:10px;opacity:0.6;" />
             Últimos 30 días
           </button>
-          <button class="filter-pill"> 
-            <img src="/images/images-movimientos/filtrar.png" style="width:10px;opacity:0.6;" /> 
-            Filtros Avanzados</button>
-        </div>
+           <button class="filter-pill" @click="mostrarFiltros = !mostrarFiltros">
+              <img src="/images/images-movimientos/filtrar.png" style="width:10px;opacity:0.6;" />
+               Filtros Avanzados
+          </button>
         <button class="export-btn">⬇ Exportar PDF</button>
+        </div>
       </div>
+
+      <!-- PANEL  -->
+        <div v-if="mostrarFiltros" class="filtros-panel-rep">
+        <div class="filtros-grupo">
+          <div class="filtros-titulo">Categoría</div>
+          <div class="filtros-opciones">
+            <span
+              v-for="cat in ['Todas', 'Electrónica', 'Hogar', 'Comida']"
+              :key="cat"
+              :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
+              @click="filtroCategoria = cat"
+            >
+              {{ cat }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="filtros-grupo">
+          <div class="filtros-titulo">Estado de Stock</div>
+          <div class="filtros-opciones">
+            <span
+              v-for="estado in ['Todos', 'Crítico', 'Bajo', 'Normal']"
+              :key="estado"
+              :class="['filtro-pill', filtroEstado === estado ? 'active' : '']"
+              @click="filtroEstado = estado"
+            >
+              {{ estado }}
+            </span>
+          </div>
+        </div>
+
+  <button class="filtros-limpiar" @click="limpiarFiltros">Limpiar filtros</button>
+</div>
 
       <div class="content">
 
@@ -115,7 +149,7 @@
         <div class="table-card">
           <div class="table-header">
             <h2 class="section-title">Alertas de Stock Bajo</h2>
-            <span class="inventory-link" @click="$router.push('/inventario')">
+            <span class="inventory-link" @click="$router.push('/productos')">
               Ver Inventario Completo
             </span>
           </div>
@@ -144,7 +178,7 @@
                 <td class="stock-low-cell">{{ item.enStock }}</td>
                 <td class="min-cell">{{ item.minimoRequerido }}</td>
                 <td>
-                  <button class="restock-btn" @click="$router.push('/inventario')">
+                  <button class="restock-btn" @click="$router.push('/registrar-producto')">
                     Reponer
                   </button>
                 </td>
@@ -176,12 +210,31 @@ const usuarioStore = useUsuarioStore()
 
 const busqueda = ref('')
 
-const alertasFiltradas = computed(() =>
-  alertasStock.value.filter(a =>
-    a.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
-    a.categoria.toLowerCase().includes(busqueda.value.toLowerCase())
-  )
-)
+const mostrarFiltros = ref(false)
+const filtroCategoria = ref('Todas')
+const filtroEstado = ref('Todos')
+
+const alertasFiltradas = computed(() => {
+  return alertasStock.value.filter(a => {
+    const porBusqueda = a.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
+                        a.categoria.toLowerCase().includes(busqueda.value.toLowerCase())
+
+    const porCategoria = filtroCategoria.value === 'Todas' ||
+                         a.categoria === filtroCategoria.value
+
+    const porEstado = filtroEstado.value === 'Todos' ||
+      (filtroEstado.value === 'Crítico' && a.enStock <= 2) ||
+      (filtroEstado.value === 'Bajo'    && a.enStock > 2 && a.enStock <= 5) ||
+      (filtroEstado.value === 'Normal'  && a.enStock > 5)
+
+    return porBusqueda && porCategoria && porEstado
+  })
+})
+
+const limpiarFiltros = () => {
+  filtroCategoria.value = 'Todas'
+  filtroEstado.value = 'Todos'
+}
 
 // ── ICONO POR CATEGORIA ──
 const getCatIcon = (categoria) => {
@@ -411,6 +464,65 @@ onMounted(() => {
 }
 
 .filter-pill:hover { border-color: var(--azul); color: var(--azul-txt); }
+/*Filtros avanzados*/
+.filtros-panel-rep {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--borde);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.filtros-grupo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filtros-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--txt-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.filtros-opciones {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filtro-pill {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1.5px solid var(--borde);
+  background: var(--bg-input);
+  color: var(--txt-normal);
+  transition: all 0.15s;
+}
+
+.filtro-pill:hover  { border-color: #38BDF8; color: #0369a1; }
+.filtro-pill.active { border-color: #38BDF8; background: #e0f2fe; color: #0369a1; font-weight: 600; }
+
+.filtros-limpiar {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--txt-muted);
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.filtros-limpiar:hover { color: #ef4444; }
 
 .export-btn {
   padding: 10px 20px;
