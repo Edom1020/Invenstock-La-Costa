@@ -127,28 +127,43 @@ const getIcono = (tipo) => {
   position: relative;
 }
 
+
+
 .notif-btn {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: var(--bg-input, #f1f5f9);
-  border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
   position: relative;
-  transition: background 0.3s;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;  /* ← sin "solid" */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
 }
+
+.notif-btn:hover { background: #e2e8f0; }
 
 .notif-dot {
   position: absolute;
-  top: 4px; right: 4px;
-  width: 16px; height: 16px;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
   background: #ef4444;
   border-radius: 50%;
-  border: 1.5px solid white;
+  border: 2px solid #ffffff;
   font-size: 9px;
   font-weight: 700;
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0 2px;
 }
+
 
 /* DROPDOWN */
 .notif-dropdown {

@@ -36,6 +36,8 @@
               <img src="/images/images-movimientos/filtrar.png" style="width:10px;opacity:0.6;" />
                Filtros Avanzados
           </button>
+        </div>
+        <div class="filters-right">
             <button class="export-btn" @click="mostrarModalPDF = true">
                 ⬇ Exportar PDF
             </button>
@@ -460,6 +462,7 @@ onMounted(() => {
 }
 
 .filters-left { display: flex; gap: 10px; }
+.filters-right { display: flex; gap: 10px; }
 
 .filter-pill {
   display: flex;
