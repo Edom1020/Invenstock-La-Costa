@@ -1,4 +1,4 @@
-/* src/assets/variables.css */
+
 
 :root {
   /* ── VARIABLES TEMA CLARO ── */
@@ -12,9 +12,9 @@
   --txt-muted:   #94a3b8;
   --txt-danger:  #ef4444;
   --azul:        #38BDF8;
-  --bg-hover: #f8fafc; /* Gris muy clarito para modo claro */
+  --bg-hover: #f8fafc; 
   
-  /* Tu nueva variable global */
+  
   --prod-name-color: #0369a1; 
   
   --cat-elec:    #e0f2fe;
@@ -27,7 +27,6 @@
 }
 
 /* ── VARIABLES TEMA OSCURO ── */
-/* Usamos [data-theme='oscuro'] o .dark-mode dependiendo de tu Store */
 .dark-mode {
   --bg-pag:      #0f172a;
   --bg-card:     #1e293b;
@@ -39,9 +38,9 @@
   --txt-muted:   #64748b;
   --txt-danger:  #f87171;
   --azul:        #38BDF8;
-  --bg-hover: #2d3a4f; /* Gris azulado sutil para modo oscuro */
+  --bg-hover: #2d3a4f; 
   
-  /* Cambia a blanco en modo oscuro */
+ 
   --prod-name-color: #ffffff; 
 
   --cat-elec:    #1e3a5f;
@@ -54,17 +53,17 @@
 }
 
 
-/* Esto afectará a todas las barras de búsqueda de todas las pantallas */
+
 .search-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
   background: var(--bg-input);
-  border-radius: 20px; /* Radio consistente */
-  padding: 8px 16px;   /* Altura consistente */
+  border-radius: 20px; 
+  padding: 8px 16px;   
   width: 100%;
   max-width: 400px;
-  margin-right: auto;  /* Para mantenerla a la izquierda como querías */
+  margin-right: auto;  
   transition: background 0.3s;
 }
 

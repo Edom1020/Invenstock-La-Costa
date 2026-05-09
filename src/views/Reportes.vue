@@ -36,7 +36,9 @@
               <img src="/images/images-movimientos/filtrar.png" style="width:10px;opacity:0.6;" />
                Filtros Avanzados
           </button>
-        <button class="export-btn">⬇ Exportar PDF</button>
+            <button class="export-btn" @click="mostrarModalPDF = true">
+                ⬇ Exportar PDF
+            </button>
         </div>
       </div>
 
@@ -189,6 +191,12 @@
 
       </div>
     </div>
+      <!-- MODAL EXPORTAR PDF -->
+      <ModalExportarPDF
+        v-if="mostrarModalPDF"
+        @cerrar="mostrarModalPDF = false"
+      />
+
   </div>
 </template>
 
@@ -196,6 +204,10 @@
 import { ref, onMounted, computed } from 'vue'
 import Chart from 'chart.js/auto'
 import Sidebar from "../components/Sidebar.vue";
+import ModalExportarPDF from '../components/ModalExportarPDF.vue'
+
+//Modal de exportar PDF//
+const mostrarModalPDF = ref(false)
 
 //Script para notificaciones//
 import Notificaciones from '../components/Notificaciones.vue'

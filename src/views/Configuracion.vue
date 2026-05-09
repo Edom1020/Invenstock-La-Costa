@@ -249,6 +249,9 @@
       </div>
     </div>
   </div>
+
+  
+
 </template>
 
 
@@ -268,7 +271,7 @@ const cambiarFoto = (e) => {
   const file = e.target.files[0]
   if (file) {
     const url = URL.createObjectURL(file)
-    usuarioStore.cambiarFotoPerfil(url)  // ← Guarda en el store
+    usuarioStore.cambiarFotoPerfil(url)  
   }
 }
 

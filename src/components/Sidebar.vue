@@ -118,7 +118,7 @@ const cerrarSesion = () => {
 }
 
 .dark-mode .nav-item.active {
-  background: #1e3a5f; /* Color azul oscuro de selección */
+  background: #1e3a5f; 
   color: var(--azul);
 }
 
@@ -153,7 +153,7 @@ const cerrarSesion = () => {
   border-radius: 8px;
   cursor: pointer;
   font-size: 13.5px;
-  color: var(--txt-normal); /* Usar variable */
+  color: var(--txt-normal); 
   text-decoration: none;
   transition: all 0.2s;
 }

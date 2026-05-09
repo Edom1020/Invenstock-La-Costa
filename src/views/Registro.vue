@@ -82,8 +82,6 @@ const toggleConfirm = () => {
 </script>
 
 <style>
-/* REUTILIZA EXACTAMENTE EL MISMO CSS DEL LOGIN */
-/* Puedes copiar el mismo estilo sin cambiar nada */
 
 .container {
   height: 100vh;

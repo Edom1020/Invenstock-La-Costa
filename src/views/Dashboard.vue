@@ -580,7 +580,7 @@ tbody tr td {
 
 .see-all:hover { color: var(--azul); }
 
-/* 2. Corregir el color de los textos que se quedan en negro */
+/* Corregir el color de los textos que se quedan en negro */
 .layout.dark-mode .page-title,
 .layout.dark-mode .table-header h2,
 .layout.dark-mode .kpi-value:not(.danger),
