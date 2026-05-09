@@ -94,7 +94,7 @@
                 Inventario y Costos
               </div>
  
-              <div class="three-col">
+              <div class="four-col">
                 <div class="field-group">
                   <label class="field-label">Stock Inicial</label>
                   <input
@@ -122,6 +122,11 @@
                     type="number"
                     min="0"
                   />
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label">Stock Máximo</label>
+                  <input v-model.number="producto.stockMaximo" class="field-input field-stock-max" type="number" min="0" />
                 </div>
               </div>
             </div>
@@ -234,7 +239,8 @@ const producto = reactive({
   descripcion:  '',
   stockInicial: 0,
   precio:       0.00,
-  stockMinimo:  5
+  stockMinimo:  5,
+  stockMaximo: 50
 })
  
 // ── Guardar ──
@@ -300,6 +306,9 @@ const cancelar = () => {
   --stock-min-borde: #7f1d1d;
   --stock-min-txt: #f87171;
   --preview-bg:    #334155;
+  --stock-max-bg:     #1e3a5f;
+  --stock-max-borde:  #1e4d7b;
+  --stock-max-txt:    #7dd3fc;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -462,10 +471,18 @@ const cancelar = () => {
   background: var(--stock-min-bg);
 }
 .field-stock-min:focus { border-color: var(--stock-min-txt); }
+/* Agregado para Stock Máximo */
+.field-stock-max{
+  color: var(--stock-max-txt);
+  font-weight: 700;
+  border-color: var(--stock-max-borde);
+  background: var(--stock-max-bg);
+}
 
+.field-stock-max:focus { border-color: var(--stock-max-txt); }
 /* ── GRIDS DE CAMPOS ── */
 .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.four-col { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
 
 /* ── SELECT ── */
 .select-wrap { position: relative; }

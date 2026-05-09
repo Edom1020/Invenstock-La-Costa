@@ -134,10 +134,10 @@
                 <td class="price">${{ prod.precio.toFixed(2) }}</td>
                 <td>
                   <div class="actions">
-                    <button class="btn-edit" title="Editar">
+                    <button class="btn-edit" title="Editar" @click="abrirEditar(prod)">
                       <img src="/images/images-dashboard/editicon.png" style="width:20px;height:20px;object-fit:contain;" />
                     </button>
-                    <button class="btn-del" title="Eliminar" @click="eliminar(prod.id)">
+                    <button class="btn-del" title="Eliminar" @click="confirmarEliminar(prod)">
                       <img src="/images/images-dashboard/delicon.png" style="width:20px;height:20px;object-fit:contain;" />
                     </button>
                   </div>
@@ -168,7 +168,116 @@
         </div>
 
       </div>
-    </div>
+    </div>  
+    <!-- ── MODAL EDITAR ── -->
+     <Teleport to="body">
+       <div v-if="modalEditarVisible" class="modal-overlay" @click.self="cancelarEdicion">
+         <div class="modal-box">
+           <div class="modal-header">
+             <h2 class="modal-title">Editar Producto</h2>
+             <button class="modal-close" @click="cancelarEdicion">✕</button>
+           </div>
+     
+           <div v-if="productoEditando" class="modal-body">
+             <div class="form-grid">
+     
+               <div class="form-group full">
+                 <label class="form-label">Nombre del producto</label>
+                 <input v-model="productoEditando.nombre" class="form-input" type="text" />
+               </div>
+     
+               <div class="form-group full">
+                 <label class="form-label">Descripción</label>
+                 <input v-model="productoEditando.descripcion" class="form-input" type="text" />
+               </div>
+     
+               <div class="form-group">
+                 <label class="form-label">SKU</label>
+                 <input v-model="productoEditando.sku" class="form-input" type="text" />
+               </div>
+     
+               <div class="form-group">
+                 <label class="form-label">Categoría</label>
+                 <select v-model="productoEditando.categoria" class="form-input form-select">
+                   <option value="electronica">Electrónica</option>
+                   <option value="hogar">Hogar</option>
+                   <option value="comida">Comida</option>
+                 </select>
+               </div>
+     
+               <div class="form-group">
+                 <label class="form-label">Stock actual</label>
+                 <input v-model.number="productoEditando.stock" class="form-input" type="number" min="0" />
+               </div>
+     
+               <div class="form-group">
+                 <label class="form-label">Stock máximo</label>
+                 <input v-model.number="productoEditando.stockMax" class="form-input" type="number" min="1" />
+               </div>
+     
+               <div class="form-group">
+                 <label class="form-label">Precio (USD)</label>
+                 <input v-model.number="productoEditando.precio" class="form-input" type="number" min="0" step="0.01" />
+               </div>
+     
+               <!-- Preview barra de stock en tiempo real -->
+               <div class="form-group full">
+                 <label class="form-label">Vista previa del stock</label>
+                 <div class="stock-preview">
+                   <div class="stock-nums">
+                     <span class="stock-actual">{{ productoEditando.stock }}</span>
+                     <span class="stock-max">/{{ productoEditando.stockMax }}</span>
+                     <span :class="['stock-pct', getStockNivel(productoEditando.stock, productoEditando.stockMax)]">
+                       {{ Math.round((productoEditando.stock / productoEditando.stockMax) * 100) }}%
+                     </span>
+                   </div>
+                   <div class="progress-bar" style="width: 100%; margin-top: 6px;">
+                     <div
+                       :class="['progress-fill', getStockNivel(productoEditando.stock, productoEditando.stockMax)]"
+                       :style="{ width: Math.min(100, Math.round((productoEditando.stock / productoEditando.stockMax) * 100)) + '%' }"
+                     ></div>
+                   </div>
+                 </div>
+               </div>
+     
+             </div>
+           </div>
+     
+           <div class="modal-footer">
+             <button class="btn-cancelar" @click="cancelarEdicion">Cancelar</button>
+             <button class="btn-guardar" @click="guardarEdicion">Guardar cambios</button>
+           </div>
+         </div>
+       </div>
+     </Teleport>
+     
+     <!-- ── MODAL CONFIRMAR ELIMINAR ── -->
+     <Teleport to="body">
+       <div v-if="modalEliminarVisible" class="modal-overlay" @click.self="cancelarEliminar">
+         <div class="modal-box modal-box--sm">
+           <div class="modal-header">
+             <h2 class="modal-title">Eliminar producto</h2>
+             <button class="modal-close" @click="cancelarEliminar">✕</button>
+           </div>
+     
+           <div class="modal-body">
+             <div class="del-icon-wrap">
+               <img src="/images/images-dashboard/delicon.png" style="width:32px;height:32px;object-fit:contain;opacity:0.7;" />
+             </div>
+             <p class="del-mensaje">
+               ¿Estás seguro de que deseas eliminar
+               <strong>{{ productoAEliminar?.nombre }}</strong>?
+               Esta acción no se puede deshacer.
+             </p>
+           </div>
+     
+           <div class="modal-footer">
+             <button class="btn-cancelar" @click="cancelarEliminar">Cancelar</button>
+             <button class="btn-eliminar" @click="eliminar">Sí, eliminar</button>
+           </div>
+         </div>
+       </div>
+     </Teleport>
   </div>
 </template>
 
@@ -224,10 +333,53 @@ const getStockNivel = (stock, max) => {
   return 'low'
 }
 
-const eliminar = (id) => {
-  // Cuando conectes el backend: await fetch(`/api/productos/${id}`, { method: 'DELETE' })
-  productos.value = productos.value.filter(p => p.id !== id)
+// ── MODAL EDITAR ──
+const modalEditarVisible = ref(false)
+const productoEditando = ref(null)
+
+
+const abrirEditar = (prod) => {
+  productoEditando.value = { ...prod } // copia para no mutar directo
+  modalEditarVisible.value = true
 }
+
+
+const guardarEdicion = () => {
+  const index = productos.value.findIndex(p => p.id === productoEditando.value.id)
+  if (index !== -1) {
+    productos.value[index] = { ...productoEditando.value }
+    // Cuando tengas backend: await fetch(`/api/productos/${productoEditando.value.id}`, { method: 'PUT', body: JSON.stringify(productoEditando.value) })
+  }
+  modalEditarVisible.value = false
+}
+
+const cancelarEdicion = () => {
+  modalEditarVisible.value = false
+  productoEditando.value = null
+}
+
+// ── MODAL ELIMINAR ──
+const modalEliminarVisible = ref(false)
+const productoAEliminar = ref(null)
+
+const confirmarEliminar = (prod) => {
+  productoAEliminar.value = prod
+  modalEliminarVisible.value = true
+}
+
+const eliminar = () => {
+  productos.value = productos.value.filter(p => p.id !== productoAEliminar.value.id)
+  // Cuando tengas backend: await fetch(`/api/productos/${productoAEliminar.value.id}`, { method: 'DELETE' })
+  modalEliminarVisible.value = false
+  productoAEliminar.value = null
+}
+
+const cancelarEliminar = () => {
+  modalEliminarVisible.value = false
+  productoAEliminar.value = null
+}
+
+
 
 const productos = ref([
   { id: 1, nombre: 'Tablet Pro 12.9"',        descripcion: 'Apple Inc. - Silver Edition',    sku: 'TAB-2024-001', categoria: 'electronica', stock: 45,  stockMax: 50,  precio: 1299.00 },

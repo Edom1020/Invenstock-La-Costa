@@ -88,6 +88,18 @@
               placeholder="Reposición de stock semanal..."
             ></textarea>
 
+             <!-- Stock disponible -->
+              <div v-if="productoSeleccionado && tipoActivo === 'salida'" class="mov-stock-info">
+                   <span class="mov-stock-disponible">
+                     Stock disponible: <strong>{{ productoSeleccionado.stock }} unidades</strong>
+                   </span>
+                 </div>
+                 
+                 <!-- Error -->
+                 <div v-if="errorStock" class="mov-error-msg">
+                   ⚠ {{ errorStock }}
+              </div>
+
             <button class="mov-btn-registrar" @click="registrarMovimiento">
               Registrar Movimiento
             </button>
@@ -247,12 +259,20 @@ const form = ref({
   notas: '',
 })
 
+// Datos de ejemplo para productos e historial, reemplazar con fetch a backend luego //
 const productos = ref([
-  { id: 1, nombre: 'MacBook Pro M3',        categoria: 'electronica' },
-  { id: 2, nombre: 'Sofá grande',            categoria: 'hogar'       },
-  { id: 3, nombre: 'Caja de manzanas x40',  categoria: 'comida'      },
-  { id: 4, nombre: 'Headphones Studio X',   categoria: 'electronica' },
+  { id: 1, nombre: 'MacBook Pro M3',        categoria: 'electronica', stock: 5},
+  { id: 2, nombre: 'Sofá grande',            categoria: 'hogar', stock: 3},
+  { id: 3, nombre: 'Caja de manzanas x40',  categoria: 'comida', stock: 120},
+  { id: 4, nombre: 'Headphones Studio X',   categoria: 'electronica', stock: 12},
 ])
+
+const errorStock = ref('')
+
+const productoSeleccionado = computed(() =>
+  productos.value.find(p => p.id === form.value.producto) || null
+)
+
 
 const getCatIcon = (categoria) => {
   const icons = {
@@ -291,13 +311,33 @@ const historialFiltrado = computed(() => {
 })
 
 const registrarMovimiento = () => {
-  // Cuando conectes el backend:
-  // await fetch('/api/movimientos', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ ...form.value, tipo: tipoActivo.value })
-  // })
+  errorStock.value = ''
+
+  if (!form.value.producto) {
+    errorStock.value = 'Selecciona un producto.'
+    return
+  }
+  if (!form.value.cantidad || form.value.cantidad <= 0) {
+    errorStock.value = 'Ingresa una cantidad válida.'
+    return
+  }
+
+  if (tipoActivo.value === 'salida') {
+    const prod = productoSeleccionado.value
+    if (form.value.cantidad > prod.stock) {
+      errorStock.value = `Stock insuficiente. Solo hay ${prod.stock} unidades disponibles de "${prod.nombre}".`
+      return
+    }
+    // Descuenta el stock localmente (hasta conectar backend)
+    prod.stock -= Number(form.value.cantidad)
+  }
+
+  // Cuando tengas backend:
+  // await fetch('/api/movimientos', { method: 'POST', ... })
+
   console.log('Registrar:', { ...form.value, tipo: tipoActivo.value })
+  form.value = { producto: '', cantidad: '', fecha: '', notas: '' }
+  errorStock.value = ''
 }
 </script>
 
@@ -812,5 +852,41 @@ const registrarMovimiento = () => {
   font-size: 26px; font-weight: 700;
   color: var(--txt-titulo);
   transition: color 0.3s;
+}
+
+.mov-stock-info {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  border: 1px solid var(--borde);
+}
+
+.mov-stock-disponible {
+  font-size: 12px;
+  color: var(--txt-suave);
+}
+
+.mov-stock-disponible strong {
+  color: var(--txt-titulo);
+  font-weight: 700;
+}
+
+.mov-error-msg {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1.5px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+/* Tema oscuro */
+.mov-layout.dark-mode .mov-error-msg {
+  background: #450a0a;
+  border-color: #7f1d1d;
+  color: #f87171;
 }
 </style>
