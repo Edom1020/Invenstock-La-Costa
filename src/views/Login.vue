@@ -24,19 +24,22 @@
           <div class="input-container">
             <input v-model="password" :type="showPassword ? 'text' : 'password'" />
             <img 
-              src="/images/Ver-contraseña.png" 
+              :src="showPassword ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'" 
               class="eye-icon"
               @click="togglePassword"
             />
           </div>
 
-          <span class="forgot">¿Olvidaste tu contraseña?</span>
+          <span class="forgot" @click="irARecuperacion">¿Olvidaste tu contraseña?</span>
         </div>
 
       </div>
 
       <!-- BOTÓN -->
       <button class="login-btn" @click="iniciarSesion">Iniciar Sesión</button>
+
+        <!-- VOLVER AL SELECTOR -->
+      <button class="back-btn" @click="$router.push('/')">Volver</button>
 
     </div>
 
@@ -54,6 +57,10 @@ const showPassword = ref(false);
 
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
+};
+
+const irARecuperacion = () => {
+  router.push("/recuperar-contrasena");
 };
 
 const iniciarSesion = () => {
@@ -158,6 +165,14 @@ label {
   font-size: 12px;
   color: #000000;
   margin-top: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.forgot:hover {
+  color: #38BDF8;
+  text-decoration: underline;
+  transform: scale(1.05);
 }
 
 /* BOTÓN */
@@ -177,4 +192,17 @@ label {
 .login-btn:hover {
   transform: scale(1.05);
 }
+
+.back-btn {
+    margin-top: 10px;
+    width: 163px;
+    height: 57px;
+    background: #38BDF8;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
 </style>

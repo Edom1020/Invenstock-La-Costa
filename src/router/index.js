@@ -8,10 +8,12 @@ import Movimientos from "../views/Movimientos.vue";
 import Reportes from "../views/Reportes.vue";
 import Configuracion from "../views/Configuracion.vue";
 import RegistrarProducto from "../views/RegistrarProducto.vue";
+import RecuperarContraseña from "../views/RecuperarContraseña.vue";
 
 const routes = [
   { path: "/", component: Selector },
   { path: "/login", component: Login },
+  { path: "/recuperar-contrasena", component: RecuperarContraseña },
   { path: "/registro", component: Registro },
   { path: "/registrar-producto", component: RegistrarProducto },
   { path: "/dashboard", component: Dashboard },

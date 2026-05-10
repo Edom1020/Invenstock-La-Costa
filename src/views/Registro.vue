@@ -37,7 +37,7 @@
           <div class="input-container">
             <input :type="showPassword ? 'text' : 'password'" />
             <img 
-              src="/images/Ver-contraseña.png"
+              :src="showPassword ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'"
               class="eye-icon"
               @click="togglePassword"
             />
@@ -50,7 +50,7 @@
           <div class="input-container">
             <input :type="showConfirm ? 'text' : 'password'" />
             <img 
-              src="/images/Ver-contraseña.png"
+              :src="showConfirm ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'"
               class="eye-icon"
               @click="toggleConfirm"
             />
@@ -61,6 +61,9 @@
 
       <!-- BOTÓN -->
       <button class="login-btn">Registrarse</button>
+
+      <!-- VOLVER AL SELECTOR -->
+      <button class="back-btn" @click="$router.push('/')">Volver</button>
 
     </div>
   </div>
@@ -176,6 +179,24 @@ label {
 }
 
 .login-btn:hover {
+  transform: scale(1.05);
+}
+
+
+.back-btn {
+  margin-top: 10px;
+  width: 163px;
+  height: 57px;
+  background: #38BDF8;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.back-btn:hover {
   transform: scale(1.05);
 }
 </style>
