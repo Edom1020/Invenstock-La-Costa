@@ -120,6 +120,24 @@ const getIcono = (tipo) => {
   }
   return iconos[tipo] || '/images/images-dashboard/warningtriangular.png'
 }
+
+// ── FUNCIÓN PARA AGREGAR NOTIFICACIONES PROGRAMÁTICAMENTE ──
+const agregarNotificacion = (titulo, descripcion, tipo = 'entrada') => {
+  const nuevoId = Math.max(...notificaciones.value.map(n => n.id), 0) + 1
+  notificaciones.value.unshift({
+    id: nuevoId,
+    tipo,
+    titulo,
+    descripcion,
+    tiempo: 'Hace unos segundos',
+    leida: false
+  })
+}
+
+// Exponer la función para que otros componentes puedan usarla
+defineExpose({
+  agregarNotificacion
+})
 </script>
 
 <style>

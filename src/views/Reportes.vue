@@ -13,7 +13,7 @@
   </div>
   
   <div class="topbar-right">
-    <Notificaciones />
+    <Notificaciones ref="notificacionesRef"/>
      <!-- Componente de notificaciones, se muestra en el topbar para acceso rápido a alertas y mensajes -->
 
     <div class="avatar-btn">
@@ -182,7 +182,7 @@
                 <td class="stock-low-cell">{{ item.enStock }}</td>
                 <td class="min-cell">{{ item.minimoRequerido }}</td>
                 <td>
-                  <button class="restock-btn" @click="$router.push('/registrar-producto')">
+                  <button class="restock-btn" @click="abrirModalReponer(item)">
                     Reponer
                   </button>
                 </td>
@@ -199,6 +199,14 @@
         @cerrar="mostrarModalPDF = false"
       />
 
+      <!-- MODAL REPONER STOCK -->
+      <ModalReponerStock
+        v-if="mostrarModalReponer"
+        :producto="productoSeleccionado"
+        @cerrar="mostrarModalReponer = false"
+        @reponedor-exitoso="onReponerExitoso"
+      />
+
   </div>
 </template>
 
@@ -207,12 +215,18 @@ import { ref, onMounted, computed } from 'vue'
 import Chart from 'chart.js/auto'
 import Sidebar from "../components/Sidebar.vue";
 import ModalExportarPDF from '../components/ModalExportarPDF.vue'
+import ModalReponerStock from '../components/ModalReponerStock.vue'
 
 //Modal de exportar PDF//
 const mostrarModalPDF = ref(false)
 
+//Modal de reponer stock//
+const mostrarModalReponer = ref(false)
+const productoSeleccionado = ref(null)
+
 //Script para notificaciones//
 import Notificaciones from '../components/Notificaciones.vue'
+const notificacionesRef = ref(null)
 
 //DARK MODE o modo oscuro
 import { useTemaStore } from '../stores/tema'
@@ -258,6 +272,38 @@ const getCatIcon = (categoria) => {
     Comida:      '/images/images-dashboard/manzanaicon.png',
   }
   return iconos[categoria] || '/images/images-dashboard/macbookicon.png'
+}
+
+// ── ABRIR MODAL REPONER ──
+const abrirModalReponer = (producto) => {
+  productoSeleccionado.value = producto
+  mostrarModalReponer.value = true
+}
+
+// ── MANEJADOR CUANDO SE REPONE EXITOSAMENTE ──
+const onReponerExitoso = (data) => {
+  // Actualizar el stock del producto en la tabla
+  const productoEnTabla = alertasStock.value.find(p => p.id === productoSeleccionado.value.id)
+  if (productoEnTabla) {
+    productoEnTabla.enStock = data.nuevoStock
+  }
+
+  // Agregar notificación
+  if (notificacionesRef.value) {
+    notificacionesRef.value.agregarNotificacion(
+      'Stock repuesto correctamente',
+      `${data.producto} — ${data.cantidad} unidades agregadas. Stock actual: ${data.nuevoStock} unidades.`,
+      'entrada'
+    )
+  }
+
+  // Mostrar mensaje de éxito
+  alert(`✅ Stock actualizado correctamente\n\n${data.producto}\nCantidad agregada: ${data.cantidad} unidades\nNuevo stock: ${data.nuevoStock} unidades`)
+
+  // Aquí se pueden agregar más acciones como:
+  // - Refrescar datos del dashboard
+  // - Actualizar gráficas
+  // - Modificar notificaciones en tiempo real
 }
 
 // ── DATOS TABLA ──
