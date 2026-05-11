@@ -13,13 +13,9 @@
   </div>
   
   <div class="topbar-right">
-    <Notificaciones ref="notificacionesRef"/>
-     <!-- Componente de notificaciones, se muestra en el topbar para acceso rápido a alertas y mensajes -->
-
     <div class="avatar-btn">
       <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
     </div>
-
   </div>
 </header>
     
@@ -211,7 +207,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, inject } from 'vue'
 import Chart from 'chart.js/auto'
 import Sidebar from "../components/Sidebar.vue";
 import ModalExportarPDF from '../components/ModalExportarPDF.vue'
@@ -225,8 +221,7 @@ const mostrarModalReponer = ref(false)
 const productoSeleccionado = ref(null)
 
 //Script para notificaciones//
-import Notificaciones from '../components/Notificaciones.vue'
-const notificacionesRef = ref(null)
+const notificacionesRef = inject('notificacionesGlobal')
 
 //DARK MODE o modo oscuro
 import { useTemaStore } from '../stores/tema'

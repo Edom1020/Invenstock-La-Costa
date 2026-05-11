@@ -10,8 +10,6 @@
       <!-- Barra superior -->
       <header class="topbar">
         <div class="topbar-right">
-          <Notificaciones />
-           <!-- Componente de notificaciones, se muestra en el topbar para acceso rápido a alertas y mensajes -->
           <div class="avatar-btn">
             <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
@@ -208,12 +206,12 @@
  
  
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 
 //Script para notificaciones//
-import Notificaciones from '../components/Notificaciones.vue'
+const notificacionesRef = inject('notificacionesGlobal')
 
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
@@ -471,6 +469,8 @@ const cancelar = () => {
   background: var(--stock-min-bg);
 }
 .field-stock-min:focus { border-color: var(--stock-min-txt); }
+
+
 /* Agregado para Stock Máximo */
 .field-stock-max{
   color: var(--stock-max-txt);

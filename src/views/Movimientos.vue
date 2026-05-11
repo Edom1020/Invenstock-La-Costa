@@ -14,8 +14,6 @@
           <input v-model="busqueda" type="text" placeholder="Buscar movimientos..." />
         </div>
         <div class="mov-topbar-right">
-          <Notificaciones />
-           <!-- Componente de notificaciones, se muestra en el topbar para acceso rápido a alertas y mensajes -->
           <div class="mov-avatar-btn">
             <img :src="usuarioStore.fotoPerfil" class="mov-avatar-img" />
           </div>
@@ -235,11 +233,11 @@
 </template>
 
 <script setup>
-import { ref, computed} from 'vue'
+import { ref, computed, inject } from 'vue'
 import Sidebar from "../components/Sidebar.vue";
 
 //Script para notificaciones//
-import Notificaciones from '../components/Notificaciones.vue'
+const notificacionesRef = inject('notificacionesGlobal')
 
 // Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
 import { useUsuarioStore } from '../stores/usuario'

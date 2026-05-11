@@ -14,7 +14,6 @@
            <input v-model="busqueda" type="text" placeholder="Buscar productos..." />
         </div>
         <div class="topbar-right">
-           <Notificaciones />
           <div class="avatar-btn">
             <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
@@ -145,12 +144,12 @@
 <script setup>
 
 import Sidebar from "../components/Sidebar.vue";
-import { ref, computed} from 'vue'
+import { ref, computed, inject } from 'vue'
 
 
 
 //Script para notificaciones//
-import Notificaciones from '../components/Notificaciones.vue'
+const notificacionesRef = inject('notificacionesGlobal')
 
 import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
