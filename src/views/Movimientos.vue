@@ -887,4 +887,36 @@ const registrarMovimiento = () => {
   border-color: #7f1d1d;
   color: #f87171;
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── RESPONSIVE DESIGN ── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET (481px - 1024px) ── */
+@media (max-width: 1024px) {
+  .content { padding: 16px; }
+  .mov-container { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .mov-field-label { font-size: 12px; }
+  .mov-field-input { font-size: 13px; padding: 10px; }
+}
+
+/* ── MOBILE (máx 480px) ── */
+@media (max-width: 480px) {
+  .content { padding: 12px; }
+  .page-title { font-size: 18px; }
+  .mov-container { grid-template-columns: 1fr; gap: 12px; }
+  .mov-field-label { font-size: 11px; }
+  .mov-field-input { font-size: 12px; padding: 8px; }
+  .mov-stat-value { font-size: 20px; }
+  .mov-stat-label { font-size: 9px; }
+  button { padding: 10px; font-size: 12px; width: 100%; }
+}
+
+/* ── SMALL MOBILE (máx 360px) ── */
+@media (max-width: 360px) {
+  .content { padding: 10px; }
+  .page-title { font-size: 16px; }
+  .mov-stat-value { font-size: 18px; }
+  button { padding: 8px; font-size: 11px; }
+}
 </style>

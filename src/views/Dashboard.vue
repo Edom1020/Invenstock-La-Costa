@@ -590,4 +590,42 @@ tbody tr td {
 .dark-mode tbody tr:hover {
   background-color: var(--bg-hover) 
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── RESPONSIVE DESIGN ── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET (481px - 1024px) ── */
+@media (max-width: 1024px) {
+  .content { padding: 16px; }
+  .dashboard-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .kpi-card { padding: 16px; }
+  .kpi-label { font-size: 11px; }
+  .kpi-value { font-size: 24px; }
+  .table-header { margin-top: 20px; }
+  tbody td { font-size: 12px; padding: 12px 8px; }
+}
+
+/* ── MOBILE (máx 480px) ── */
+@media (max-width: 480px) {
+  .content { padding: 12px; }
+  .page-title { font-size: 18px; }
+  .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
+  .kpi-card { padding: 12px; }
+  .kpi-label { font-size: 10px; }
+  .kpi-value { font-size: 20px; }
+  .table-header h2 { font-size: 14px; }
+  thead th { font-size: 10px; }
+  tbody td { font-size: 11px; padding: 10px 6px; }
+  .badge { font-size: 11px; padding: 2px 8px; }
+}
+
+/* ── SMALL MOBILE (máx 360px) ── */
+@media (max-width: 360px) {
+  .content { padding: 10px; }
+  .page-title { font-size: 16px; }
+  .kpi-value { font-size: 18px; }
+  thead th { font-size: 9px; }
+  tbody td { font-size: 10px; padding: 8px 4px; }
+}
 </style>

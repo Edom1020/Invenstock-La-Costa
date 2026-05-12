@@ -205,4 +205,31 @@ label {
     cursor: pointer;
     transition: 0.3s;
   }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── RESPONSIVE DESIGN ── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET (481px - 1024px) ── */
+@media (max-width: 1024px) {
+  .login-container { max-width: 90%; }
+  input { font-size: 14px; padding: 12px; }
+  button { font-size: 15px; }
+}
+
+/* ── MOBILE (máx 480px) ── */
+@media (max-width: 480px) {
+  .login-container { max-width: 95%; padding: 16px; }
+  h1 { font-size: 20px; }
+  input { font-size: 13px; padding: 10px; margin-bottom: 12px; }
+  button { font-size: 14px; padding: 12px; width: 100%; }
+}
+
+/* ── SMALL MOBILE (máx 360px) ── */
+@media (max-width: 360px) {
+  .login-container { padding: 12px; }
+  h1 { font-size: 18px; }
+  input { font-size: 12px; padding: 8px; }
+  button { font-size: 13px; padding: 10px; }
+}
 </style>

@@ -847,4 +847,45 @@ tbody td {
 
 .pag-num.active { background: var(--pag-active-bg); color: #ffffff; border-color: var(--pag-active-bg); }
 .pag-num:hover:not(.active) { background: var(--bg-input); }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── RESPONSIVE DESIGN ── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET (481px - 1024px) ── */
+@media (max-width: 1024px) {
+  .content { padding: 16px; }
+  .tabla { font-size: 12px; }
+  thead th { font-size: 10px; }
+  tbody td { font-size: 12px; padding: 12px 8px; }
+  .btn-edit, .btn-del { width: 28px; height: 28px; font-size: 12px; }
+  .pagination { padding: 12px 16px; }
+  .pag-btn { padding: 5px 12px; font-size: 12px; }
+  .pag-num { width: 28px; height: 28px; font-size: 12px; }
+}
+
+/* ── MOBILE (máx 480px) ── */
+@media (max-width: 480px) {
+  .content { padding: 12px; }
+  .page-title { font-size: 18px; }
+  .tabla-wrapper { overflow-x: auto; }
+  .tabla { font-size: 11px; }
+  thead th { font-size: 9px; padding: 0 0 8px 0; }
+  tbody td { font-size: 10px; padding: 10px 6px; }
+  .actions { gap: 4px; }
+  .btn-edit, .btn-del { width: 26px; height: 26px; font-size: 11px; }
+  .pagination { padding: 10px 12px; flex-wrap: wrap; }
+  .pag-btn { padding: 4px 10px; font-size: 11px; }
+  .pag-num { width: 26px; height: 26px; font-size: 11px; }
+}
+
+/* ── SMALL MOBILE (máx 360px) ── */
+@media (max-width: 360px) {
+  .content { padding: 10px; }
+  .page-title { font-size: 16px; }
+  thead th { font-size: 8px; }
+  tbody td { font-size: 9px; padding: 8px 4px; }
+  .btn-edit, .btn-del { width: 24px; height: 24px; font-size: 10px; }
+  .pag-num { width: 24px; height: 24px; font-size: 10px; }
+}
 </style>

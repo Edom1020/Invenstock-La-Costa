@@ -966,4 +966,37 @@ const guardarCambios = () => {
   cursor: pointer;
   transition: background 0.2s;
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── RESPONSIVE DESIGN ── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET (481px - 1024px) ── */
+@media (max-width: 1024px) {
+  .content { padding: 16px; }
+  .conf-container { grid-template-columns: 1fr; }
+  .conf-field { margin-bottom: 12px; }
+  input, textarea { font-size: 13px; padding: 10px; }
+}
+
+/* ── MOBILE (máx 480px) ── */
+@media (max-width: 480px) {
+  .content { padding: 12px; }
+  .page-title { font-size: 18px; }
+  .conf-container { grid-template-columns: 1fr; }
+  .conf-field { margin-bottom: 10px; }
+  input, textarea { font-size: 12px; padding: 8px; width: 100%; }
+  .conf-label { font-size: 11px; }
+  .btn-primary, .btn-cancelar { padding: 10px 16px; font-size: 12px; width: 100%; }
+  .action-buttons { gap: 10px; }
+  .conf-btn-update { width: 100%; }
+}
+
+/* ── SMALL MOBILE (máx 360px) ── */
+@media (max-width: 360px) {
+  .content { padding: 10px; }
+  .page-title { font-size: 16px; }
+  input, textarea { font-size: 11px; padding: 6px; }
+  .btn-primary, .btn-cancelar { padding: 8px 12px; font-size: 11px; }
+}
 </style>

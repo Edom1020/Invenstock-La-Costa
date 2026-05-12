@@ -854,4 +854,42 @@ tbody td {
   border-color: var(--azul-dark);
   color: var(--azul-dark);
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── RESPONSIVE DESIGN ── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET (481px - 1024px) ── */
+@media (max-width: 1024px) {
+  .content { padding: 16px; }
+  .tabla { font-size: 12px; }
+  thead th { font-size: 10px; padding: 0 0 10px 0; }
+  tbody td { padding: 12px 0; font-size: 12px; }
+  .restock-btn { padding: 5px 12px; font-size: 12px; }
+  .prod-thumb { width: 32px; height: 32px; }
+}
+
+/* ── MOBILE (máx 480px) ── */
+@media (max-width: 480px) {
+  .content { padding: 12px; }
+  .page-title { font-size: 18px; }
+  .tabla-wrapper { overflow-x: auto; }
+  .tabla { font-size: 11px; }
+  thead th { font-size: 9px; padding: 0 0 8px 0; }
+  tbody td { padding: 10px 4px; font-size: 11px; }
+  .prod-cell { gap: 8px; }
+  .prod-thumb { width: 28px; height: 28px; }
+  .prod-name { font-size: 12px; }
+  .restock-btn { padding: 4px 10px; font-size: 11px; }
+}
+
+/* ── SMALL MOBILE (máx 360px) ── */
+@media (max-width: 360px) {
+  .content { padding: 10px; }
+  .page-title { font-size: 16px; }
+  thead th { font-size: 8px; }
+  tbody td { padding: 8px 2px; font-size: 10px; }
+  .prod-thumb { width: 24px; height: 24px; }
+  .restock-btn { padding: 3px 8px; font-size: 10px; }
+}
 </style>

@@ -47,8 +47,8 @@
                 />
               </div>
  
-              <!-- SKU + Categoría -->
-              <div class="two-col" style="margin-bottom:14px;">
+              <!-- SKU + Categoría + Marca -->
+              <div class="three-col" style="margin-bottom:14px;">
                 <div class="field-group">
                   <label class="field-label">SKU / Código</label>
                   <input
@@ -71,6 +71,15 @@
                     </select>
                     <span class="select-arrow">▾</span>
                   </div>
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Marca</label>
+                  <input
+                    v-model="producto.marca"
+                    class="field-input"
+                    type="text"
+                    placeholder="Ej: Bosch, DeWalt"
+                  />
                 </div>
               </div>
  
@@ -127,6 +136,89 @@
                   <input v-model.number="producto.stockMaximo" class="field-input field-stock-max" type="number" min="0" />
                 </div>
               </div>
+            </div>
+
+            <!-- Control de Lotes y Vencimiento -->
+            <div class="card-lotes">
+              <div class="card-title">
+                <img src="/images/images-registroproducto/costosicon.png" style="width:16px;height:16px;object-fit:contain;" />
+                Control de Lotes y Vencimiento
+              </div>
+
+              <!-- Switch Usar Lotes -->
+              <div class="lotes-switch-row">
+                <div class="lotes-switch-info">
+                  <div class="lotes-switch-titulo">Usar Lotes</div>
+                  <div class="lotes-switch-desc">Habilita control de vencimiento y trazabilidad de lotes</div>
+                </div>
+                <button
+                  class="modal-toggle"
+                  :class="{ on: usaLotes }"
+                  @click="usaLotes = !usaLotes"
+                ></button>
+              </div>
+
+              <!-- Campos de Lote (solo si está activo) -->
+              <transition name="lotes-fade">
+                <div v-if="usaLotes" class="lotes-campos">
+                  
+                  <!-- Código Lote + Fecha Vencimiento -->
+                  <div class="two-col" style="margin-bottom:14px;">
+                    <div class="field-group">
+                      <label class="field-label">Código Lote</label>
+                      <input
+                        v-model="lote.codigo"
+                        class="field-input"
+                        type="text"
+                        placeholder="Ej: A001, LOTE-2026-001"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Fecha Vencimiento</label>
+                      <input
+                        v-model="lote.fechaVencimiento"
+                        class="field-input"
+                        type="date"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Días Alerta + Observación -->
+                  <div class="two-col" style="margin-bottom:14px;">
+                    <div class="field-group">
+                      <label class="field-label">Días Alerta (preventiva)</label>
+                      <input
+                        v-model.number="lote.diasAlerta"
+                        class="field-input"
+                        type="number"
+                        min="1"
+                        placeholder="Ej: 30"
+                      />
+                    </div>
+                    <div class="field-group">
+                      <label class="field-label">Observación (opcional)</label>
+                      <input
+                        v-model="lote.observacion"
+                        class="field-input"
+                        type="text"
+                        placeholder="Ej: Lote proveedor principal"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Info -->
+                  <div class="lotes-info-box">
+                    <span class="lotes-info-icon">ℹ️</span>
+                    <span class="lotes-info-texto">
+                      <strong>SKU:</strong> Identifica el producto general (Aceite Oliva)
+                      <br/>
+                      <strong>Código Lote:</strong> Identifica esta entrada específica (A001)
+                    </span>
+                  </div>
+
+                </div>
+              </transition>
+
             </div>
  
           </div>
@@ -235,20 +327,87 @@ const producto = reactive({
   sku:          'INV-00923',
   categoria:    '',
   descripcion:  '',
+  marca:        '',
   stockInicial: 0,
   precio:       0.00,
   stockMinimo:  5,
-  stockMaximo: 50
+  stockMaximo:  50
+})
+
+// ── Control de lotes ──
+const usaLotes = ref(false)
+const lote = reactive({
+  codigo:              '',
+  fechaVencimiento:   '',
+  diasAlerta:         30,
+  observacion:        ''
 })
  
 // ── Guardar ──
 const guardarProducto = () => {
+  // ── Validación básica ──
   if (!producto.nombre.trim()) {
     alert('El nombre del producto es obligatorio.')
     return
   }
-  // Aquí iría la llamada a tu API / store
-  alert(`Producto "${producto.nombre}" guardado correctamente.`)
+
+  if (!producto.sku.trim()) {
+    alert('El SKU es obligatorio.')
+    return
+  }
+
+  if (!producto.categoria.trim()) {
+    alert('Debes seleccionar una categoría.')
+    return
+  }
+
+  // ── Validación de lote (si está activo) ──
+  if (usaLotes.value) {
+    if (!lote.codigo.trim()) {
+      alert('El código de lote es obligatorio cuando usas lotes.')
+      return
+    }
+
+    if (!lote.fechaVencimiento) {
+      alert('La fecha de vencimiento es obligatoria.')
+      return
+    }
+
+    if (!lote.diasAlerta || lote.diasAlerta < 1) {
+      alert('Los días de alerta deben ser al menos 1.')
+      return
+    }
+  }
+
+  // ── Construir objeto para enviar ──
+  const datosProducto = {
+    nombre:        producto.nombre,
+    descripcion:   producto.descripcion,
+    sku:           producto.sku,
+    marca:         producto.marca,
+    categoria:     producto.categoria,
+    precio:        producto.precio,
+    stock:         producto.stockInicial,
+    stockMinimo:   producto.stockMinimo,
+    stockMaximo:   producto.stockMaximo,
+    usaLotes:      usaLotes.value
+  }
+
+  // ── Si usa lotes, agregar datos del lote ──
+  if (usaLotes.value) {
+    datosProducto.lote = {
+      codigo:              lote.codigo,
+      fechaVencimiento:   lote.fechaVencimiento,
+      diasAlerta:         lote.diasAlerta,
+      observacion:        lote.observacion
+    }
+  }
+
+  // ── Aquí irá la llamada a la API ──
+  console.log('Datos a enviar al backend:', datosProducto)
+  
+  // Por ahora, mostrar confirmación
+  alert(`✅ Producto "${producto.nombre}" guardado correctamente.`)
   router.push('/productos')
 }
  
@@ -482,6 +641,7 @@ const cancelar = () => {
 .field-stock-max:focus { border-color: var(--stock-max-txt); }
 /* ── GRIDS DE CAMPOS ── */
 .two-col   { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 .four-col { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 14px; }
 
 /* ── SELECT ── */
@@ -572,4 +732,418 @@ const cancelar = () => {
   transition: color 0.2s;
 }
 .btn-cancelar:hover { color: var(--txt); }
+
+/* ── CARD LOTES ── */
+.card-lotes {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid var(--borde);
+  margin-bottom: 16px;
+}
+
+/* Switch Usar Lotes */
+.lotes-switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  background: var(--bg-input);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.lotes-switch-info {
+  flex: 1;
+}
+
+.lotes-switch-titulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--txt-titulo);
+  margin-bottom: 2px;
+}
+
+.lotes-switch-desc {
+  font-size: 11px;
+  color: var(--txt-suave);
+}
+
+/* Toggle Switch */
+.modal-toggle {
+  width: 50px;
+  height: 28px;
+  border-radius: 14px;
+  border: none;
+  background: #cbd5e1;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s;
+  outline: none;
+}
+
+.modal-toggle::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: left 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-toggle.on {
+  background: #38BDF8;
+}
+
+.modal-toggle.on::after {
+  left: 24px;
+}
+
+/* Campos de Lote */
+.lotes-campos {
+  animation: lotes-slideDown 0.3s ease-out;
+}
+
+.lotes-fade-enter-active,
+.lotes-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.lotes-fade-enter-from,
+.lotes-fade-leave-to {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+@keyframes lotes-slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+/* Info Box */
+.lotes-info-box {
+  display: flex;
+  gap: 10px;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 12px;
+  color: #0369a1;
+  margin-top: 14px;
+}
+
+.lotes-info-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.lotes-info-texto {
+  line-height: 1.5;
+}
+
+.dark-mode .lotes-info-box {
+  background: #1e3a5f;
+  border-color: #1e5a96;
+  color: #7dd3fc;
+}
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── RESPONSIVE DESIGN ── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET (481px - 1024px) ── */
+@media (max-width: 1024px) {
+  /* Layout */
+  .rp-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  /* Grid de campos */
+  .three-col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .four-col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Página */
+  .page-title {
+    font-size: 26px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  /* Cards */
+  .card-info,
+  .card-inventario,
+  .card-lotes,
+  .card-imagen,
+  .guia-card {
+    padding: 16px;
+  }
+
+  /* Botones */
+  .btn-guardar,
+  .btn-cancelar {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  /* Imagen preview */
+  .img-preview {
+    height: 180px;
+  }
+}
+
+/* ── MOBILE (máx 480px) ── */
+@media (max-width: 480px) {
+  /* Layout principal */
+  .layout {
+    flex-direction: column;
+  }
+
+  .main {
+    width: 100%;
+  }
+
+  /* Content padding */
+  .content {
+    padding: 16px 12px;
+  }
+
+  /* Page header */
+  .page-header {
+    margin-bottom: 16px;
+  }
+
+  .page-title {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .page-subtitle {
+    font-size: 12px;
+  }
+
+  /* Grid de campos */
+  .rp-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .three-col,
+  .two-col,
+  .four-col {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Cards */
+  .card-info,
+  .card-inventario,
+  .card-lotes,
+  .card-imagen,
+  .guia-card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  /* Labels y inputs */
+  .field-label {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .field-input,
+  .field-textarea {
+    font-size: 13px;
+    padding: 8px 10px;
+    min-height: 36px;
+  }
+
+  .field-textarea {
+    min-height: 80px;
+  }
+
+  /* Selects */
+  .custom-select {
+    font-size: 12px;
+    padding: 8px 28px 8px 10px;
+  }
+
+  /* Imagen preview */
+  .img-preview {
+    height: 140px;
+    margin-bottom: 12px;
+  }
+
+  .upload-label {
+    font-size: 12px;
+  }
+
+  .upload-hint {
+    font-size: 10px;
+  }
+
+  /* Switch Usar Lotes */
+  .lotes-switch-row {
+    padding: 12px;
+    margin-bottom: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .lotes-switch-titulo {
+    font-size: 12px;
+  }
+
+  .lotes-switch-desc {
+    font-size: 10px;
+  }
+
+  .modal-toggle {
+    width: 56px;
+    height: 32px;
+  }
+
+  .modal-toggle::after {
+    width: 28px;
+    height: 28px;
+  }
+
+  .modal-toggle.on::after {
+    left: 26px;
+  }
+
+  /* Campos de lote */
+  .lotes-campos {
+    padding: 0;
+  }
+
+  /* Info box */
+  .lotes-info-box {
+    font-size: 11px;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .lotes-info-icon {
+    font-size: 14px;
+  }
+
+  /* Guía */
+  .guia-item {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .guia-num {
+    font-size: 12px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .guia-texto {
+    font-size: 11px;
+  }
+
+  /* Botones */
+  .btn-guardar,
+  .btn-cancelar {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  /* Topbar */
+  .topbar {
+    padding: 12px 16px;
+  }
+
+  /* Avatar */
+  .avatar-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ── SMALL MOBILE (máx 360px) ── */
+@media (max-width: 360px) {
+  /* Content padding aún más pequeño */
+  .content {
+    padding: 12px 8px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  /* Cards aún más compactas */
+  .card-info,
+  .card-inventario,
+  .card-lotes,
+  .card-imagen,
+  .guia-card {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    font-size: 12px;
+  }
+
+  .field-label {
+    font-size: 10px;
+  }
+
+  .field-input,
+  .field-textarea {
+    font-size: 12px;
+  }
+
+  /* Botones más pequeños pero clickeables */
+  .btn-guardar,
+  .btn-cancelar {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  /* Switch más compacto */
+  .modal-toggle {
+    width: 48px;
+    height: 28px;
+  }
+
+  .modal-toggle::after {
+    width: 24px;
+    height: 24px;
+  }
+
+  .modal-toggle.on::after {
+    left: 22px;
+  }
+}
 </style>

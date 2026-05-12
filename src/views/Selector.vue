@@ -84,4 +84,36 @@ button {
 button:hover {
   transform: scale(1.05);
 }
+
+/* ═══════════════════════════════════════════════════════════════ */
+/* ── RESPONSIVE DESIGN ── */
+/* ═══════════════════════════════════════════════════════════════ */
+
+/* ── TABLET (481px - 1024px) ── */
+@media (max-width: 1024px) {
+  .selector-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .selector-card { padding: 16px; }
+  h2 { font-size: 14px; }
+}
+
+/* ── MOBILE (máx 480px) ── */
+@media (max-width: 480px) {
+  .selector-container { padding: 12px; }
+  h1 { font-size: 18px; }
+  .selector-grid { grid-template-columns: 1fr; gap: 12px; }
+  .selector-card { padding: 12px; }
+  h2 { font-size: 13px; }
+  p { font-size: 12px; }
+  button { font-size: 13px; padding: 10px; }
+}
+
+/* ── SMALL MOBILE (máx 360px) ── */
+@media (max-width: 360px) {
+  .selector-container { padding: 10px; }
+  h1 { font-size: 16px; }
+  .selector-card { padding: 10px; }
+  h2 { font-size: 12px; }
+  p { font-size: 11px; }
+  button { font-size: 12px; padding: 8px; }
+}
 </style>
