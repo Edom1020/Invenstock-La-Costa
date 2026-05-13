@@ -7,14 +7,8 @@
     <!-- ÁREA PRINCIPAL -->
     <div class="main">
  
-      <!-- Barra superior -->
-      <header class="topbar">
-        <div class="topbar-right">
-          <div class="avatar-btn">
-            <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
-          </div>
-        </div>
-      </header>
+      <!-- TOPBAR-->
+        <Topbar @buscar="busqueda = $event" />
  
       <!-- CONTENIDO -->
       <div class="content">
@@ -301,9 +295,7 @@
 import { ref, reactive, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
-
-//Script para notificaciones//
-const notificacionesRef = inject('notificacionesGlobal')
+import Topbar from "../components/Topbar.vue";
 
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()

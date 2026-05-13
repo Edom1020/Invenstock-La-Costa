@@ -8,17 +8,7 @@
     <div class="main">
 
       <!-- TOPBAR -->
-      <header class="topbar">
-        <div class="search-wrap">
-          <img src="/images/images-dashboard/lupaicon.png" class="search-icon" />
-           <input v-model="busqueda" type="text" placeholder="Buscar productos..." />
-        </div>
-        <div class="topbar-right">
-          <div class="avatar-btn">
-            <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
-          </div>
-        </div>
-      </header>
+      <Topbar @buscar="busqueda = $event" />
 
       <!-- CONTENT -->
       <div class="content">
@@ -142,14 +132,10 @@
 </template>
 
 <script setup>
-
 import Sidebar from "../components/Sidebar.vue";
+import Topbar from "../components/Topbar.vue";
 import { ref, computed, inject } from 'vue'
 
-
-
-//Script para notificaciones//
-const notificacionesRef = inject('notificacionesGlobal')
 
 import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
@@ -259,67 +245,6 @@ const limpiarFiltros = () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-/* ── TOPBAR ── */
-.topbar {
-  background: var(--bg-card);
-  padding: 14px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--borde);
-  transition: background 0.3s, border-color 0.3s;
-}
-
-
-
-.search-icon { width: 15px; height: 15px; object-fit: contain; }
-
-
-
-.search-wrap input::placeholder { color: var(--txt-muted); }
-
-.topbar-right { display: flex; align-items: center; gap: 14px; }
-
-.notif-btn {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: var(--bg-input);
-  border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  position: relative; font-size: 16px;
-  transition: background 0.3s;
-}
-
-.notif-dot {
-  width: 8px; height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
-  position: absolute; top: 6px; right: 6px;
-  border: 1.5px solid var(--bg-card);
-}
-
-.avatar-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--azul);
-  border: 2px solid #38bdf8;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: default;
-  flex-shrink: 0;
-  transition: background 0.3s, border-color 0.3s;
-}
-
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
 }
 
 /* ── CONTENT ── */
@@ -591,6 +516,17 @@ tbody tr td {
   background-color: var(--bg-hover) 
 }
 
+
+.topbar {
+  background: var(--bg-card);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--borde);
+  flex-shrink: 0;
+  transition: background 0.3s, border-color 0.3s;
+}
 /* ═══════════════════════════════════════════════════════════════ */
 /* ── RESPONSIVE DESIGN ── */
 /* ═══════════════════════════════════════════════════════════════ */
@@ -608,6 +544,14 @@ tbody tr td {
 
 /* ── MOBILE (máx 480px) ── */
 @media (max-width: 480px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .main {
+    width: 100%;
+  }
+
   .content { padding: 12px; }
   .page-title { font-size: 18px; }
   .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }

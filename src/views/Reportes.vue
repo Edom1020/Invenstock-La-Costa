@@ -6,20 +6,9 @@
     <div class="main">
 
       <!-- TOPBAR -->
-       <header class="topbar">
-  <div class="search-wrap">
-    <img src="/images/images-dashboard/lupaicon.png" class="search-icon" />
-    <input v-model="busqueda" type="text" placeholder="Buscar movimientos..." />
-  </div>
-  
-  <div class="topbar-right">
-    <div class="avatar-btn">
-      <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
-    </div>
-  </div>
-</header>
-    
+      <Topbar @buscar="busqueda = $event" />
 
+  
       <!-- FILTROS -->
       <div class="filters-bar">
         <div class="filters-left">
@@ -212,6 +201,7 @@ import Chart from 'chart.js/auto'
 import Sidebar from "../components/Sidebar.vue";
 import ModalExportarPDF from '../components/ModalExportarPDF.vue'
 import ModalReponerStock from '../components/ModalReponerStock.vue'
+import Topbar from "../components/Topbar.vue";
 
 //Modal de exportar PDF//
 const mostrarModalPDF = ref(false)
@@ -220,8 +210,7 @@ const mostrarModalPDF = ref(false)
 const mostrarModalReponer = ref(false)
 const productoSeleccionado = ref(null)
 
-//Script para notificaciones//
-const notificacionesRef = inject('notificacionesGlobal')
+
 
 //DARK MODE o modo oscuro
 import { useTemaStore } from '../stores/tema'
@@ -433,12 +422,12 @@ onMounted(() => {
 /* ── TOPBAR ── */
 .topbar {
   background: var(--bg-card);
-  padding: 14px 28px;
+  padding: 10px 24px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: flex-end;
   border-bottom: 1px solid var(--borde);
-  gap: 20px;
+  flex-shrink: 0;
   transition: background 0.3s, border-color 0.3s;
 }
 
@@ -871,6 +860,14 @@ tbody td {
 
 /* ── MOBILE (máx 480px) ── */
 @media (max-width: 480px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .main {
+    width: 100%;
+  }
+
   .content { padding: 12px; }
   .page-title { font-size: 18px; }
   .tabla-wrapper { overflow-x: auto; }

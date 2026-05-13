@@ -7,22 +7,7 @@
     <!-- MAIN -->
     <div class="main">
 
-      <!-- TOPBAR -->
-      <header class="topbar">
-        <div class="search-wrap">
-          <img src="/images/images-dashboard/lupaicon.png" class="search-icon" />
-          <input
-            v-model="busqueda"
-            type="text"
-            placeholder="Buscar productos, SKU o categorías..."
-          />
-        </div>
-        <div class="topbar-right">
-          <div class="avatar-btn">
-            <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
-          </div>
-        </div>
-      </header>
+      <Topbar @buscar="busqueda = $event" />
 
       <!-- CONTENT -->
       <div class="content">
@@ -284,7 +269,7 @@
 import Sidebar from "../components/Sidebar.vue";
 import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
-
+import Topbar from "../components/Topbar.vue";
 //Script para notificaciones//
 const notificacionesRef = inject('notificacionesGlobal')
 
@@ -866,9 +851,14 @@ tbody td {
 
 /* ── MOBILE (máx 480px) ── */
 @media (max-width: 480px) {
+  .layout { overflow-x: hidden; }
   .content { padding: 12px; }
   .page-title { font-size: 18px; }
-  .tabla-wrapper { overflow-x: auto; }
+  .page-header { flex-direction: column; gap: 12px; align-items: stretch; }
+  .btn-nuevo { width: 100%; }
+  .stats-row { grid-template-columns: 1fr; }
+  .table-card { overflow-x: auto; }
+  table { min-width: 700px; }
   .tabla { font-size: 11px; }
   thead th { font-size: 9px; padding: 0 0 8px 0; }
   tbody td { font-size: 10px; padding: 10px 6px; }

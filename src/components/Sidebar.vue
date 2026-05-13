@@ -48,6 +48,11 @@
         Movimientos
       </router-link>
 
+      <router-link to="/lotes" class="nav-item" active-class="active" @click="sidebarOpen = false">
+        <img src="/images/images-dashboard/lotes.png" class="nav-icon" />
+       Lotes
+      </router-link>
+
       <router-link to="/reportes" class="nav-item" active-class="active" @click="sidebarOpen = false">
         <img src="/images/images-dashboard/reportesicon.png" class="nav-icon" />
         Reportes

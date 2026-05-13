@@ -8,17 +8,7 @@
     <div class="mov-main">
 
       <!-- TOPBAR -->
-      <header class="mov-topbar">
-        <div class="search-wrap">
-          <img src="/images/images-dashboard/lupaicon.png" class="mov-search-icon" />
-          <input v-model="busqueda" type="text" placeholder="Buscar movimientos..." />
-        </div>
-        <div class="mov-topbar-right">
-          <div class="mov-avatar-btn">
-            <img :src="usuarioStore.fotoPerfil" class="mov-avatar-img" />
-          </div>
-        </div>
-      </header>
+      <Topbar @buscar="busqueda = $event" />
 
       <!-- CONTENT -->
       <div class="mov-content">
@@ -235,9 +225,9 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import Sidebar from "../components/Sidebar.vue";
+import Topbar from "../components/Topbar.vue";
 
-//Script para notificaciones//
-const notificacionesRef = inject('notificacionesGlobal')
+
 
 // Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
 import { useUsuarioStore } from '../stores/usuario'
@@ -423,6 +413,18 @@ const registrarMovimiento = () => {
 }
 
 /* ── TOPBAR ── */
+
+.topbar {
+  background: var(--bg-card);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: 1px solid var(--borde);
+  flex-shrink: 0;
+  transition: background 0.3s, border-color 0.3s;
+}
+
 .mov-topbar {
   background: var(--bg-card);
   padding: 12px 28px;
@@ -902,6 +904,14 @@ const registrarMovimiento = () => {
 
 /* ── MOBILE (máx 480px) ── */
 @media (max-width: 480px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .main {
+    width: 100%;
+  }
+
   .content { padding: 12px; }
   .page-title { font-size: 18px; }
   .mov-container { grid-template-columns: 1fr; gap: 12px; }

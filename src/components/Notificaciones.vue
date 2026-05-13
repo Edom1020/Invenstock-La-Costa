@@ -186,7 +186,8 @@ defineExpose({
 /* DROPDOWN */
 .notif-dropdown {
   position: absolute;
-  top: 44px; right: 0;
+  top: 44px;
+  left: -284px;
   width: 320px;
   background: var(--bg-card, #ffffff);
   border: 1px solid var(--borde, #e5e7eb);
@@ -300,5 +301,30 @@ defineExpose({
   position: fixed;
   inset: 0;
   z-index: 999;
+}
+
+/* ── RESPONSIVE NOTIFICACIONES ── */
+@media (max-width: 480px) {
+  .notif-dropdown {
+    width: 290px;
+    left: -254px;
+  }
+}
+
+@media (max-width: 360px) {
+  .notif-dropdown {
+    width: 260px;
+    left: -224px;
+  }
+}
+
+.notif-btn {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .notif-btn { width: 28px; height: 28px; }
 }
 </style>

@@ -389,32 +389,15 @@ const guardarCambios = () => {
   min-width: 0;
 }
 
-/* ── TOPBAR ── */
-.topbar {
-  background: var(--bg-topbar);
-  padding: 10px 24px;
+.topbar-right {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  border-bottom: 1px solid var(--borde);
-  flex-shrink: 0;
-  transition: background 0.3s, border-color 0.3s;
+  gap: 12px;
+  margin-left: auto; 
 }
 
-.topbar-right { display: flex; align-items: center; gap: 12px; }
-
-.notif-btn {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--bg-input); border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  position: relative; transition: background 0.3s;
-}
-.notif-dot {
-  width: 7px; height: 7px; background: #ef4444; border-radius: 50%;
-  position: absolute; top: 5px; right: 5px;
-  border: 1.5px solid var(--bg-topbar);
-}
 .avatar-btn {
+  margin-left: auto;
   width: 32px; height: 32px; border-radius: 50%;
   background: #0ea5e9; border: 2px solid #38bdf8;
   overflow: hidden; display: flex; align-items: center; justify-content: center;
@@ -563,6 +546,8 @@ const guardarCambios = () => {
   letter-spacing: 0.4px;
   text-transform: uppercase;
   transition: color 0.3s;
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 .conf-value,
@@ -981,10 +966,20 @@ const guardarCambios = () => {
 
 /* ── MOBILE (máx 480px) ── */
 @media (max-width: 480px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .main {
+    width: 100%;
+  }
+
   .content { padding: 12px; }
   .page-title { font-size: 18px; }
+  .config-grid { grid-template-columns: 1fr; gap: 12px; }
   .conf-container { grid-template-columns: 1fr; }
   .conf-field { margin-bottom: 10px; }
+  .conf-fields { grid-template-columns: 1fr; gap: 12px; }
   input, textarea { font-size: 12px; padding: 8px; width: 100%; }
   .conf-label { font-size: 11px; }
   .btn-primary, .btn-cancelar { padding: 10px 16px; font-size: 12px; width: 100%; }
