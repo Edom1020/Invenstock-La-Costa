@@ -555,6 +555,7 @@ tbody tr td {
   .content { padding: 12px; }
   .page-title { font-size: 18px; }
   .dashboard-grid { grid-template-columns: 1fr; gap: 12px; }
+  .kpi-grid { grid-template-columns: 1fr; gap: 12px; }
   .kpi-card { padding: 12px; }
   .kpi-label { font-size: 10px; }
   .kpi-value { font-size: 20px; }
@@ -569,6 +570,7 @@ tbody tr td {
   .content { padding: 10px; }
   .page-title { font-size: 16px; }
   .kpi-value { font-size: 18px; }
+  .kpi-grid { grid-template-columns: 1fr; gap: 10px; }
   thead th { font-size: 9px; }
   tbody td { font-size: 10px; padding: 8px 4px; }
 }

@@ -920,6 +920,10 @@ const registrarMovimiento = () => {
   .mov-stat-value { font-size: 20px; }
   .mov-stat-label { font-size: 9px; }
   button { padding: 10px; font-size: 12px; width: 100%; }
+  .mov-stats-footer {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 /* ── SMALL MOBILE (máx 360px) ── */
@@ -928,5 +932,12 @@ const registrarMovimiento = () => {
   .page-title { font-size: 16px; }
   .mov-stat-value { font-size: 18px; }
   button { padding: 8px; font-size: 11px; }
+}
+
+/* Asegurar que las tarjetas se apilen verticalmente en móvil */
+@media (max-width: 480px) {
+  .mov-main-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 </style>

@@ -428,6 +428,7 @@ const guardarCambios = () => {
   display: grid;
   grid-template-columns: minmax(300px, 650px) minmax(250px, 320px);
   gap: 20px;
+  width: 100%;
   max-width: 1200px;
   justify-content: center;
   margin: 0 auto;
@@ -440,20 +441,13 @@ const guardarCambios = () => {
   padding: 18px;
   border: 1px solid var(--borde);
   transition: background 0.3s, border-color 0.3s;
+  box-sizing: border-box;
 
   display: flex;
   flex-direction: column;
   gap : 14px;
 }
 
-.config-card.full {
-  grid-column: span 2;
-  width: 100%;
-  max-width: 400px;
-  margin-left: auto;
-  height: fit-content;
-  min-height: auto;
-}
 
 /* ── TÍTULOS DE CARD ── */
 .conf-card-title {
@@ -479,6 +473,7 @@ const guardarCambios = () => {
   padding: 18px;
   border: 1px solid var(--borde);
   transition: background 0.3s, border-color 0.3s;
+  box-sizing: border-box;
   width: 100%;
   height: auto;
   flex-direction: column;
@@ -597,6 +592,7 @@ const guardarCambios = () => {
   padding: 18px;
   border: 1px solid var(--borde);
   transition: background 0.3s, border-color 0.3s;
+  box-sizing: border-box;
   width: 100%;
   height: auto;
   min-height: 300px;
@@ -739,6 +735,7 @@ const guardarCambios = () => {
   padding: 18px;
   border: 1px solid var(--borde);
   transition: background 0.3s, border-color 0.3s;
+  box-sizing: border-box;
   width: 100%;
   height: auto;
   min-height: 300px;
@@ -827,10 +824,6 @@ const guardarCambios = () => {
 }
 
 /* ── CONTRASEÑA ── */
-.config-card.full {
-  width: 298.67px;
-  margin-left: auto;
-}
 
 .conf-password-form {
   display: flex;
@@ -1008,6 +1001,12 @@ const guardarCambios = () => {
   .btn-primary, .btn-cancelar { padding: 10px 16px; font-size: 12px; width: 100%; }
   .action-buttons { gap: 10px; }
   .conf-btn-update { width: 100%; }
+  /* Asegurar que las tarjetas se apilen verticalmente en móvil */
+  .config-card.full {
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: 400px;
+  }
 }
 
 /* ── SMALL MOBILE (máx 360px) ── */

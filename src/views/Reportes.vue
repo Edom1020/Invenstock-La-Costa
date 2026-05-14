@@ -878,6 +878,8 @@ tbody td {
   .prod-thumb { width: 28px; height: 28px; }
   .prod-name { font-size: 12px; }
   .restock-btn { padding: 4px 10px; font-size: 11px; }
+  .summary-grid { grid-template-columns: 1fr; gap: 12px; }
+  .charts-row { grid-template-columns: 1fr; gap: 16px; }
 }
 
 /* ── SMALL MOBILE (máx 360px) ── */
@@ -888,5 +890,7 @@ tbody td {
   tbody td { padding: 8px 2px; font-size: 10px; }
   .prod-thumb { width: 24px; height: 24px; }
   .restock-btn { padding: 3px 8px; font-size: 10px; }
+  .summary-grid { grid-template-columns: 1fr; gap: 10px; }
+  .charts-row { grid-template-columns: 1fr; gap: 12px; }
 }
 </style>
