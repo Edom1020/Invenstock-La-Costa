@@ -49,7 +49,7 @@
       </router-link>
 
       <router-link to="/lotes" class="nav-item" active-class="active" @click="sidebarOpen = false">
-        <img src="/images/images-dashboard/lotes.png" class="nav-icon" />
+        <img src="/images/images-lotes/lotes.png" class="nav-icon" />
        Lotes
       </router-link>
 

@@ -10,6 +10,7 @@
       <!-- Barra superior -->
       <header class="topbar">
         <div class="topbar-right">
+          <Notificaciones />
           <div class="avatar-btn">
             <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
@@ -257,13 +258,13 @@
 <script setup>
 import { ref, reactive, inject } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
+import Notificaciones from '../components/Notificaciones.vue'
 
 // Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
 
-//Script para notificaciones//
-const notificacionesRef = inject('notificacionesGlobal')
+
 
 // Función para cambiar la foto de perfil, actualiza el store de usuario //
 const cambiarFoto = (e) => {
@@ -950,6 +951,28 @@ const guardarCambios = () => {
   border-radius: 50px;
   cursor: pointer;
   transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #1e4d7b;
+}
+
+.btn-cancelar {
+  background: #cbd5e1;
+  color: #334155;
+}
+
+.btn-cancelar:hover {
+  background: #94a3b8;
+}
+
+.layout.dark-mode .btn-cancelar {
+  background: #475569;
+  color: #f1f5f9;
+}
+
+.layout.dark-mode .btn-cancelar:hover {
+  background: #64748b;
 }
 
 /* ═══════════════════════════════════════════════════════════════ */

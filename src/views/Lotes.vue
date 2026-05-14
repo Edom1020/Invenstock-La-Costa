@@ -7,7 +7,15 @@
     <!-- MAIN -->
     <div class="main">
 
-      <Topbar @buscar="busqueda = $event" />
+       <!-- Barra superior -->
+      <header class="topbar">
+        <div class="topbar-right">
+          <Notificaciones />
+          <div class="avatar-btn">
+            <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
+          </div>
+        </div>
+      </header>
 
       <!-- CONTENT -->
       <div class="content">
@@ -31,7 +39,7 @@
               <div class="kpi-value">{{ lotes.length }}</div>
             </div>
             <div class="kpi-icon-wrap blue">
-              <img src="/images/images-dashboard/cajadecuadrotproductos.png" style="width:28px;height:28px;object-fit:contain;" />
+              <img src="/images/images-lotes/lotes.png" style="width:28px;height:28px;object-fit:contain;" />
             </div>
           </div>
 
@@ -41,7 +49,7 @@
               <div class="kpi-value green">{{ lotesActivos }}</div>
             </div>
             <div class="kpi-icon-wrap green">
-              <img src="/images/images-dashboard/movimientosicon.png" style="width:28px;height:28px;object-fit:contain;" />
+              <img src="/images/images-lotes/checkicon.png" style="width:28px;height:28px;object-fit:contain;" />
             </div>
           </div>
 
@@ -61,7 +69,7 @@
               <div class="kpi-value orange">{{ lotesPorVencer }}</div>
             </div>
             <div class="kpi-icon-wrap orange">
-              <img src="/images/images-config/alerticon.png" style="width:28px;height:28px;object-fit:contain;" />
+              <img src="/images/images-lotes/alertlote.png" style="width:28px;height:28px;object-fit:contain;" />
             </div>
           </div>
         </div>
@@ -223,11 +231,13 @@
 
 <script setup>
 import Sidebar from "../components/Sidebar.vue"
-import Topbar from "../components/Topbar.vue"
 import { ref, computed } from 'vue'
 import { useTemaStore } from '../stores/tema'
+import { useUsuarioStore } from '../stores/usuario'
+import Notificaciones from "../components/Notificaciones.vue"
 
 const temaStore = useTemaStore()
+const usuarioStore = useUsuarioStore()
 
 const busqueda = ref('')
 const filtroEstado = ref('')
@@ -829,7 +839,7 @@ tbody td {
 .btn-guardar:hover { background: #0ea5e9; }
 
 .btn-eliminar {
-  background: var(--rojo);
+  background: #dc2626;
   color: #ffffff;
 }
 
