@@ -49,6 +49,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useUsuarioStore } from '../stores/usuario'
 
 const router = useRouter();
 const email = ref("");
@@ -64,12 +65,23 @@ const irARecuperacion = () => {
 };
 
 const iniciarSesion = () => {
-  if (!email.value || !password.value) { 
+  if (!email.value || !password.value) {
     alert("Por favor, completa todos los campos.");
     return;
   }
-  router.push("/dashboard");
 
+  // Simula la validación del usuario y asigna un rol (en una app real, esto vendría del backend)
+  const userRole = email.value === 'admin@test.com' ? 'administrador' : 'usuario';
+
+  // llama el método del store para iniciar sesión y redirige al dashboard si es exitoso
+  const usuarioStore = useUsuarioStore(); 
+  const success = usuarioStore.iniciarSesion(email.value, password.value, userRole);
+
+  if (success) {
+    router.push("/dashboard");
+  } else {
+    alert("Error al iniciar sesión");
+  }
 }
 
 

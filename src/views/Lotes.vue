@@ -26,7 +26,7 @@
             <h1>Control de Lotes</h1>
             <p>Gestiona el inventario por lotes y fechas de vencimiento</p>
           </div>
-          <button class="btn-nuevo" @click="abrirCrearLote">
+          <button v-if="usuarioStore.rol === 'administrador'" class="btn-nuevo" @click="abrirCrearLote">
             + Crear Lote
           </button>
         </div>
@@ -126,10 +126,10 @@
                 </td>
                 <td>
                   <div class="actions">
-                    <button class="btn-edit" title="Editar" @click="abrirEditar(lote)">
+                    <button v-if="usuarioStore.rol === 'administrador'" class="btn-edit" title="Editar" @click="abrirEditar(lote)">
                       <img src="/images/images-dashboard/editicon.png" style="width:16px;height:16px;object-fit:contain;" />
                     </button>
-                    <button class="btn-del" title="Eliminar" @click="confirmarEliminar(lote)">
+                    <button v-if="usuarioStore.rol === 'administrador'" class="btn-del" title="Eliminar" @click="confirmarEliminar(lote)">
                       <img src="/images/images-dashboard/delicon.png" style="width:16px;height:16px;object-fit:contain;" />
                     </button>
                   </div>

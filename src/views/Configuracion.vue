@@ -146,9 +146,9 @@
                   <div class="conf-notif-title">Avisos por email</div>
                   <div class="conf-notif-desc">Alertas de stock y movimientos</div>
                 </div>
-                <button 
-                  class="conf-toggle-btn" 
-                  :class="{ on: notif.email }" 
+                <button
+                  class="conf-toggle-btn"
+                  :class="{ on: notif.email }"
                   @click="notif.email = !notif.email"
                   aria-label="Toggle email notifications"
                 ></button>
@@ -159,9 +159,9 @@
                   <div class="conf-notif-title">Notificaciones escritorio</div>
                   <div class="conf-notif-desc">Mensajes emergentes en tiempo real</div>
                 </div>
-                <button 
-                  class="conf-toggle-btn" 
-                  :class="{ on: notif.escritorio }" 
+                <button
+                  class="conf-toggle-btn"
+                  :class="{ on: notif.escritorio }"
                   @click="notif.escritorio = !notif.escritorio"
                   aria-label="Toggle desktop notifications"
                 ></button>
@@ -172,16 +172,15 @@
                   <div class="conf-notif-title">Reportes semanales</div>
                   <div class="conf-notif-desc">Resumen de stock cada lunes</div>
                 </div>
-                <button 
-                  class="conf-toggle-btn" 
-                  :class="{ on: notif.reportes }" 
+                <button
+                  class="conf-toggle-btn"
+                  :class="{ on: notif.reportes }"
                   @click="notif.reportes = !notif.reportes"
                   aria-label="Toggle weekly reports"
                 ></button>
               </div>
             </div>
           </div>
-          
                     <!-- SEGURIDAD -->
           <div class="config-card full">
             <!-- BOTÓN (se ve cuando NO está expandido) -->
@@ -256,7 +255,7 @@
 
 
 <script setup>
-import { ref, reactive, inject } from 'vue'
+import { ref, reactive } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 import Notificaciones from '../components/Notificaciones.vue'
 

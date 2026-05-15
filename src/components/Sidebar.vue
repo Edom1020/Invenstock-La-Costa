@@ -38,6 +38,7 @@
         Dashboard
       </router-link>
 
+      <!-- Inventario - Todos pueden ver, pero solo administradores pueden editar/crear -->
       <router-link to="/productos" class="nav-item" active-class="active" @click="sidebarOpen = false">
         <img src="/images/images-dashboard/inventarioicon.png" class="nav-icon" />
         Inventario
@@ -48,6 +49,7 @@
         Movimientos
       </router-link>
 
+      <!-- Lotes - Todos pueden ver, pero solo administradores pueden editar/crear -->
       <router-link to="/lotes" class="nav-item" active-class="active" @click="sidebarOpen = false">
         <img src="/images/images-lotes/lotes.png" class="nav-icon" />
        Lotes
@@ -58,8 +60,8 @@
         Reportes
       </router-link>
 
-      <!-- Enlace a la página de Configuración -->
-      <router-link to="/configuracion" class="nav-item" active-class="active" @click="sidebarOpen = false">
+      <!-- Configuración - Solo para administradores -->
+      <router-link  to="/configuracion" class="nav-item" active-class="active" @click="sidebarOpen = false">
         <img src="/images/images-dashboard/ajustesicon.png" class="nav-icon" />
         Configuración
       </router-link>
@@ -79,6 +81,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { useUsuarioStore } from '../stores/usuario'
 
 // ── Props: recibimos el tema desde la vista padre ──
 // Si no se pasa ningún valor, el tema por defecto es 'claro'
@@ -91,6 +94,7 @@ const props = defineProps({
 
 const router = useRouter()
 const sidebarOpen = ref(false)
+const usuarioStore = useUsuarioStore()
 
 // Toggle sidebar en móvil
 const toggleSidebar = () => {

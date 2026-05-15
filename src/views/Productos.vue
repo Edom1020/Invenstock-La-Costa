@@ -18,7 +18,8 @@
             <h1>Catálogo de Inventario</h1>
             <p>Gestiona y monitorea el stock de tus productos de electrónica, hogar y comida.</p>
           </div>
-          <button class="btn-nuevo" @click="irARegistrar">
+          <!-- El botón de nuevo producto solo lo ven los administradores -->
+          <button v-if="usuarioStore.rol === 'administrador'" class="btn-nuevo" @click="irARegistrar">
             + Nuevo Producto
           </button>
         </div>
@@ -118,10 +119,10 @@
                 <td class="price">${{ prod.precio.toFixed(2) }}</td>
                 <td>
                   <div class="actions">
-                    <button class="btn-edit" title="Editar" @click="abrirEditar(prod)">
+                    <button v-if="usuarioStore.rol === 'administrador'" class="btn-edit" title="Editar" @click="abrirEditar(prod)">
                       <img src="/images/images-dashboard/editicon.png" style="width:20px;height:20px;object-fit:contain;" />
                     </button>
-                    <button class="btn-del" title="Eliminar" @click="confirmarEliminar(prod)">
+                    <button v-if="usuarioStore.rol === 'administrador'" class="btn-del" title="Eliminar" @click="confirmarEliminar(prod)">
                       <img src="/images/images-dashboard/delicon.png" style="width:20px;height:20px;object-fit:contain;" />
                     </button>
                   </div>

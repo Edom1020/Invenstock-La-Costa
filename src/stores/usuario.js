@@ -2,12 +2,52 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useUsuarioStore = defineStore('usuario', () => {
-    const fotoPerfil = ref(localStorage.getItem('fotoPerfil-invenstock') || 'https://i.pravatar.cc/150?img=1')
+    const fotoPerfil = ref(localStorage.getItem('fotoPerfil-invenstock') || '/images/User/capibara.png')
+    const rol = ref(localStorage.getItem('rol-usuario') || '') // 'administrador' or 'usuario'
+    const token = ref(localStorage.getItem('token-auth') || '')
+    const estaAutenticado = ref(!!localStorage.getItem('token-auth'))
 
     const cambiarFotoPerfil = (nuevaFoto) => {
         fotoPerfil.value = nuevaFoto
         localStorage.setItem('fotoPerfil-invenstock', nuevaFoto)
     }
 
-    return { fotoPerfil, cambiarFotoPerfil }
+    const iniciarSesion = (email, password, userRole) => {
+        // En una aplicación real, aquí harías una llamada a tu backend para validar las credenciales y obtener el rol y token
+        // por ahora, simularemos esto con una validación simple y asignaremos un rol basado en el email
+        if (email && password) {
+            estaAutenticado.value = true
+            rol.value = userRole || 'usuario' // Se puede asignar 'administrador' o 'usuario' según el caso
+            token.value = 'fake-token-' + Math.random().toString(36).substr(2, 9)
+
+            // Guardar en localStorage para persistencia
+            localStorage.setItem('rol-usuario', rol.value)
+            localStorage.setItem('token-auth', token.value)
+
+            return true
+        }
+        return false
+    }
+
+    const cerrarSesion = () => {
+        fotoPerfil.value = 'https://i.pravatar.cc/150?img=1'
+        rol.value = ''
+        token.value = ''
+        estaAutenticado.value = false
+
+        // Limpiar localStorage
+        localStorage.removeItem('fotoPerfil-invenstock')
+        localStorage.removeItem('rol-usuario')
+        localStorage.removeItem('token-auth')
+    }
+
+    return {
+        fotoPerfil,
+        cambiarFotoPerfil,
+        rol,
+        token,
+        estaAutenticado,
+        iniciarSesion,
+        cerrarSesion
+    }
 })
