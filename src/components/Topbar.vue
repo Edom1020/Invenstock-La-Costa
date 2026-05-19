@@ -3,18 +3,21 @@
     <!-- LADO IZQUIERDO: Búsqueda -->
     <div class="search-wrap">
       <img src="/images/images-dashboard/lupaicon.png" class="search-icon" />
-      <input 
-        type="text" 
-        placeholder="Buscar productos..." 
+      <input
+        type="text"
+        placeholder="Buscar productos..."
         @input="$emit('buscar', $event.target.value)"
       />
     </div>
 
     <!-- LADO DERECHO: Acciones de usuario -->
     <div class="topbar-right">
-      
+
       <!-- Tu componente de notificaciones con el dropdown -->
       <Notificaciones />
+
+      <!-- NUEVO: Botón de IA -->
+      <AIBot />
 
       <!-- Foto de Perfil (Avatar) -->
       <div class="avatar-btn">
@@ -27,6 +30,7 @@
 
 <script setup>
 import Notificaciones from './Notificaciones.vue'
+import AIBot from './AIBot.vue'
 import { useUsuarioStore } from '../stores/usuario'
 
 const usuarioStore = useUsuarioStore()
@@ -85,8 +89,8 @@ defineEmits(['buscar'])
 
 .search-wrap input::placeholder { color: var(--txt-muted); }
 
-.search-icon { 
-  width: 15px; height: 15px; 
+.search-icon {
+  width: 15px; height: 15px;
   object-fit: contain;
   flex-shrink: 0;        /* ← el icono no se encoge */
 }
@@ -120,8 +124,8 @@ defineEmits(['buscar'])
 /* MOBILE */
 @media (max-width: 768px) {
   .topbar { padding: 10px 14px; gap: 8px; }
-  .search-wrap { 
-    max-width: 180px; 
+  .search-wrap {
+    max-width: 180px;
     padding: 6px 10px;
   }
   .search-wrap input { font-size: 12px; }
@@ -130,7 +134,7 @@ defineEmits(['buscar'])
 /* SMALL MOBILE */
 @media (max-width: 480px) {
   .topbar { padding: 8px 12px; gap: 6px; }
-  .search-wrap { 
+  .search-wrap {
     max-width: 130px;
     padding: 5px 8px;
   }
