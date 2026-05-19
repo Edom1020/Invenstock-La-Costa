@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 export const useUsuarioStore = defineStore('usuario', () => {
     const fotoPerfil = ref(localStorage.getItem('fotoPerfil-invenstock') || '/images/User/capibara.png')
-    const rol = ref(localStorage.getItem('rol-usuario') || '') // 'administrador' or 'usuario'
+    const rol = ref(localStorage.getItem('rol-usuario') || '') // 'administrador' o 'usuario'
     const token = ref(localStorage.getItem('token-auth') || '')
     const estaAutenticado = ref(!!localStorage.getItem('token-auth'))
 
@@ -30,7 +30,7 @@ export const useUsuarioStore = defineStore('usuario', () => {
     }
 
     const cerrarSesion = () => {
-        fotoPerfil.value = 'https://i.pravatar.cc/150?img=1'
+        fotoPerfil.value = '/images/User/capibara.png'
         rol.value = ''
         token.value = ''
         estaAutenticado.value = false

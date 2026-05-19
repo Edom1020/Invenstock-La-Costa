@@ -104,7 +104,8 @@ const toggleSidebar = () => {
 // Redirige al usuario a la pantalla de login al cerrar sesión
 const cerrarSesion = () => {
   sidebarOpen.value = false
-  router.push('/')
+  usuarioStore.cerrarSesion()
+  router.push('/login')
 }
 </script>
 

@@ -32,31 +32,24 @@ const router = createRouter({
   routes,
 });
 
-// Route guard to protect routes based on authentication and role
-router.beforeEach((to, from, next) => {
-  const usuarioStore = useUsuarioStore();
-  const requiresAuth = to.meta.requiresAuth;
-  const userRole = usuarioStore.rol;
-  const isAuthenticated = usuarioStore.estaAutenticado;
+// Ruta global para verificar autenticación y roles antes de cada navegación
+router.beforeEach((to, from) => {
+  const usuarioStore = useUsuarioStore()
+  const requiresAuth = to.meta.requiresAuth
+  const userRole = usuarioStore.rol
+  const isAuthenticated = usuarioStore.estaAutenticado
 
-  // If route requires authentication and user is not authenticated
   if (requiresAuth && !isAuthenticated) {
-    // Redirect to login page
-    next({ path: '/login' });
-  } else if (requiresAuth && isAuthenticated) {
-    // Check if user has the required role for this route
-    const allowedRoles = to.meta.roles || [];
-    if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
-      // User doesn't have permission, redirect to home or show unauthorized
-      next({ path: '/' });
-    } else {
-      // User is authenticated and has proper role
-      next();
-    }
-  } else {
-    // Route doesn't require authentication or user is not trying to access protected route
-    next();
+    return { path: '/login' }
   }
-});
 
+  if (requiresAuth && isAuthenticated) {
+    const allowedRoles = to.meta.roles || []
+    if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+      return { path: '/' }
+    }
+  }
+
+  // Sin return explícito permite la navegación
+})
 export default router;

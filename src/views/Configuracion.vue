@@ -181,6 +181,87 @@
               </div>
             </div>
           </div>
+
+          <!-- GESTIÓN DE PERMISOS -->
+          <div v-if="esAdmin" class="config-card">
+            <div v-if="!mostrarPermisos" class="seg-btn" @click="mostrarPermisos = true">
+              <div class="seg-izquierda">
+                <div class="seg-icono">
+                  <img src="/images/images-config/shield.png" style="width:16px;height:16px;object-fit:contain;" />
+                </div>
+                <div>
+                  <div class="conf-notif-title">Gestión de Permisos</div>
+                  <div class="conf-notif-desc">Gestionar permisos de usuarios</div>
+                </div>
+              </div>
+              <span class="seg-arrow">›</span>
+            </div>
+
+            <div v-else>
+              <div class="conf-card-title">
+                <img src="/images/images-config/shield.png" style="width:16px;height:16px;object-fit:contain;" />
+                Gestión de Permisos
+              </div>
+
+              <div class="permiso-container">
+                <!-- Selector de Usuario -->
+                <div class="permiso-field">
+                  <label class="permiso-label">Seleccionar Usuario</label>
+                  <select v-model="usuarioSeleccionado" class="permiso-select" @change="cargarPermisosUsuario">
+                    <option v-for="usuario in usuarios" :key="usuario.id" :value="usuario.id">
+                      {{ usuario.nombre }} ({{ usuario.email }})
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Lista de Permisos Disponibles -->
+                <div class="permiso-lista">
+                  <div
+                    v-for="permiso in permisosDisponibles"
+                    :key="permiso.id"
+                    class="permiso-item"
+                  >
+                    <div class="permiso-info">
+                      <span class="permiso-icono">{{ permiso.icono }}</span>
+                      <div>
+                        <div class="permiso-nombre">{{ permiso.nombre }}</div>
+                        <div class="permiso-descripcion">{{ permiso.descripcion }}</div>
+                      </div>
+                    </div>
+
+                    <!-- Switch para activar/desactivar permiso -->
+                    <div class="permiso-toggle">
+                      <input
+                        type="checkbox"
+                        :id="`permiso-${permiso.id}`"
+                        :checked="permisosActual.includes(permiso.id)"
+                        @change="togglePermiso(permiso.id)"
+                      />
+                      <label :for="`permiso-${permiso.id}`"></label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botón de Guardar -->
+                <button
+                  class="btn-permisos"
+                  @click="guardarPermisos"
+                  :disabled="guardando"
+                >
+                  <span v-if="guardando">Guardando...</span>
+                  <span v-else>Guardar Permisos</span>
+                </button>
+
+                <!-- Botón de Cancelar -->
+                <button class="btn-cancelar-permisos" @click="mostrarPermisos = false">Cancelar</button>
+
+                <!-- Mensaje de éxito/error -->
+                <div v-if="mensaje" class="mensaje-operacion" :class="tipoMensaje">
+                  {{ mensaje }}
+                </div>
+              </div>
+            </div>
+          </div>
                     <!-- SEGURIDAD -->
           <div class="config-card full">
             <!-- BOTÓN (se ve cuando NO está expandido) -->
@@ -255,7 +336,7 @@
 
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed} from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 import Notificaciones from '../components/Notificaciones.vue'
 
@@ -317,6 +398,202 @@ const abrirCambioContraseña = () => {
 
 //Mostrar contraseña en formulario de seguridad
 const mostrarPassword = ref(false)
+const mostrarPermisos = ref(false)
+
+
+/**
+ * DATOS REACTIVOS PARA LA GESTIÓN DE PERMISOS
+ * ========================================================================
+ */
+
+// Lista de usuarios del sistema (en una aplicación real vendría del backend)
+const usuarios = ref([
+  {
+    id: 1,
+    nombre: 'Juan Pérez',
+    email: 'juan@empresa.com',
+    rol: 'operador',
+    permisos: ['ver_reportes'] // Permisos iniciales
+  },
+  {
+    id: 2,
+    nombre: 'María Gómez',
+    email: 'maria@empresa.com',
+    rol: 'invitado',
+    permisos: []
+  },
+  {
+    id: 3,
+    nombre: 'Carlos Ruiz',
+    email: 'carlos@empresa.com',
+    rol: 'admin',
+    permisos: ['*'] // El admin tiene todos los permisos
+  }
+])
+
+// Usuario actualmente seleccionado para editar permisos
+const usuarioSeleccionado = ref(usuarios.value[0])
+
+// Permisos disponibles que se pueden otorgar
+const permisosDisponibles = ref([
+  {
+    id: 'crear_producto',
+    nombre: 'Crear Productos',
+    icono: '➕',
+    descripcion: 'Permite agregar nuevos productos al inventario'
+  },
+  {
+    id: 'editar_producto',
+    nombre: 'Editar Productos',
+    icono: '✏️',
+    descripcion: 'Permite modificar productos existentes'
+  },
+  {
+    id: 'eliminar_producto',
+    nombre: 'Eliminar Productos',
+    icono: '🗑️',
+    descripcion: 'Permite eliminar productos del inventario'
+  },
+  {
+    id: 'crear_lote',
+    nombre: 'Crear Lotes',
+    icono: '📦',
+    descripcion: 'Permite registrar nuevos lotes de productos'
+  },
+  {
+    id: 'ver_reportes',
+    nombre: 'Ver Reportes',
+    icono: '📊',
+    descripcion: 'Permite acceder y generar reportes de inventario'
+  },
+  {
+    id: 'gestionar_usuarios',
+    nombre: 'Gestionar Usuarios',
+    icono: '👥',
+    descripcion: 'Permite crear, modificar y eliminar otros usuarios'
+  },
+  {
+    id: 'configurar_sistema',
+    nombre: 'Configurar Sistema',
+    icono: '⚙️',
+    descripcion: 'Permite acceder a la configuración general del sistema'
+  }
+])
+
+// Estado para manejar el proceso de guardado
+const guardando = ref(false)
+const mensaje = ref('')
+const tipoMensaje = ref('') // 'exito' o 'error'
+
+/**
+ * FUNCIONES PARA LA GESTIÓN DE PERMISOS
+ * ========================================================================
+ */
+
+/**
+ * Carga los permisos del usuario seleccionado cuando cambia la selección
+ * Esto asegura que siempre veamos los permisos actuales del usuario
+ */
+function cargarPermisosUsuario() {
+  // En una aplicación real, aquí haríamos una llamada al API
+  // Para este ejemplo, usamos los datos locales
+  const usuario = usuarios.value.find(u => u.id === usuarioSeleccionado.value)
+  if (usuario) {
+    // Ya tenemos los permisos en el objeto usuario, no necesitamos hacer nada extra
+    console.log(`Cargando permisos para ${usuario.nombre}:`, usuario.permisos)
+  }
+}
+
+/**
+ * Alterna un permiso específico para el usuario seleccionado
+ * @param {string} permisoId - ID del permiso a activar/desactivar
+ */
+function togglePermiso(permisoId) {
+  const usuario = usuarios.value.find(u => u.id === usuarioSeleccionado.value)
+
+  if (!usuario) return
+
+  const indice = usuario.permisos.indexOf(permisoId)
+
+  if (indice > -1) {
+    // Si el permiso ya existe, lo removemos
+    usuario.permisos.splice(indice, 1)
+  } else {
+    // Si el permiso no existe, lo agregamos
+    // Los administradores ('*') no necesitan permisos específicos
+    if (usuario.rol !== 'admin') {
+      usuario.permisos.push(permisoId)
+    }
+  }
+}
+
+/**
+ * Guarda los cambios de permisos en el backend
+ * En una aplicación real, aquí enviaría los datos al servidor
+ */
+async function guardarPermisos() {
+  guardando.value = true
+  mensaje.value = ''
+  tipoMensaje.value = ''
+
+  try {
+    // Simulamos una llamada al API (en producción sería algo como:)
+    // await api.actualizarPermisosUsuario(usuarioSeleccionado.value, permisosActualizados)
+
+    // Obtener el usuario actualizado
+    const usuarioActualizado = usuarios.value.find(u => u.id === usuarioSeleccionado.value)
+
+    // En una aplicación real, aquí guardaríamos en el backend
+    // Por ahora, solo actualizamos localmente y mostramos mensaje
+    await new Promise(resolve => setTimeout(resolve, 1500)) // Simulamos latencia
+
+    mensaje.value = `Permisos actualizados correctamente para ${usuarioActualizado.nombre}`
+    tipoMensaje.value = 'exito'
+
+    // También actualizamos el store si el usuario editado es el actual
+    if (usuarioStore.usuario.id === usuarioActualizado.id) {
+      usuarioStore.usuario.permisos = usuarioActualizado.permisos
+    }
+
+  } catch (error) {
+    console.error('Error al guardar permisos:', error)
+    mensaje.value = 'Error al guardar los permisos. Por favor inténtalo nuevamente.'
+    tipoMensaje.value = 'error'
+  } finally {
+    guardando.value = false
+  }
+}
+
+/**
+ * Computed para obtener los permisos actuales del usuario seleccionado
+ * Útil para mostrar información adicional o validaciones
+ */
+const permisosActual = computed(() => {
+  const usuario = usuarios.value.find(u => u.id === usuarioSeleccionado.value)
+  return usuario ? usuario.permisos : []
+})
+
+/**
+ * Función para verificar si un usuario tiene un permiso específico
+ * Esta función sería utilizada en otros componentes para restringir acceso
+ * @param {string} permisoId - ID del permiso a verificar
+ * @returns {boolean} - True si el usuario tiene el permiso
+ */
+function usuarioTienePermiso(usuarioId, permisoId) {
+  const usuario = usuarios.value.find(u => u.id === usuarioId)
+  if (!usuario) return false
+
+  // Los administradores tienen todos los permisos
+  if (usuario.rol === 'admin' || usuario.permisos.includes('*')) return true
+
+  // Verificamos si el permiso específico está en la lista
+  return usuario.permisos.includes(permisoId)
+}
+
+const esAdmin = computed(() => {
+  console.log('rol:', usuarioStore.rol)
+  return usuarioStore.rol === 'administrador'
+})
 
 const cancelar = () => {
   perfil.nombre    = 'Ricardo Alcaraz'
@@ -431,6 +708,7 @@ const guardarCambios = () => {
   max-width: 1200px;
   justify-content: center;
   margin: 0 auto;
+  align-items: start;
 }
 
 /* ── CARDS ── */
@@ -1005,6 +1283,7 @@ const guardarCambios = () => {
     grid-column: 1 / -1;
     width: 100%;
     max-width: 400px;
+    align-self: start;
   }
 }
 
@@ -1014,5 +1293,311 @@ const guardarCambios = () => {
   .page-title { font-size: 16px; }
   input, textarea { font-size: 11px; padding: 6px; }
   .btn-primary, .btn-cancelar { padding: 8px 12px; font-size: 11px; }
+}
+
+/* ========================================================================
+   ESTILOS PARA LA GESTIÓN DE PERMISOS
+   ======================================================================== */
+
+/* CONTENEDOR PRINCIPAL DE PERMISOS */
+.permiso-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* SECCIÓN DE SELECCIÓN DE USUARIO */
+.permiso-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.permiso-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--txt-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.permiso-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--borde);
+  background: var(--bg-input);
+  font-size: 13px;
+  color: var(--txt-normal);
+  font-family: inherit;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.permiso-select:focus {
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+}
+
+.permiso-select::-ms-expand {
+  display: none; /* Ocultar flecha en IE */
+}
+
+/* LISTA DE PERMISOS */
+.permiso-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.permiso-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg-input);
+  border-radius: 10px;
+  border: 1px solid var(--borde);
+  transition: all 0.2s ease;
+}
+
+.permiso-item:hover {
+  background: var(--bg-card);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* INFORMACIÓN DEL PERMISO */
+.permiso-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0; /* Para que funcione correctamente en flex */
+}
+
+.permiso-icono {
+  font-size: 20px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.permiso-nombre {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--txt-titulo);
+  margin-bottom: 2px;
+}
+
+.permiso-descripcion {
+  font-size: 12px;
+  color: var(--txt-suave);
+  line-height: 1.4;
+}
+
+/* TOGGLE SWITCH PERSONALIZADO */
+.permiso-toggle {
+  position: relative;
+  width: 50px;
+  height: 26px;
+}
+
+.permiso-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.permiso-toggle label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--toggle-off);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.permiso-toggle label::after {
+  position: absolute;
+  content: "";
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: var(--thumb);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.permiso-toggle input[type="checkbox"]:checked + label {
+  background: var(--toggle-on);
+}
+
+.permiso-toggle input[type="checkbox"]:checked + label::after {
+  transform: translateX(24px);
+}
+
+/* BOTÓN DE GUARDAR PERMISOS */
+.btn-permisos {
+  width: 100%;
+  max-width: 300px;
+  padding: 12px 20px;
+  background: var(--azul-dark);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-permisos:hover:not(:disabled) {
+  background: #163d5e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(30, 77, 123, 0.2);
+}
+
+.btn-permisos:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* MENSAJES DE OPERACIÓN */
+.mensaje-operacion {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mensaje-operacion.exito {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.mensaje-operacion.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* ICONOS EN LOS MENSAJES */
+.mensaje-operacion::before {
+  font-size: 16px;
+}
+
+.mensaje-operacion.exito::before {
+  content: "✅";
+}
+
+.mensaje-operacion.error::before {
+  content: "❌";
+}
+
+/* BOTÓN DE CANCELAR PERMISOS */
+.btn-cancelar-permisos {
+  background: transparent;
+  color: var(--txt-suave);
+  border: 1.5px solid var(--borde);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  width: 100%;
+  max-width: 300px;
+}
+
+.btn-cancelar-permisos:hover {
+  color: var(--txt-titulo);
+  border-color: var(--txt-normal);
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  .permiso-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .permiso-toggle {
+    align-self: flex-start;
+    margin-top: 8px;
+  }
+
+  .btn-permisos {
+    width: 100%;
+    padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .permiso-label {
+    font-size: 11px;
+  }
+
+  .permiso-select {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .permiso-item {
+    padding: 12px;
+  }
+
+  .permiso-nombre {
+    font-size: 13px;
+  }
+
+  .permiso-descripcion {
+    font-size: 11px;
+  }
+
+  .permiso-toggle {
+    width: 45px;
+    height: 24px;
+  }
+
+  .permiso-toggle label::after {
+    width: 20px;
+    height: 20px;
+    top: 2px;
+    left: 2px;
+  }
+
+  .permiso-toggle input[type="checkbox"]:checked + label::after {
+    transform: translateX(21px);
+  }
+
+  .btn-permisos {
+    padding: 12px;
+    font-size: 12px;
+  }
 }
 </style>
