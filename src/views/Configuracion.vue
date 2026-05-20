@@ -472,12 +472,6 @@ const permisosDisponibles = ref([
     icono: '👥',
     descripcion: 'Permite crear, modificar y eliminar otros usuarios'
   },
-  {
-    id: 'configurar_sistema',
-    nombre: 'Configurar Sistema',
-    icono: '⚙️',
-    descripcion: 'Permite acceder a la configuración general del sistema'
-  }
 ])
 
 // Estado para manejar el proceso de guardado
