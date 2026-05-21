@@ -11,6 +11,7 @@
       <header class="topbar">
         <div class="topbar-right">
           <Notificaciones />
+          <AIBot />
           <div class="avatar-btn">
             <img :src="usuarioStore.fotoPerfil" class="avatar-img" />
           </div>
@@ -235,6 +236,7 @@ import { ref, computed } from 'vue'
 import { useTemaStore } from '../stores/tema'
 import { useUsuarioStore } from '../stores/usuario'
 import Notificaciones from "../components/Notificaciones.vue"
+import AIBot from "../components/AIBot.vue"
 
 const temaStore = useTemaStore()
 const usuarioStore = useUsuarioStore()
