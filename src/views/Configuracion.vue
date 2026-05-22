@@ -183,7 +183,7 @@
           </div>
 
           <!-- GESTIÓN DE PERMISOS -->
-          <div v-if="esAdmin" class="config-card">
+          <div v-if="puede('gestionar_usuarios')" class="config-card">
             <div v-if="!mostrarPermisos" class="seg-btn" @click="mostrarPermisos = true">
               <div class="seg-izquierda">
                 <div class="seg-icono">
@@ -222,7 +222,7 @@
                     class="permiso-item"
                   >
                     <div class="permiso-info">
-                      <span class="permiso-icono">{{ permiso.icono }}</span>
+                      <img :src="permiso.icono" :alt="permiso.nombre" class="permiso-icono">
                       <div>
                         <div class="permiso-nombre">{{ permiso.nombre }}</div>
                         <div class="permiso-descripcion">{{ permiso.descripcion }}</div>
@@ -432,46 +432,53 @@ const usuarios = ref([
 ])
 
 // Usuario actualmente seleccionado para editar permisos
-const usuarioSeleccionado = ref(usuarios.value[0])
+const usuarioSeleccionado = ref(usuarios.value[0].id)
 
 // Permisos disponibles que se pueden otorgar
 const permisosDisponibles = ref([
   {
     id: 'crear_producto',
     nombre: 'Crear Productos',
-    icono: '➕',
+    icono: '/images/images-config/add.png',
     descripcion: 'Permite agregar nuevos productos al inventario'
   },
   {
     id: 'editar_producto',
     nombre: 'Editar Productos',
-    icono: '✏️',
+    icono: '/images/images-config/editc.png',
     descripcion: 'Permite modificar productos existentes'
   },
   {
     id: 'eliminar_producto',
     nombre: 'Eliminar Productos',
-    icono: '🗑️',
+    icono: '/images/images-config/delete.png',
     descripcion: 'Permite eliminar productos del inventario'
   },
   {
     id: 'crear_lote',
     nombre: 'Crear Lotes',
-    icono: '📦',
+    icono: '/images/images-config/lots.png',
     descripcion: 'Permite registrar nuevos lotes de productos'
   },
-  {
-    id: 'ver_reportes',
-    nombre: 'Ver Reportes',
-    icono: '📊',
-    descripcion: 'Permite acceder y generar reportes de inventario'
-  },
+
   {
     id: 'gestionar_usuarios',
     nombre: 'Gestionar Usuarios',
-    icono: '👥',
+    icono: '/images/images-config/users.png',
     descripcion: 'Permite crear, modificar y eliminar otros usuarios'
   },
+  {
+    id: 'editar_producto',
+    nombre: 'Editar Productos',
+    icono: '/images/images-config/editc.png',
+    descripcion: 'Permite modificar productos y lotes existentes'
+  },
+  {
+    id: 'eliminar_producto',
+    nombre: 'Eliminar Productos',
+    icono: '/images/images-config/delete.png',
+    descripcion: 'Permite eliminar productos y lotes del sistema'
+  }
 ])
 
 // Estado para manejar el proceso de guardado
@@ -503,21 +510,14 @@ function cargarPermisosUsuario() {
  * @param {string} permisoId - ID del permiso a activar/desactivar
  */
 function togglePermiso(permisoId) {
-  const usuario = usuarios.value.find(u => u.id === usuarioSeleccionado.value)
-
+  const usuario = usuarios.value.find(u => u.id === Number(usuarioSeleccionado.value))
   if (!usuario) return
 
   const indice = usuario.permisos.indexOf(permisoId)
-
   if (indice > -1) {
-    // Si el permiso ya existe, lo removemos
     usuario.permisos.splice(indice, 1)
   } else {
-    // Si el permiso no existe, lo agregamos
-    // Los administradores ('*') no necesitan permisos específicos
-    if (usuario.rol !== 'admin') {
-      usuario.permisos.push(permisoId)
-    }
+    usuario.permisos.push(permisoId)
   }
 }
 
@@ -545,8 +545,8 @@ async function guardarPermisos() {
     tipoMensaje.value = 'exito'
 
     // También actualizamos el store si el usuario editado es el actual
-    if (usuarioStore.usuario.id === usuarioActualizado.id) {
-      usuarioStore.usuario.permisos = usuarioActualizado.permisos
+    if (usuarioStore.nombre === usuarioActualizado.nombre) {
+       usuarioStore.permisos = [...usuarioActualizado.permisos]
     }
 
   } catch (error) {
@@ -563,7 +563,7 @@ async function guardarPermisos() {
  * Útil para mostrar información adicional o validaciones
  */
 const permisosActual = computed(() => {
-  const usuario = usuarios.value.find(u => u.id === usuarioSeleccionado.value)
+  const usuario = usuarios.value.find(u => u.id === Number(usuarioSeleccionado.value))
   return usuario ? usuario.permisos : []
 })
 
@@ -573,19 +573,16 @@ const permisosActual = computed(() => {
  * @param {string} permisoId - ID del permiso a verificar
  * @returns {boolean} - True si el usuario tiene el permiso
  */
-function usuarioTienePermiso(usuarioId, permisoId) {
-  const usuario = usuarios.value.find(u => u.id === usuarioId)
-  if (!usuario) return false
-
-  // Los administradores tienen todos los permisos
-  if (usuario.rol === 'admin' || usuario.permisos.includes('*')) return true
-
-  // Verificamos si el permiso específico está en la lista
-  return usuario.permisos.includes(permisoId)
+const puede = (permisoId) => {
+  // El administrador global siempre tiene permiso
+  if (usuarioStore.rol === 'administrador') return true
+  
+  // Si no es admin, revisamos su lista de permisos en el store
+  const permisosUser = usuarioStore.permisos || []
+  return permisosUser.includes(permisoId)
 }
 
 const esAdmin = computed(() => {
-  console.log('rol:', usuarioStore.rol)
   return usuarioStore.rol === 'administrador'
 })
 
@@ -1376,6 +1373,7 @@ const guardarCambios = () => {
   font-size: 20px;
   width: 24px;
   height: 24px;
+  object-fit: contain;
   display: flex;
   align-items: center;
   justify-content: center;

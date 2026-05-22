@@ -27,7 +27,7 @@
             <h1>Control de Lotes</h1>
             <p>Gestiona el inventario por lotes y fechas de vencimiento</p>
           </div>
-          <button v-if="usuarioStore.rol === 'administrador'" class="btn-nuevo" @click="abrirCrearLote">
+          <button v-if="puede('crear_lote')" class="btn-nuevo" @click="abrirCrearLote">
             + Crear Lote
           </button>
         </div>
@@ -127,10 +127,10 @@
                 </td>
                 <td>
                   <div class="actions">
-                    <button v-if="usuarioStore.rol === 'administrador'" class="btn-edit" title="Editar" @click="abrirEditar(lote)">
+                    <button v-if="puede('editar_producto')" class="btn-edit" title="Editar" @click="abrirEditar(lote)">
                       <img src="/images/images-dashboard/editicon.png" style="width:16px;height:16px;object-fit:contain;" />
                     </button>
-                    <button v-if="usuarioStore.rol === 'administrador'" class="btn-del" title="Eliminar" @click="confirmarEliminar(lote)">
+                    <button v-if="puede('eliminar_producto')" class="btn-del" title="Eliminar" @click="confirmarEliminar(lote)">
                       <img src="/images/images-dashboard/delicon.png" style="width:16px;height:16px;object-fit:contain;" />
                     </button>
                   </div>
@@ -409,6 +409,12 @@ const eliminarLote = () => {
   cerrarEliminar()
 }
 
+const puede = (permiso) => {
+  if (usuarioStore.rol === 'administrador') return true
+  const permisos = usuarioStore.permisos || []
+  return permisos.includes(permiso)
+}
+
 const cerrarEliminar = () => {
   modalEliminarVisible.value = false
   loteAEliminar.value = null
@@ -620,7 +626,8 @@ const cerrarEliminar = () => {
   background: var(--bg-card);
   border-radius: 14px;
   border: 1px solid var(--borde);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
   transition: background 0.3s, border-color 0.3s;
 }
 
