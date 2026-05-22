@@ -87,8 +87,14 @@
                  <div v-if="errorStock" class="mov-error-msg">
                    ⚠ {{ errorStock }}
               </div>
-
-            <button class="mov-btn-registrar" @click="registrarMovimiento">
+            
+            <!-- El botón se deshabilita o se oculta si no tiene permiso -->
+            <button 
+              class="mov-btn-registrar" 
+              @click="registrarMovimiento"
+              :disabled="!puede('registrar_movimiento')"
+              :style="!puede('registrar_movimiento') ? 'opacity: 0.5; cursor: not-allowed;' : ''"
+            >
               Registrar Movimiento
             </button>
           </div>
@@ -297,6 +303,12 @@ const historialFiltrado = computed(() => {
     return porTipo && porCategoria && porBusqueda
   })
 })
+
+const puede = (permiso) => {
+  if (usuarioStore.rol === 'administrador') return true
+  const permisos = usuarioStore.permisos || []
+  return permisos.includes(permiso)
+}
 
 const registrarMovimiento = () => {
   errorStock.value = ''

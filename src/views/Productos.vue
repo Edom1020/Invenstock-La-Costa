@@ -19,7 +19,7 @@
             <p>Gestiona y monitorea el stock de tus productos de electrónica, hogar y comida.</p>
           </div>
           <!-- El botón de nuevo producto solo lo ven los administradores -->
-          <button v-if="usuarioStore.rol === 'administrador'" class="btn-nuevo" @click="irARegistrar">
+          <button v-if="puede('crear_producto')" class="btn-nuevo" @click="irARegistrar">
             + Nuevo Producto
           </button>
         </div>
@@ -119,10 +119,10 @@
                 <td class="price">${{ prod.precio.toFixed(2) }}</td>
                 <td>
                   <div class="actions">
-                    <button v-if="usuarioStore.rol === 'administrador'" class="btn-edit" title="Editar" @click="abrirEditar(prod)">
+                    <button v-if="puede('editar_producto')" class="btn-edit" title="Editar" @click="abrirEditar(prod)">
                       <img src="/images/images-dashboard/editicon.png" style="width:20px;height:20px;object-fit:contain;" />
                     </button>
-                    <button v-if="usuarioStore.rol === 'administrador'" class="btn-del" title="Eliminar" @click="confirmarEliminar(prod)">
+                    <button v-if="puede('eliminar_producto')" class="btn-del" title="Eliminar" @click="confirmarEliminar(prod)">
                       <img src="/images/images-dashboard/delicon.png" style="width:20px;height:20px;object-fit:contain;" />
                     </button>
                   </div>
@@ -357,6 +357,12 @@ const eliminar = () => {
   // Cuando tengas backend: await fetch(`/api/productos/${productoAEliminar.value.id}`, { method: 'DELETE' })
   modalEliminarVisible.value = false
   productoAEliminar.value = null
+}
+
+const puede = (permiso) => {
+  if (usuarioStore.rol === 'administrador') return true
+  const permisos = usuarioStore.permisos || []
+  return permisos.includes(permiso)
 }
 
 const cancelarEliminar = () => {

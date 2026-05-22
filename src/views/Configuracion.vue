@@ -446,31 +446,6 @@ const permisosDisponibles = ref([
     id: 'editar_producto',
     nombre: 'Editar Productos',
     icono: '/images/images-config/editc.png',
-    descripcion: 'Permite modificar productos existentes'
-  },
-  {
-    id: 'eliminar_producto',
-    nombre: 'Eliminar Productos',
-    icono: '/images/images-config/delete.png',
-    descripcion: 'Permite eliminar productos del inventario'
-  },
-  {
-    id: 'crear_lote',
-    nombre: 'Crear Lotes',
-    icono: '/images/images-config/lots.png',
-    descripcion: 'Permite registrar nuevos lotes de productos'
-  },
-
-  {
-    id: 'gestionar_usuarios',
-    nombre: 'Gestionar Usuarios',
-    icono: '/images/images-config/users.png',
-    descripcion: 'Permite crear, modificar y eliminar otros usuarios'
-  },
-  {
-    id: 'editar_producto',
-    nombre: 'Editar Productos',
-    icono: '/images/images-config/editc.png',
     descripcion: 'Permite modificar productos y lotes existentes'
   },
   {
@@ -478,6 +453,24 @@ const permisosDisponibles = ref([
     nombre: 'Eliminar Productos',
     icono: '/images/images-config/delete.png',
     descripcion: 'Permite eliminar productos y lotes del sistema'
+  },
+  {
+    id: 'crear_lote',
+    nombre: 'Crear Lotes',
+    icono: '/images/images-config/lots.png',
+    descripcion: 'Permite registrar nuevos lotes de productos'
+  },
+  {
+    id: 'registrar_movimiento',
+    nombre: 'Registrar Movimientos',
+    icono: '/images/images-movimientos/nuevoRegistro.png',
+    descripcion: 'Permite registrar entradas y salidas de stock manuales'
+  },
+  {
+    id: 'gestionar_usuarios',
+    nombre: 'Gestionar Usuarios',
+    icono: '/images/images-config/users.png',
+    descripcion: 'Permite crear, modificar y eliminar otros usuarios'
   }
 ])
 

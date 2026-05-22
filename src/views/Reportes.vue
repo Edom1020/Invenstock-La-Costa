@@ -167,7 +167,7 @@
                 <td class="stock-low-cell">{{ item.enStock }}</td>
                 <td class="min-cell">{{ item.minimoRequerido }}</td>
                 <td>
-                  <button class="restock-btn" @click="abrirModalReponer(item)">
+                  <button v-if="puede('registrar_movimiento')" class="restock-btn" @click="abrirModalReponer(item)">
                     Reponer
                   </button>
                 </td>
@@ -246,6 +246,12 @@ const alertasFiltradas = computed(() => {
 const limpiarFiltros = () => {
   filtroCategoria.value = 'Todas'
   filtroEstado.value = 'Todos'
+}
+
+const puede = (permiso) => {
+  if (usuarioStore.rol === 'administrador') return true
+  const permisos = usuarioStore.permisos || []
+  return permisos.includes(permiso)
 }
 
 // ── ICONO POR CATEGORIA ──
