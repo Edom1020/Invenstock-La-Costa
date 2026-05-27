@@ -47,68 +47,26 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { useNotificacionesStore } from '../stores/notificaciones'
 
+const notificacionesStore = useNotificacionesStore()
 const abierto = ref(false)
 
 const toggleDropdown = () => {
   abierto.value = !abierto.value
 }
 
-const notificaciones = ref([
-  {
-    id: 1,
-    tipo: 'alerta',
-    titulo: 'Stock bajo detectado',
-    descripcion: 'Headphones Studio X tiene solo 2 unidades.',
-    tiempo: 'Hace 5 min',
-    leida: false
-  },
-  {
-    id: 2,
-    tipo: 'alerta',
-    titulo: 'Stock bajo detectado',
-    descripcion: 'Tablet Pro 12.9" tiene solo 4 unidades.',
-    tiempo: 'Hace 20 min',
-    leida: false
-  },
-  {
-    id: 3,
-    tipo: 'entrada',
-    titulo: 'Nueva entrada registrada',
-    descripcion: 'MacBook Pro M3 — 12 unidades ingresadas.',
-    tiempo: 'Hace 1 hora',
-    leida: false
-  },
-  {
-    id: 4,
-    tipo: 'salida',
-    titulo: 'Salida registrada',
-    descripcion: 'Sofá grande — 4 unidades despachadas.',
-    tiempo: 'Hace 2 horas',
-    leida: true
-  },
-  {
-    id: 5,
-    tipo: 'sistema',
-    titulo: 'Reporte semanal listo',
-    descripcion: 'El resumen de inventario del lunes está disponible.',
-    tiempo: 'Ayer',
-    leida: true
-  },
-])
-
-const noLeidas = computed(() =>
-  notificaciones.value.filter(n => !n.leida).length
-)
+// Usa el store en lugar de refs locales
+const notificaciones = notificacionesStore.notificaciones
+const noLeidas       = notificacionesStore.noLeidas
 
 const marcarLeida = (id) => {
-  const notif = notificaciones.value.find(n => n.id === id)
-  if (notif) notif.leida = true
+  notificacionesStore.marcarLeida(id)
 }
 
 const marcarTodas = () => {
-  notificaciones.value.forEach(n => n.leida = true)
+  notificacionesStore.marcarTodas()
 }
 
 const getIcono = (tipo) => {
@@ -121,23 +79,11 @@ const getIcono = (tipo) => {
   return iconos[tipo] || '/images/images-dashboard/warningtriangular.png'
 }
 
-// ── FUNCIÓN PARA AGREGAR NOTIFICACIONES PROGRAMÁTICAMENTE ──
 const agregarNotificacion = (titulo, descripcion, tipo = 'entrada') => {
-  const nuevoId = Math.max(...notificaciones.value.map(n => n.id), 0) + 1
-  notificaciones.value.unshift({
-    id: nuevoId,
-    tipo,
-    titulo,
-    descripcion,
-    tiempo: 'Hace unos segundos',
-    leida: false
-  })
+  notificacionesStore.agregarNotificacion(titulo, descripcion, tipo)
 }
 
-// Exponer la función para que otros componentes puedan usarla
-defineExpose({
-  agregarNotificacion
-})
+defineExpose({ agregarNotificacion })
 </script>
 
 <style>

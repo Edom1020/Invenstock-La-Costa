@@ -82,6 +82,7 @@
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { useUsuarioStore } from '../stores/usuario'
+import { useNotificacionesStore } from '../stores/notificaciones'
 
 // ── Props: recibimos el tema desde la vista padre ──
 // Si no se pasa ningún valor, el tema por defecto es 'claro'
@@ -95,6 +96,9 @@ const props = defineProps({
 const router = useRouter()
 const sidebarOpen = ref(false)
 const usuarioStore = useUsuarioStore()
+const notificacionesStore = useNotificacionesStore()
+
+
 
 // Toggle sidebar en móvil
 const toggleSidebar = () => {
@@ -104,6 +108,7 @@ const toggleSidebar = () => {
 // Redirige al usuario a la pantalla de login al cerrar sesión
 const cerrarSesion = () => {
   sidebarOpen.value = false
+  notificacionesStore.desconectar()
   usuarioStore.cerrarSesion()
   router.push('/login')
 }

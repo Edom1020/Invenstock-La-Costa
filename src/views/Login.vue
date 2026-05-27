@@ -50,8 +50,13 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUsuarioStore } from '../stores/usuario'
+import { useNotificacionesStore } from '../stores/notificaciones'
+
 
 const router = useRouter();
+const usuarioStore = useUsuarioStore();
+const notificacionesStore = useNotificacionesStore();
+
 const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
@@ -74,16 +79,15 @@ const iniciarSesion = () => {
   const userRole = email.value === 'admin@test.com' ? 'administrador' : 'usuario';
 
   // llama el método del store para iniciar sesión y redirige al dashboard si es exitoso
-  const usuarioStore = useUsuarioStore(); 
   const success = usuarioStore.iniciarSesion(email.value, password.value, userRole);
 
   if (success) {
+    notificacionesStore.conectar()
     router.push("/dashboard");
   } else {
     alert("Error al iniciar sesión");
   }
 }
-
 
 </script>
 
