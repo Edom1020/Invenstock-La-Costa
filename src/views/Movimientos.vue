@@ -44,11 +44,13 @@
             </div>
 
             <div class="mov-field-label">Producto</div>
-            <select v-model="form.producto" class="mov-select">
+            <select v-model="form.productoId" class="mov-select">
               <option value="">Seleccionar producto...</option>
-              <option v-for="p in productos" :key="p.id" :value="p.id">
-                {{ p.nombre }}
-              </option>
+              <optgroup v-for="cat in productosStore.categorias" :key="cat" :label="cat.charAt(0).toUpperCase() + cat.slice(1)">
+                <option v-for="p in productosStore.productos.filter(prod => prod.categoria === cat)" :key="p.id" :value="p.id">
+                  {{ p.nombre }}
+                </option>
+              </optgroup>
             </select>
 
             <div class="mov-two-col">
@@ -133,12 +135,12 @@
                      <div class="filtros-titulo">Categoría</div>
                      <div class="filtros-opciones">
                        <span
-                         v-for="cat in ['Todas', 'electronica', 'hogar', 'comida']"
+                         v-for="cat in categoriasConTodas"
                          :key="cat"
                          :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
                          @click="filtroCategoria = cat"
                        >
-                         {{ cat === 'electronica' ? 'Electrónica' : cat === 'hogar' ? 'Hogar' : cat === 'comida' ? 'Comida' : cat }}
+                         {{ cat === 'Todas' ? 'Todas' : cat.charAt(0).toUpperCase() + cat.slice(1) }}
                        </span>
                      </div>
                    </div>
@@ -180,7 +182,8 @@
             </table>
 
             <div class="mov-hist-footer">
-              <span>Mostrando los últimos 10 registros de un total de 452</span>
+              <span v-if="historialFiltrado.length">Mostrando los últimos {{ historialFiltrado.length }} registros de un total de {{ productosStore.historialMovimientos.length }}</span>
+              <span v-else>No hay movimientos que coincidan con los filtros</span>
               <div class="mov-pag-arrows">
                 <button class="mov-pag-arrow">‹</button>
                 <button class="mov-pag-arrow">›</button>
@@ -198,7 +201,7 @@
             </div>
             <div>
               <div class="mov-stat-label">Total Entradas Mes</div>
-              <div class="mov-stat-value">4,520</div>
+              <div class="mov-stat-value">{{ totalEntradasMes.toLocaleString() }}</div>
             </div>
           </div>
           <div class="mov-stat-card">
@@ -208,7 +211,7 @@
             </div>
             <div>
               <div class="mov-stat-label">Total Salidas Mes</div>
-              <div class="mov-stat-value">1,895</div>
+              <div class="mov-stat-value">{{ totalSalidasMes.toLocaleString() }}</div>
             </div>
           </div>
           <div class="mov-stat-card">
@@ -218,7 +221,7 @@
             </div>
             <div>
               <div class="mov-stat-label">Stock Neto Actual</div>
-              <div class="mov-stat-value">12,430</div>
+              <div class="mov-stat-value">{{ totalStockNeto }}</div>
             </div>
           </div>
         </div>
@@ -235,9 +238,12 @@ import Topbar from "../components/Topbar.vue";
 
 
 
-// Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
+
+//PRODUCTOS STORE
+import { useProductosStore } from '../stores/productos'
+const productosStore = useProductosStore()
 
 //DARK MODE o modo oscuro
 import { useTemaStore } from '../stores/tema'
@@ -247,24 +253,16 @@ const busqueda = ref('')
 const tipoActivo = ref('entrada')
 
 const form = ref({
-  producto: '',
+  productoId: '',
   cantidad: '',
-  fecha: '',
+  fecha: new Date().toISOString().split('T')[0],
   notas: '',
 })
-
-// Datos de ejemplo para productos e historial, reemplazar con fetch a backend luego //
-const productos = ref([
-  { id: 1, nombre: 'MacBook Pro M3',        categoria: 'electronica', stock: 5},
-  { id: 2, nombre: 'Sofá grande',            categoria: 'hogar', stock: 3},
-  { id: 3, nombre: 'Caja de manzanas x40',  categoria: 'comida', stock: 120},
-  { id: 4, nombre: 'Headphones Studio X',   categoria: 'electronica', stock: 12},
-])
 
 const errorStock = ref('')
 
 const productoSeleccionado = computed(() =>
-  productos.value.find(p => p.id === form.value.producto) || null
+  productosStore.productos.find(p => p.id === form.value.productoId) || null
 )
 
 
@@ -277,13 +275,6 @@ const getCatIcon = (categoria) => {
   return icons[categoria] || '/images/images-dashboard/macbookicon.png'
 }
 
-const historial = ref([
-  { id: 1, fechaFormato: '14 Mar, 2024', producto: 'MacBook Pro M3',       categoria: 'electronica', tipo: 'Entrada', cantidad: 1250 },
-  { id: 2, fechaFormato: '14 Mar, 2024', producto: 'Sofá Grande',           categoria: 'hogar',       tipo: 'Salida',  cantidad: 340  },
-  { id: 3, fechaFormato: '13 Mar, 2024', producto: 'Caja Manzanas x40',    categoria: 'comida',      tipo: 'Entrada', cantidad: 500  },
-  { id: 4, fechaFormato: '12 Mar, 2024', producto: 'Headphones Studio X',  categoria: 'electronica', tipo: 'Salida',  cantidad: 120  },
-])
-
 const mostrarFiltros = ref(false)
 const filtroTipo = ref('Todos')
 const filtroCategoria = ref('Todas')
@@ -293,15 +284,38 @@ const limpiarFiltros = () => {
   filtroCategoria.value = 'Todas'
 }
 
+const totalStockNeto = computed(() => {
+  return productosStore.productos.reduce((acc, p) => acc + p.stock, 0)
+})
 
-// Para filtrar los movimientos según el término de búsqueda ingresado //
+const categoriasConTodas = computed(() => {
+  return ['Todas', ...productosStore.categorias]
+})
+
 const historialFiltrado = computed(() => {
-  return historial.value.filter(m => {
+  return productosStore.historialMovimientos.filter(m => {
     const porTipo = filtroTipo.value === 'Todos' || m.tipo === filtroTipo.value
     const porCategoria = filtroCategoria.value === 'Todas' || m.categoria === filtroCategoria.value
     const porBusqueda = m.producto.toLowerCase().includes(busqueda.value.toLowerCase())
     return porTipo && porCategoria && porBusqueda
   })
+})
+
+// KPIs de Movimientos
+const totalEntradasMes = computed(() => {
+  const hoy = new Date()
+  const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+  return productosStore.historialMovimientos
+    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Entrada')
+    .reduce((sum, mov) => sum + mov.cantidad, 0)
+})
+
+const totalSalidasMes = computed(() => {
+  const hoy = new Date()
+  const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+  return productosStore.historialMovimientos
+    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Salida')
+    .reduce((sum, mov) => sum + mov.cantidad, 0)
 })
 
 const puede = (permiso) => {
@@ -313,7 +327,7 @@ const puede = (permiso) => {
 const registrarMovimiento = () => {
   errorStock.value = ''
 
-  if (!form.value.producto) {
+  if (!form.value.productoId) {
     errorStock.value = 'Selecciona un producto.'
     return
   }
@@ -322,21 +336,31 @@ const registrarMovimiento = () => {
     return
   }
 
-  if (tipoActivo.value === 'salida') {
-    const prod = productoSeleccionado.value
-    if (form.value.cantidad > prod.stock) {
-      errorStock.value = `Stock insuficiente. Solo hay ${prod.stock} unidades disponibles de "${prod.nombre}".`
+  const cantidadNum = Number(form.value.cantidad)
+
+  if (tipoActivo.value === 'salida' && productoSeleccionado.value) {
+    if (cantidadNum > productoSeleccionado.value.stock) {
+      errorStock.value = `Stock insuficiente. Solo hay ${productoSeleccionado.value.stock} unidades disponibles de "${productoSeleccionado.value.nombre}".`
       return
     }
-    // Descuenta el stock localmente (hasta conectar backend)
-    prod.stock -= Number(form.value.cantidad)
   }
 
-  // Cuando tengas backend:
-  // await fetch('/api/movimientos', { method: 'POST', ... })
+  // Llama a la acción del store para registrar el movimiento
+  productosStore.registrarMovimiento({
+    productoId: form.value.productoId,
+    cantidad: cantidadNum,
+    fecha: form.value.fecha,
+    notas: form.value.notas,
+    tipo: tipoActivo.value // 'entrada' o 'salida'
+  })
 
-  console.log('Registrar:', { ...form.value, tipo: tipoActivo.value })
-  form.value = { producto: '', cantidad: '', fecha: '', notas: '' }
+  // Limpiar formulario
+  form.value = {
+    productoId: '',
+    cantidad: '',
+    fecha: new Date().toISOString().split('T')[0],
+    notas: ''
+  }
   errorStock.value = ''
 }
 </script>

@@ -20,7 +20,7 @@
           <div class="kpi-card">
             <div class="kpi-left">
               <div class="kpi-label">TOTAL PRODUCTOS</div>
-              <div class="kpi-value">120</div>
+              <div class="kpi-value">{{ totalProductos }}</div>
             </div>
             <div class="kpi-icon-wrap blue">
               <img src="/images/images-dashboard/cajadecuadrotproductos.png" class="kpi-img" />
@@ -30,8 +30,8 @@
           <div class="kpi-card">
             <div class="kpi-left">
               <div class="kpi-label">BAJO STOCK</div>
-              <div class="kpi-value danger">5</div>
-              <div class="kpi-alert">Acción inmediata</div>
+              <div class="kpi-value danger">{{ bajoStock }}</div>
+              <div v-if="bajoStock > 0" class="kpi-alert">Acción inmediata</div>
             </div>
             <div class="kpi-icon-wrap red">
               <img src="/images/images-dashboard/warningtriangular.png" class="kpi-img" />
@@ -41,9 +41,9 @@
           <div class="kpi-card">
             <div class="kpi-left">
               <div class="kpi-label">MOVIMIENTOS HOY</div>
-              <div class="kpi-value">24</div>
+              <div class="kpi-value">{{ movimientosHoy.total }}</div>
               <div class="kpi-sub">
-                🕐 12 entraron / 12 salieron
+                🕐 {{ movimientosHoy.entradas }} entraron / {{ movimientosHoy.salidas }} salieron
               </div>
             </div>
             <div class="kpi-icon-wrap teal">
@@ -79,12 +79,12 @@
                   <div class="filtros-titulo">Categoría</div>
                   <div class="filtros-opciones">
                     <span
-                      v-for="cat in ['Todas', 'electronica', 'hogar', 'comida']"
+                      v-for="cat in categoriasConTodas"
                       :key="cat"
                       :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
                       @click="filtroCategoria = cat"
                     >
-                      {{ cat === 'electronica' ? 'Electrónica' : cat === 'hogar' ? 'Hogar' : cat === 'comida' ? 'Comida' : cat }}
+                      {{ cat === 'Todas' ? 'Todas' : cat.charAt(0).toUpperCase() + cat.slice(1) }}
                     </span>
                   </div>
                 </div>
@@ -102,7 +102,7 @@
             </thead>
             <tbody>
               <tr v-for="mov in movimientosFiltrados" :key="mov.id">
-                <td class="fecha-cell">{{ mov.fecha }}</td>
+                <td class="fecha-cell">{{ mov.fechaFormato }}</td>
                 <td>
                   <div class="prod-cell">
                     <div :class="['cat-icon', mov.categoria]">
@@ -143,12 +143,37 @@ const temaStore = useTemaStore()
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
 
+import { useProductosStore } from '../stores/productos'
+const productosStore = useProductosStore()
+
 // Para el buscador de productos en el topbar //
 const busqueda = ref('')
 
+const totalProductos = computed(() => productosStore.productos.length)
+
+const bajoStock = computed(() => {
+  return productosStore.productos.filter(p => p.stock < 10).length
+})
+
+const movimientosHoy = computed(() => {
+  const hoy = new Date().toISOString().split('T')[0]
+  const hoyMovs = productosStore.historialMovimientos.filter(m => m.fecha === hoy)
+  const entradas = hoyMovs.filter(m => m.tipo === 'Entrada').length
+  const salidas = hoyMovs.filter(m => m.tipo === 'Salida').length
+  return {
+    total: hoyMovs.length,
+    entradas,
+    salidas
+  }
+})
+
+const categoriasConTodas = computed(() => {
+  return ['Todas', ...productosStore.categorias]
+})
+
 // Para filtrar los movimientos según el término de búsqueda ingresado //
 const movimientosFiltrados = computed(() => {
-  return movimientos.value.filter(m => {
+  return productosStore.historialMovimientos.filter(m => {
     const porTipo = filtroTipo.value === 'Todos' || m.tipo === filtroTipo.value
     const porCategoria = filtroCategoria.value === 'Todas' || m.categoria === filtroCategoria.value
     const porBusqueda = m.producto.toLowerCase().includes(busqueda.value.toLowerCase())
@@ -166,13 +191,6 @@ const getCatIcon = (categoria) => {
   }
   return icons[categoria] || '/images/images-dashboard/laptopicon.png'
 }
-
-const movimientos = ref([
-  { id: 1, fecha: 'Ene 26, 14:30', producto: 'MacBook Pro M2',           categoria: 'electronica', tipo: 'Entrada', cantidad: 12 },
-  { id: 2, fecha: 'Feb 26, 15:00', producto: 'Sofá grande',               categoria: 'hogar',       tipo: 'Salida',  cantidad: 4  },
-  { id: 3, fecha: 'Mar 26, 12:15', producto: 'Airpods 4',                 categoria: 'electronica', tipo: 'Entrada', cantidad: 30 },
-  { id: 4, fecha: 'Abr 26, 10:00', producto: 'Caja de manzanas grande x40', categoria: 'comida',   tipo: 'Salida',  cantidad: 20 },
-])
 
 const mostrarFiltros = ref(false)
 const filtroTipo = ref('Todos')
@@ -487,7 +505,7 @@ tbody tr td {
 
 .qty {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--txt-titulo);
 }
 
 .see-all {

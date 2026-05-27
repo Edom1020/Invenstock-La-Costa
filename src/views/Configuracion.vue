@@ -348,7 +348,7 @@ const usuarioStore = useUsuarioStore()
 
 // Función para cambiar la foto de perfil, actualiza el store de usuario //
 const cambiarFoto = (e) => {
-  const file = e.target.files[0]
+  const file = e.target.files?.[0]
   if (file) {
     const url = URL.createObjectURL(file)
     usuarioStore.cambiarFotoPerfil(url)  
@@ -364,7 +364,10 @@ const perfil = reactive({
   ubicacion: 'Sede La Costa'
 })
 
-const inventario = reactive({ stockMinimo: 15, unidadMedida: 'u' })
+// Usar un store para la configuración de inventario si queremos que persista
+import { useConfiguracionStore } from '../stores/configuracion'
+const configuracionStore = useConfiguracionStore()
+const inventario = configuracionStore.inventario
 
 import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
@@ -390,10 +393,6 @@ const cambiarContraseña = () => {
   password.actual = ''
   password.nueva = ''
   password.confirmar = ''
-}
-
-const abrirCambioContraseña = () => {
-  alert('Cambio de contraseña próximamente.')
 }
 
 //Mostrar contraseña en formulario de seguridad
@@ -580,12 +579,12 @@ const esAdmin = computed(() => {
 })
 
 const cancelar = () => {
-  perfil.nombre    = 'Ricardo Alcaraz'
-  perfil.correo    = 'r.alcaraz@invenstock.com'
-  perfil.cargo     = 'Administrador de Inventario'
-  perfil.ubicacion = 'Sede La Costa'
-  inventario.stockMinimo  = 15
-  inventario.unidadMedida = 'u'
+  // Revertir a los valores originales o del store
+  Object.assign(perfil, usuarioStore.perfil) // Asumiendo que el store de usuario guarda el perfil
+  // Revertir configuración de inventario
+  Object.assign(inventario, configuracionStore.inventario)
+  // Revertir notificaciones
+  // Object.assign(notif, configuracionStore.notificaciones) // Si tuvieras un store para notificaciones
   modoEdicion.value = false
 }
 

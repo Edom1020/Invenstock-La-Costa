@@ -13,7 +13,7 @@
       <div class="notif-dropdown-header">
         <span class="notif-dropdown-titulo">Notificaciones</span>
         <span class="notif-marcar-todo" @click="marcarTodas">Marcar todas como leídas</span>
-      </div>
+      </div> 
 
       <div class="notif-lista">
         <div
@@ -34,14 +34,24 @@
         </div>
       </div>
 
-      <div class="notif-dropdown-footer">
+      <div class="notif-dropdown-footer" @click="abrirModalTodasNotificaciones">
         Ver todas las notificaciones
       </div>
 
     </div>
 
     <!-- OVERLAY para cerrar al hacer clic afuera -->
-    <div v-if="abierto" class="notif-overlay" @click="abierto = false"></div>
+    <div v-if="abierto && !mostrarTodasNotificaciones" class="notif-overlay" @click="abierto = false"></div>
+
+    <!-- MODAL DE TODAS LAS NOTIFICACIONES -->
+    <ModalTodasNotificaciones
+      v-if="mostrarTodasNotificaciones"
+      :notificaciones="notificaciones"
+      :tema="temaActual"
+      @cerrar="mostrarTodasNotificaciones = false"
+      @marcar-leida="marcarLeida"
+      @marcar-todas="marcarTodas"
+    />
 
   </div>
 </template>
@@ -49,9 +59,16 @@
 <script setup>
 import { ref } from 'vue'
 import { useNotificacionesStore } from '../stores/notificaciones'
+import { useTemaStore } from '../stores/tema' // Importar el store de tema
+import ModalTodasNotificaciones from './ModalTodasNotificaciones.vue' // Importar el nuevo componente modal
 
 const notificacionesStore = useNotificacionesStore()
 const abierto = ref(false)
+const mostrarTodasNotificaciones = ref(false) // Nuevo estado para el modal
+
+// Obtener el tema actual del store
+const temaStore = useTemaStore()
+const temaActual = temaStore.temaActual
 
 const toggleDropdown = () => {
   abierto.value = !abierto.value
@@ -67,6 +84,12 @@ const marcarLeida = (id) => {
 
 const marcarTodas = () => {
   notificacionesStore.marcarTodas()
+}
+
+// Función para abrir el modal de todas las notificaciones
+const abrirModalTodasNotificaciones = () => {
+  abierto.value = false // Cerrar el dropdown
+  mostrarTodasNotificaciones.value = true // Abrir el modal
 }
 
 const getIcono = (tipo) => {

@@ -57,11 +57,9 @@
                   <div class="select-wrap">
                     <select v-model="producto.categoria" class="custom-select">
                       <option value="">Seleccionar categoría...</option>
-                      <option value="herramientas">Herramientas</option>
-                      <option value="electricidad">Electricidad</option>
-                      <option value="plomeria">Plomería</option>
-                      <option value="ferreteria">Ferretería</option>
-                      <option value="otro">Otro</option>
+                      <option v-for="cat in productosStore.categorias" :key="cat" :value="cat">
+                        {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
+                      </option>
                     </select>
                     <span class="select-arrow">▾</span>
                   </div>
@@ -106,7 +104,7 @@
                   />
                 </div>
                 <div class="field-group">
-                  <label class="field-label">Precio Unitario ($)</label>
+                  <label class="field-label">Precio Unitario (COP)</label>
                   <input
                     v-model.number="producto.precio"
                     class="field-input"
@@ -127,7 +125,7 @@
 
                 <div class="field-group">
                   <label class="field-label">Stock Máximo</label>
-                  <input v-model.number="producto.stockMaximo" class="field-input field-stock-max" type="number" min="0" />
+                  <input v-model.number="producto.stockMax" class="field-input field-stock-max" type="number" min="0" />
                 </div>
               </div>
             </div>
@@ -295,6 +293,8 @@
 import { ref, reactive, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
+import { useProductosStore } from '../stores/productos' // Importar store
+
 import Topbar from "../components/Topbar.vue";
 
 import { useUsuarioStore } from '../stores/usuario'
@@ -303,6 +303,8 @@ const usuarioStore = useUsuarioStore()
 //DARK MODE o modo oscuro
 import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
+
+const productosStore = useProductosStore()
  
 const router = useRouter()
  
@@ -323,13 +325,14 @@ const producto = reactive({
   stockInicial: 0,
   precio:       0.00,
   stockMinimo:  5,
-  stockMaximo:  50
+  stockMax:     50
 })
 
 // ── Control de lotes ──
 const usaLotes = ref(false)
 const lote = reactive({
   codigo:              '',
+  fechaEntrada:        new Date().toISOString().split('T')[0], // Añadir fecha de entrada por defecto
   fechaVencimiento:   '',
   diasAlerta:         30,
   observacion:        ''
@@ -381,7 +384,7 @@ const guardarProducto = () => {
     precio:        producto.precio,
     stock:         producto.stockInicial,
     stockMinimo:   producto.stockMinimo,
-    stockMaximo:   producto.stockMaximo,
+    stockMax:      producto.stockMax,
     usaLotes:      usaLotes.value
   }
 
@@ -389,14 +392,15 @@ const guardarProducto = () => {
   if (usaLotes.value) {
     datosProducto.lote = {
       codigo:              lote.codigo,
+      fechaEntrada:        lote.fechaEntrada,
       fechaVencimiento:   lote.fechaVencimiento,
       diasAlerta:         lote.diasAlerta,
       observacion:        lote.observacion
     }
   }
 
-  // ── Aquí irá la llamada a la API ──
-  console.log('Datos a enviar al backend:', datosProducto)
+  // ── Guardar en el store global ──
+  productosStore.agregarProducto(datosProducto)
   
   // Por ahora, mostrar confirmación
   alert(`✅ Producto "${producto.nombre}" guardado correctamente.`)

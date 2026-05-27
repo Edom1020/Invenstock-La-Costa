@@ -67,20 +67,20 @@
         <!-- TARJETAS RESUMEN -->
         <div class="summary-grid">
           <div class="summary-card border-green">
-            <div class="summary-label">VALOR TOTAL STOCK</div>
-            <div class="summary-value">$42,850 <span class="up">↑12%</span></div>
+            <div class="summary-label">VALOR TOTAL INVENTARIO</div>
+            <div class="summary-value">COP {{ totalInventarioValor.toLocaleString('es-CO') }} <span :class="[porcentajeCrecimiento >= 0 ? 'up' : 'down']">{{ porcentajeCrecimiento >= 0 ? '↑' : '↓' }}{{ Math.abs(porcentajeCrecimiento).toFixed(1) }}%</span></div>
           </div>
           <div class="summary-card border-green">
             <div class="summary-label">ENTRADAS MENSUALES</div>
-            <div class="summary-value">1,240 <span class="up">↑8.4%</span></div>
+            <div class="summary-value">{{ totalEntradasMes.toLocaleString() }} <span class="up">↑8.4%</span></div>
           </div>
           <div class="summary-card border-red">
             <div class="summary-label">SALIDAS MENSUALES</div>
-            <div class="summary-value">890 <span class="down">↓2.1%</span></div>
+            <div class="summary-value">{{ totalSalidasMes.toLocaleString() }} <span class="down">↓2.1%</span></div>
           </div>
           <div class="summary-card border-blue">
             <div class="summary-label">ARTÍCULOS CRÍTICOS</div>
-            <div class="summary-value">14 <span class="alert-badge">ALERTA</span></div>
+            <div class="summary-value">{{ stockBajoCount }} <span class="alert-badge">ALERTA</span></div>
           </div>
         </div>
 
@@ -116,7 +116,7 @@
             <div class="category-list">
               <div class="category-row">
                 <span class="legend-dot dark-blue"></span>
-                <span class="category-name">Electrónica</span>
+                <span class="category-name">{{ categoriaPopular.nombre }}</span>
                 <span class="category-pct">45%</span>
               </div>
               <div class="category-row">
@@ -201,6 +201,7 @@ import Chart from 'chart.js/auto'
 import Sidebar from "../components/Sidebar.vue";
 import ModalExportarPDF from '../components/ModalExportarPDF.vue'
 import ModalReponerStock from '../components/ModalReponerStock.vue'
+import { useProductosStore } from '../stores/productos'
 import Topbar from "../components/Topbar.vue";
 
 //Modal de exportar PDF//
@@ -219,6 +220,7 @@ const temaStore = useTemaStore()
 // Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
+const productosStore = useProductosStore()
 
 const busqueda = ref('')
 
@@ -226,20 +228,71 @@ const mostrarFiltros = ref(false)
 const filtroCategoria = ref('Todas')
 const filtroEstado = ref('Todos')
 
+// KPIs del store de productos
+const productos = computed(() => productosStore.productos)
+
+const totalInventarioValor = computed(() => {
+  return productos.value.reduce((acc, p) => acc + (p.precio * p.stock), 0)
+})
+
+const valorMesAnterior = 5000000 // Simulación, en real vendría de backend
+const porcentajeCrecimiento = computed(() => {
+  if (valorMesAnterior === 0) return 0
+  return ((totalInventarioValor.value - valorMesAnterior) / valorMesAnterior) * 100
+})
+
+const totalEntradasMes = computed(() => {
+  const hoy = new Date()
+  const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+  return productosStore.historialMovimientos
+    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Entrada')
+    .reduce((sum, mov) => sum + mov.cantidad, 0)
+})
+
+const totalSalidasMes = computed(() => {
+  const hoy = new Date()
+  const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+  return productosStore.historialMovimientos
+    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Salida')
+    .reduce((sum, mov) => sum + mov.cantidad, 0)
+})
+
+const stockBajoCount = computed(() => {
+  return productos.value.filter(p => p.stock <= p.stockMinimo).length
+})
+
+const categoriaPopular = computed(() => {
+  const categoriaCounts = productos.value.reduce((acc, p) => {
+    acc[p.categoria] = (acc[p.categoria] || 0) + p.stock
+    return acc
+  }, {})
+
+  let popularCat = { nombre: 'N/A', count: 0 }
+  for (const cat in categoriaCounts) {
+    if (categoriaCounts[cat] > popularCat.count) {
+      popularCat = { nombre: cat.charAt(0).toUpperCase() + cat.slice(1), count: categoriaCounts[cat] }
+    }
+  }
+  return popularCat
+})
+
 const alertasFiltradas = computed(() => {
-  return alertasStock.value.filter(a => {
-    const porBusqueda = a.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
-                        a.categoria.toLowerCase().includes(busqueda.value.toLowerCase())
+  return productos.value.filter(p => p.stock <= p.stockMinimo).filter(p => {
+    const porBusqueda = p.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
+                        p.categoria.toLowerCase().includes(busqueda.value.toLowerCase())
 
-    const porCategoria = filtroCategoria.value === 'Todas' ||
-                         a.categoria === filtroCategoria.value
+    const porCategoria = filtroCategoria.value === 'Todas' || p.categoria === filtroCategoria.value.toLowerCase()
 
+    // La lógica de estado crítico/bajo/normal se aplica al stock bajo, no es un filtro adicional aquí
+    // Si queremos filtrar por "Crítico", "Bajo", "Normal" en las alertas, necesitamos definir rangos
+    // Por ahora, solo filtramos por categoría y búsqueda en los productos con stock bajo.
     const porEstado = filtroEstado.value === 'Todos' ||
-      (filtroEstado.value === 'Crítico' && a.enStock <= 2) ||
-      (filtroEstado.value === 'Bajo'    && a.enStock > 2 && a.enStock <= 5) ||
-      (filtroEstado.value === 'Normal'  && a.enStock > 5)
+      (filtroEstado.value === 'Crítico' && p.stock <= (p.stockMinimo * 0.5)) || // Ejemplo: crítico si es la mitad del mínimo
+      (filtroEstado.value === 'Bajo'    && p.stock > (p.stockMinimo * 0.5) && p.stock <= p.stockMinimo) ||
+      (filtroEstado.value === 'Normal'  && p.stock > p.stockMinimo) // Esto no debería aparecer en alertas de stock bajo
 
-    return porBusqueda && porCategoria && porEstado
+    // Para alertas de stock bajo, solo nos interesan los que están por debajo del mínimo
+    return porBusqueda && porCategoria && p.stock <= p.stockMinimo
   })
 })
 
@@ -267,17 +320,16 @@ const getCatIcon = (categoria) => {
 // ── ABRIR MODAL REPONER ──
 const abrirModalReponer = (producto) => {
   productoSeleccionado.value = producto
+  // El modal de reponer stock necesita el producto completo para actualizarlo
   mostrarModalReponer.value = true
 }
 
 // ── MANEJADOR CUANDO SE REPONE EXITOSAMENTE ──
 const onReponerExitoso = (data) => {
-  // Actualizar el stock del producto en la tabla
-  const productoEnTabla = alertasStock.value.find(p => p.id === productoSeleccionado.value.id)
-  if (productoEnTabla) {
-    productoEnTabla.enStock = data.nuevoStock
-  }
+  // El stock ya se actualizó en el store por la acción registrarMovimiento
+  // Aquí solo necesitamos la notificación y el mensaje de éxito
 
+  // TODO: Conectar con el store de notificaciones real
   // Agregar notificación
   if (notificacionesRef.value) {
     notificacionesRef.value.agregarNotificacion(
@@ -295,13 +347,6 @@ const onReponerExitoso = (data) => {
   // - Actualizar gráficas
   // - Modificar notificaciones en tiempo real
 }
-
-// ── DATOS TABLA ──
-const alertasStock = ref([
-  { id: 1, nombre: 'Tablet Pro 12.9"',     categoria: 'Electrónica', enStock: 4, minimoRequerido: 10 },
-  { id: 2, nombre: 'Auriculares Studio X',  categoria: 'Electrónica', enStock: 2, minimoRequerido: 15 },
-  { id: 3, nombre: 'Workstation Elite V2',  categoria: 'Electrónica', enStock: 1, minimoRequerido: 5  },
-])
 
 // ── GRAFICAS ──
 onMounted(() => {

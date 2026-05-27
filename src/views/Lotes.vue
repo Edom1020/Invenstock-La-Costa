@@ -235,11 +235,13 @@ import Sidebar from "../components/Sidebar.vue"
 import { ref, computed } from 'vue'
 import { useTemaStore } from '../stores/tema'
 import { useUsuarioStore } from '../stores/usuario'
+import { useProductosStore } from '../stores/productos'
 import Notificaciones from "../components/Notificaciones.vue"
 import AIBot from "../components/AIBot.vue"
 
 const temaStore = useTemaStore()
 const usuarioStore = useUsuarioStore()
+const productosStore = useProductosStore()
 
 const busqueda = ref('')
 const filtroEstado = ref('')
@@ -259,103 +261,46 @@ const loteTrabajo = ref({
   estado: 'activo'
 })
 
-const lotes = ref([
-  {
-    id: 1,
-    numero: 'LOT-001',
-    producto: 'MacBook Pro M3',
-    sku: 'LAP-APL-003',
-    cantidad: 12,
-    fechaEntrada: '2024-01-15',
-    fechaVencimiento: '2025-01-15',
-    estado: 'activo',
-    observaciones: 'Lote de ingreso enero'
-  },
-  {
-    id: 2,
-    numero: 'LOT-002',
-    producto: 'Tablet Pro 12.9"',
-    sku: 'TAB-2024-001',
-    cantidad: 8,
-    fechaEntrada: '2024-02-20',
-    fechaVencimiento: '2024-05-20',
-    estado: 'activo',
-    observaciones: ''
-  },
-  {
-    id: 3,
-    numero: 'LOT-003',
-    producto: 'Headphones Studio X',
-    sku: 'AUD-WRL-505',
-    cantidad: 0,
-    fechaEntrada: '2023-12-01',
-    fechaVencimiento: '2024-12-01',
-    estado: 'agotado',
-    observaciones: 'Lote completamente vendido'
-  },
-  {
-    id: 4,
-    numero: 'LOT-004',
-    producto: 'Escritorio Nórdico',
-    sku: 'FUR-WAL-120',
-    cantidad: 3,
-    fechaEntrada: '2024-03-10',
-    fechaVencimiento: '2024-06-10',
-    estado: 'activo',
-    observaciones: 'Poco stock'
-  },
-])
+// Usar los lotes del store global (es un computed, no se modifica directamente)
+const lotes = computed(() => productosStore.lotes)
 
 const lotesFiltrados = computed(() => {
-  let lista = lotes.value
+  let lista = [...productosStore.lotes] // Crear una copia para poder ordenar y filtrar
 
   if (filtroEstado.value) {
     lista = lista.filter(l => l.estado === filtroEstado.value)
   }
 
   if (busqueda.value.trim()) {
-    const q = busqueda.value.toLowerCase()
+    const q = busqueda.value.toLowerCase().trim()
     lista = lista.filter(l =>
       l.numero.toLowerCase().includes(q) ||
       l.producto.toLowerCase().includes(q) ||
       l.sku.toLowerCase().includes(q)
     )
   }
+  
+  // Ordenar por fecha de vencimiento (los más cercanos primero)
+  lista.sort((a, b) => {
+    const fechaA = new Date(a.fechaVencimiento)
+    const fechaB = new Date(b.fechaVencimiento)
+    return fechaA.getTime() - fechaB.getTime()
+  })
 
   return lista
 })
 
-const lotesActivos = computed(() =>
-  lotes.value.filter(l => l.estado === 'activo' && l.cantidad > 0).length
-)
-
-const lotesAgotados = computed(() =>
-  lotes.value.filter(l => l.cantidad === 0).length
-)
-
+const lotesActivos = computed(() => lotes.value.filter(l => l.estado === 'activo' && l.cantidad > 0).length)
+const lotesAgotados = computed(() => lotes.value.filter(l => l.cantidad === 0).length)
 const lotesPorVencer = computed(() => {
   const hoy = new Date()
   const treintaDias = new Date(hoy.getTime() + 30 * 24 * 60 * 60 * 1000)
   return lotes.value.filter(l => {
     const fecha = new Date(l.fechaVencimiento)
-    return fecha >= hoy && fecha <= treintaDias && l.cantidad > 0
+    // Considerar solo lotes activos y con cantidad > 0
+    return l.estado === 'activo' && l.cantidad > 0 && fecha >= hoy && fecha <= treintaDias
   }).length
 })
-
-const formatDate = (fecha) => {
-  if (!fecha) return '-'
-  const d = new Date(fecha)
-  return d.toLocaleDateString('es-ES')
-}
-
-const estadoTexto = (estado) => {
-  const textos = {
-    activo: 'Activo',
-    agotado: 'Agotado',
-    vencido: 'Vencido'
-  }
-  return textos[estado] || estado
-}
 
 const abrirCrearLote = () => {
   modoEdicion.value = false
@@ -373,6 +318,7 @@ const abrirCrearLote = () => {
 }
 
 const abrirEditar = (lote) => {
+  // Asegurarse de que el objeto loteTrabajo sea una copia profunda para evitar mutaciones directas
   modoEdicion.value = true
   loteTrabajo.value = { ...lote }
   modalVisible.value = true
@@ -380,21 +326,32 @@ const abrirEditar = (lote) => {
 
 const cerrarModal = () => {
   modalVisible.value = false
-  loteTrabajo.value = {}
+  // Resetear loteTrabajo para el siguiente uso
+  loteTrabajo.value = {
+    numero: '',
+    producto: '',
+    sku: '',
+    cantidad: 0,
+    fechaEntrada: '',
+    fechaVencimiento: '',
+    observaciones: '',
+    estado: 'activo'
+  }
 }
 
 const guardarLote = () => {
+  // Validación básica
+  if (!loteTrabajo.value.numero || !loteTrabajo.value.producto || !loteTrabajo.value.cantidad || !loteTrabajo.value.fechaVencimiento) {
+    alert('Por favor, completa todos los campos obligatorios (Número de Lote, Producto, Cantidad, Fecha de Vencimiento).')
+    return
+  }
+
   if (modoEdicion.value) {
-    const index = lotes.value.findIndex(l => l.id === loteTrabajo.value.id)
-    if (index !== -1) {
-      lotes.value[index] = { ...loteTrabajo.value }
-    }
+    productosStore.editarLote(loteTrabajo.value)
   } else {
-    const nuevoId = Math.max(...lotes.value.map(l => l.id), 0) + 1
-    lotes.value.push({
-      id: nuevoId,
-      ...loteTrabajo.value
-    })
+    // Cuando se crea un lote desde aquí, no tiene productoId, lo cual es un caso de uso válido.
+    // Podríamos añadir un selector de producto en el modal si queremos asociarlo.
+    productosStore.agregarLote(loteTrabajo.value)
   }
   cerrarModal()
 }
@@ -405,7 +362,7 @@ const confirmarEliminar = (lote) => {
 }
 
 const eliminarLote = () => {
-  lotes.value = lotes.value.filter(l => l.id !== loteAEliminar.value.id)
+  productosStore.eliminarLote(loteAEliminar.value.id)
   cerrarEliminar()
 }
 
@@ -418,6 +375,22 @@ const puede = (permiso) => {
 const cerrarEliminar = () => {
   modalEliminarVisible.value = false
   loteAEliminar.value = null
+}
+
+// Funciones de formato (pueden ser globales o helpers)
+const formatDate = (fecha) => {
+  if (!fecha) return '-'
+  const d = new Date(fecha)
+  return d.toLocaleDateString('es-ES')
+}
+
+const estadoTexto = (estado) => {
+  const textos = {
+    activo: 'Activo',
+    agotado: 'Agotado',
+    vencido: 'Vencido'
+  }
+  return textos[estado] || estado
 }
 </script>
 

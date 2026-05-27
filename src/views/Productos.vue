@@ -28,20 +28,22 @@
         <div class="stats-row">
           <div class="stat-card">
             <div class="stat-label">VALOR TOTAL INVENTARIO</div>
-            <div class="stat-value">$1,240,500</div>
-            <div class="stat-growth">↑ +12.5% este mes</div>
+            <div class="stat-value">COP {{ totalInventarioValor.toLocaleString('es-CO') }}</div>
+            <div :class="['stat-growth', porcentajeCrecimiento >= 0 ? 'positive' : 'negative']">
+              {{ porcentajeCrecimiento >= 0 ? '↑ +' : '↓ ' }}{{ Math.abs(porcentajeCrecimiento).toFixed(1) }}% este mes
+            </div>
           </div>
           <div class="stat-card center">
             <div class="stat-icon-wrap">
-              <img src="/images/images-dashboard/warningtriangular.png" style="width:28px;height:28px;object-fit:contain;" />
+              <img src="/images/images-dashboard/warningtriangular.png" style="width:28px;height:28px;object-fit:contain;" :style="{ filter: temaStore.temaActual === 'oscuro' ? 'invert(1)' : 'none' }" />
             </div>
-            <div class="stat-value">24</div>
+            <div class="stat-value">{{ stockBajoCount }}</div>
             <div class="stat-sub">Stock bajo</div>
           </div>
           <div class="stat-card dark">
             <div class="stat-label">Categoría Popular</div>
-            <div class="stat-value-dark">Electrónica</div>
-            <span class="badge-popular">420 ítems</span>
+            <div class="stat-value-dark">{{ categoriaPopular.nombre }}</div>
+            <span class="badge-popular">{{ categoriaPopular.count }} ítems</span>
           </div>
         </div>
 
@@ -55,12 +57,12 @@
               ▼ Categoría: Todas
             </div>
             <div
-              v-for="cat in categorias"
-              :key="cat.key"
-              :class="['pill', categoriaActiva === cat.key ? 'active' : '']"
-              @click="categoriaActiva = cat.key"
+              v-for="cat in productosStore.categorias"
+              :key="cat"
+              :class="['pill', categoriaActiva === cat ? 'active' : '']"
+              @click="categoriaActiva = cat"
             >
-              {{ cat.nombre }}
+              {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
             </div>
           </div>
           <span class="showing">
@@ -116,7 +118,7 @@
                     </div>
                   </div>
                 </td>
-                <td class="price">${{ prod.precio.toFixed(2) }}</td>
+                <td class="price">COP {{ prod.precio.toLocaleString('es-CO') }}</td>
                 <td>
                   <div class="actions">
                     <button v-if="puede('editar_producto')" class="btn-edit" title="Editar" @click="abrirEditar(prod)">
@@ -184,9 +186,9 @@
                <div class="form-group">
                  <label class="form-label">Categoría</label>
                  <select v-model="productoEditando.categoria" class="form-input form-select">
-                   <option value="electronica">Electrónica</option>
-                   <option value="hogar">Hogar</option>
-                   <option value="comida">Comida</option>
+                   <option v-for="cat in productosStore.categorias" :key="cat" :value="cat">
+                     {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
+                   </option>
                  </select>
                </div>
      
@@ -201,8 +203,8 @@
                </div>
      
                <div class="form-group">
-                 <label class="form-label">Precio (USD)</label>
-                 <input v-model.number="productoEditando.precio" class="form-input" type="number" min="0" step="0.01" />
+                 <label class="form-label">Precio (COP)</label>
+                 <input v-model.number="productoEditando.precio" class="form-input" type="number" min="0" step="50" />
                </div>
      
                <!-- Preview barra de stock en tiempo real -->
@@ -270,6 +272,8 @@
 import Sidebar from "../components/Sidebar.vue";
 import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
+import { useProductosStore } from '../stores/productos' // Importar store
+
 import Topbar from "../components/Topbar.vue";
 //Script para notificaciones//
 const notificacionesRef = inject('notificacionesGlobal')
@@ -277,6 +281,7 @@ const notificacionesRef = inject('notificacionesGlobal')
 import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
 
+const productosStore = useProductosStore()
 const router = useRouter()
 
 const irARegistrar = () => {
@@ -293,14 +298,8 @@ const categoriaActiva = ref('todas')
 const paginaActual = ref(1)
 const porPagina = 10
 
-const categorias = [
-  { key: 'electronica', nombre: 'Electrónica' },
-  { key: 'hogar',       nombre: 'Hogar'       },
-  { key: 'comida',      nombre: 'Comida'      },
-]
-
 const getCatNombre = (key) =>
-  categorias.find(c => c.key === key)?.nombre || key
+  key.charAt(0).toUpperCase() + key.slice(1)
 
 const getCatIcon = (categoria) => {
   const icons = {
@@ -330,11 +329,7 @@ const abrirEditar = (prod) => {
 
 
 const guardarEdicion = () => {
-  const index = productos.value.findIndex(p => p.id === productoEditando.value.id)
-  if (index !== -1) {
-    productos.value[index] = { ...productoEditando.value }
-    // Cuando tengas backend: await fetch(`/api/productos/${productoEditando.value.id}`, { method: 'PUT', body: JSON.stringify(productoEditando.value) })
-  }
+  productosStore.editarProducto(productoEditando.value)
   modalEditarVisible.value = false
 }
 
@@ -353,7 +348,7 @@ const confirmarEliminar = (prod) => {
 }
 
 const eliminar = () => {
-  productos.value = productos.value.filter(p => p.id !== productoAEliminar.value.id)
+  productosStore.eliminarProducto(productoAEliminar.value.id)
   // Cuando tengas backend: await fetch(`/api/productos/${productoAEliminar.value.id}`, { method: 'DELETE' })
   modalEliminarVisible.value = false
   productoAEliminar.value = null
@@ -371,19 +366,44 @@ const cancelarEliminar = () => {
 }
 
 
+// Usar la lista del store
+const productos = computed(() => productosStore.productos)
 
-const productos = ref([
-  { id: 1, nombre: 'Tablet Pro 12.9"',        descripcion: 'Apple Inc. - Silver Edition',    sku: 'TAB-2024-001', categoria: 'electronica', stock: 45,  stockMax: 50,  precio: 1299.00 },
-  { id: 2, nombre: 'Escritorio Nórdico',       descripcion: 'Madera Maciza de Roble',         sku: 'FUR-WAL-120',  categoria: 'hogar',       stock: 3,   stockMax: 20,  precio: 450.00  },
-  { id: 3, nombre: 'Caja de Manzanas x40',     descripcion: 'Manzana Red Delicious',          sku: 'COM-APL-040',  categoria: 'comida',      stock: 120, stockMax: 200, precio: 85.00   },
-  { id: 4, nombre: 'Headphones Studio X',      descripcion: 'Bluetooth 5.3 High Fidelity',   sku: 'AUD-WRL-505',  categoria: 'electronica', stock: 12,  stockMax: 100, precio: 299.00  },
-  { id: 5, nombre: 'Silla Ergonómica',         descripcion: 'Soporte Lumbar Ajustable',       sku: 'FUR-CHR-210',  categoria: 'hogar',       stock: 8,   stockMax: 30,  precio: 380.00  },
-  { id: 6, nombre: 'MacBook Pro M3',           descripcion: 'Apple - Space Gray 14"',         sku: 'LAP-APL-003',  categoria: 'electronica', stock: 5,   stockMax: 20,  precio: 2499.00 },
-  { id: 7, nombre: 'Caja de Arroz 25kg',       descripcion: 'Arroz Diana Premium',            sku: 'COM-RIC-025',  categoria: 'comida',      stock: 60,  stockMax: 100, precio: 45.00   },
-])
+// Calcular el valor total del inventario dinámicamente
+const totalInventarioValor = computed(() => {
+  return productos.value.reduce((acc, p) => acc + (p.precio * p.stock), 0)
+})
+
+// Simulación de valor del mes anterior para calcular el crecimiento real
+const valorMesAnterior = 5000000 
+const porcentajeCrecimiento = computed(() => {
+  if (valorMesAnterior === 0) return 0
+  return ((totalInventarioValor.value - valorMesAnterior) / valorMesAnterior) * 100
+})
+
+// KPI: Conteo de productos con stock bajo
+const stockBajoCount = computed(() => {
+  return productos.value.filter(p => p.stock <= 10).length
+})
+
+// KPI: Categoría más popular (con más ítems en stock)
+const categoriaPopular = computed(() => {
+  const categoriaCounts = productos.value.reduce((acc, p) => {
+    acc[p.categoria] = (acc[p.categoria] || 0) + p.stock
+    return acc
+  }, {})
+
+  let popularCat = { nombre: 'N/A', count: 0 }
+  for (const cat in categoriaCounts) {
+    if (categoriaCounts[cat] > popularCat.count) {
+      popularCat = { nombre: cat.charAt(0).toUpperCase() + cat.slice(1), count: categoriaCounts[cat] }
+    }
+  }
+  return popularCat
+})
 
 const productosFiltrados = computed(() => {
-  let lista = productos.value
+  let lista = productosStore.productos
   if (categoriaActiva.value !== 'todas')
     lista = lista.filter(p => p.categoria === categoriaActiva.value)
   if (busqueda.value.trim())
@@ -642,6 +662,14 @@ const totalPaginas = computed(() =>
   margin-top: 4px;
   font-weight: 600;
   transition: color 0.3s;
+}
+
+.stat-growth.negative {
+  color: var(--stock-low);
+}
+
+.stat-growth.positive {
+  color: var(--stock-low);
 }
 
 .stat-sub {
