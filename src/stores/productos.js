@@ -64,6 +64,9 @@ export const useProductosStore = defineStore('productos', () => {
       ...nuevoLote,
       estado: nuevoLote.estado || 'activo' // Asegurar estado por defecto
     })
+    if (nuevoLote.productoId) {
+      syncProductStock(nuevoLote.productoId)
+    }
   }
 
   // Acción para editar un lote directamente (desde Lotes.vue)
@@ -71,37 +74,89 @@ export const useProductosStore = defineStore('productos', () => {
     const index = lotes.value.findIndex(l => l.id === loteEditado.id)
     if (index !== -1) {
       lotes.value[index] = { ...loteEditado }
+      syncProductStock(loteEditado.productoId)
     }
   }
 
   // Acción para eliminar un lote directamente (desde Lotes.vue)
   const eliminarLote = (id) => {
+    const lote = lotes.value.find(l => l.id === id)
+    const prodId = lote?.productoId
     lotes.value = lotes.value.filter(l => l.id !== id)
-    // Opcional: Si un lote se elimina, ¿debería afectar el stock del producto?
-    // Por ahora, no lo haremos automáticamente para evitar complejidad.
+    if (prodId) {
+      syncProductStock(prodId)
+    }
+  }
+
+  // Función interna para sincronizar el stock del producto basándose en sus lotes
+  const syncProductStock = (productoId) => {
+    if (!productoId) return
+    const prod = productos.value.find(p => p.id === productoId)
+    if (prod) {
+      const total = lotes.value
+        .filter(l => l.productoId === productoId)
+        .reduce((acc, l) => acc + (l.cantidad || 0), 0)
+      prod.stock = total
+    }
   }
 
   // Acción para registrar movimientos y afectar el stock
   const registrarMovimiento = (mov) => {
     const prod = productos.value.find(p => p.id === mov.productoId)
-    if (prod) {
-      if (mov.tipo === 'entrada') {
-        prod.stock += mov.cantidad
-      } else {
-        prod.stock -= mov.cantidad
-      }
-      
-      historialMovimientos.value.unshift({
-        id: historialMovimientos.value.length + 1,
-        fechaFormato: new Date(mov.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
+    if (!prod) return
+
+    if (mov.tipo === 'entrada') {
+      // Para entradas: Crear un nuevo lote automáticamente
+      agregarLote({
+        productoId: prod.id,
+        numero: `MOV-IN-${Date.now().toString().slice(-6)}`,
         producto: prod.nombre,
-        categoria: prod.categoria,
-        tipo: mov.tipo === 'entrada' ? 'Entrada' : 'Salida',
+        sku: prod.sku,
         cantidad: mov.cantidad,
-        fecha: mov.fecha // Guardar la fecha completa para filtros
+        fechaEntrada: mov.fecha || new Date().toISOString().split('T')[0],
+        fechaVencimiento: '', // El usuario puede editarlo luego en la pantalla Lotes
+        estado: 'activo',
+        observaciones: mov.notas || 'Entrada automática por movimiento'
       })
-      // Opcional: Generar notificación de movimiento
+    } else {
+      // Para salidas: Implementar FIFO (First-In-First-Out)
+      let cantidadARestara = mov.cantidad
+      const lotesActivos = lotes.value
+        .filter(l => l.productoId === prod.id && l.cantidad > 0)
+        .sort((a, b) => new Date(a.fechaEntrada) - new Date(b.fechaEntrada))
+
+      if (lotesActivos.reduce((sum, l) => sum + l.cantidad, 0) < cantidadARestara) {
+        // No hay stock suficiente en lotes
+        return { error: 'Stock insuficiente en los lotes disponibles.' }
+      }
+
+      for (const lote of lotesActivos) {
+        if (cantidadARestara <= 0) break
+        const disponible = lote.cantidad
+        const descuento = Math.min(disponible, cantidadARestara)
+
+        lote.cantidad -= descuento
+        cantidadARestara -= descuento
+
+        if (lote.cantidad === 0) {
+          lote.estado = 'agotado'
+        }
+      }
+      syncProductStock(prod.id)
     }
+
+    // Registrar en el historial
+    historialMovimientos.value.unshift({
+      id: historialMovimientos.value.length + 1,
+      fechaFormato: new Date(mov.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
+      producto: prod.nombre,
+      categoria: prod.categoria,
+      tipo: mov.tipo === 'entrada' ? 'Entrada' : 'Salida',
+      cantidad: mov.cantidad,
+      fecha: mov.fecha
+    })
+
+    return { success: true }
   }
 
   const editarProducto = (productoEditado) => {

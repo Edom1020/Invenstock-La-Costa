@@ -51,6 +51,11 @@
                   {{ p.nombre }}
                 </option>
               </optgroup>
+              <optgroup v-if="productosStore.productos.some(p => !p.categoria || !productosStore.categorias.includes(p.categoria))" label="Otros">
+                <option v-for="p in productosStore.productos.filter(prod => !prod.categoria || !productosStore.categorias.includes(prod.categoria))" :key="p.id" :value="p.id">
+                  {{ p.nombre }}
+                </option>
+              </optgroup>
             </select>
 
             <div class="mov-two-col">
@@ -346,13 +351,18 @@ const registrarMovimiento = () => {
   }
 
   // Llama a la acción del store para registrar el movimiento
-  productosStore.registrarMovimiento({
+  const result = productosStore.registrarMovimiento({
     productoId: form.value.productoId,
     cantidad: cantidadNum,
     fecha: form.value.fecha,
     notas: form.value.notas,
     tipo: tipoActivo.value // 'entrada' o 'salida'
   })
+
+  if (result?.error) {
+    errorStock.value = result.error
+    return
+  }
 
   // Limpiar formulario
   form.value = {
