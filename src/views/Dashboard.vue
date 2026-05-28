@@ -38,6 +38,7 @@
             </div>
           </div>
 
+
           <div class="kpi-card">
             <div class="kpi-left">
               <div class="kpi-label">MOVIMIENTOS HOY</div>
@@ -47,7 +48,7 @@
               </div>
             </div>
             <div class="kpi-icon-wrap teal">
-              <img src="/images/images-dashboard/movimientosicon.png" class="kpi-img" />
+              <img src="/images/images-dashboard/movimientosKPI.png" class="kpi-img" />
             </div>
           </div>
 
@@ -154,6 +155,7 @@ const totalProductos = computed(() => productosStore.productos.length)
 const bajoStock = computed(() => {
   return productosStore.productos.filter(p => p.stock < 10).length
 })
+
 
 const movimientosHoy = computed(() => {
   const hoy = new Date().toISOString().split('T')[0]

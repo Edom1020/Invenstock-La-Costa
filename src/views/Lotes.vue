@@ -341,7 +341,13 @@ const cerrarModal = () => {
 
 const guardarLote = () => {
   // Validación básica
-  if (!loteTrabajo.value.numero || !loteTrabajo.value.producto || !loteTrabajo.value.cantidad || !loteTrabajo.value.fechaVencimiento) {
+  if (
+    !loteTrabajo.value.numero?.trim() ||
+    !loteTrabajo.value.producto?.trim() ||
+    loteTrabajo.value.cantidad === null ||
+    loteTrabajo.value.cantidad === undefined ||
+    !loteTrabajo.value.fechaVencimiento
+  ) {
     alert('Por favor, completa todos los campos obligatorios (Número de Lote, Producto, Cantidad, Fecha de Vencimiento).')
     return
   }
@@ -380,7 +386,9 @@ const cerrarEliminar = () => {
 // Funciones de formato (pueden ser globales o helpers)
 const formatDate = (fecha) => {
   if (!fecha) return '-'
-  const d = new Date(fecha)
+  const parts = fecha.split('-')
+  if (parts.length !== 3) return fecha
+  const d = new Date(parts[0], parts[1] - 1, parts[2])
   return d.toLocaleDateString('es-ES')
 }
 

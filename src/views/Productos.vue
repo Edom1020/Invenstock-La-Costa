@@ -366,24 +366,24 @@ const cancelarEliminar = () => {
 }
 
 
-// Usar la lista del store
+// Usar la lista del store directamente
 const productos = computed(() => productosStore.productos)
 
 // Calcular el valor total del inventario dinámicamente
 const totalInventarioValor = computed(() => {
-  return productos.value.reduce((acc, p) => acc + (p.precio * p.stock), 0)
+  return productosStore.productos.reduce((acc, p) => acc + (p.precio * p.stock), 0)
 })
 
 // Simulación de valor del mes anterior para calcular el crecimiento real
-const valorMesAnterior = 5000000 
+const valorMesAnterior = 5000000
 const porcentajeCrecimiento = computed(() => {
   if (valorMesAnterior === 0) return 0
   return ((totalInventarioValor.value - valorMesAnterior) / valorMesAnterior) * 100
 })
 
-// KPI: Conteo de productos con stock bajo
+// KPI: Conteo de productos con stock bajo (Menor a 10)
 const stockBajoCount = computed(() => {
-  return productos.value.filter(p => p.stock <= 10).length
+  return productosStore.productos.filter(p => p.stock < 10).length
 })
 
 // KPI: Categoría más popular (con más ítems en stock)
