@@ -385,7 +385,8 @@ const guardarProducto = () => {
     stock:         producto.stockInicial,
     stockMinimo:   producto.stockMinimo,
     stockMax:      producto.stockMax,
-    usaLotes:      usaLotes.value
+    usaLotes:      usaLotes.value,
+    imagen:        imagenPreview.value
   }
 
   // ── Si usa lotes, agregar datos del lote ──

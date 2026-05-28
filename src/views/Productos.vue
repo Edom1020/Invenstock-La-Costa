@@ -87,8 +87,9 @@
             <tbody>
               <tr v-for="prod in productosFiltrados" :key="prod.id">
                 <td>
-                  <div class="img-placeholder">
-                    <img :src="getCatIcon(prod.categoria)" style="width:22px;height:22px;object-fit:contain;opacity:0.5;" />
+                  <div class="prod-img-container">
+                    <img v-if="prod.imagen" :src="prod.imagen" class="prod-img-thumb" />
+                    <img v-else src="/images/images-dashboard/cajadecuadrotproductos.png" class="prod-img-placeholder" />
                   </div>
                 </td>
                 <td>
@@ -168,6 +169,13 @@
            <div v-if="productoEditando" class="modal-body">
              <div class="form-grid">
      
+               <div class="form-group full" style="display: flex; justify-content: center; margin-bottom: 10px;">
+                 <div class="prod-img-container" style="width: 80px; height: 80px; border-radius: 12px;">
+                    <img v-if="productoEditando.imagen" :src="productoEditando.imagen" class="prod-img-thumb" />
+                    <img v-else src="/images/images-dashboard/cajadecuadrotproductos.png" class="prod-img-placeholder" style="width: 32px; height: 32px;" />
+                 </div>
+               </div>
+
                <div class="form-group full">
                  <label class="form-label">Nombre del producto</label>
                  <input v-model="productoEditando.nombre" class="form-input" type="text" />
@@ -756,13 +764,29 @@ tbody td {
   transition: color 0.3s;
 }
 
-.img-placeholder {
+.prod-img-container {
   width: 44px; height: 44px;
   border-radius: 8px;
   background: var(--bg-input);
   border: 1px solid var(--borde);
-  display: flex; align-items: center; justify-content: center;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  overflow: hidden;
   transition: background 0.3s, border-color 0.3s;
+}
+
+.prod-img-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prod-img-placeholder {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  opacity: 0.4;
 }
 
 .prod-name {

@@ -12,8 +12,12 @@
       <!-- FILTROS -->
       <div class="filters-bar">
         <div class="filters-left">
-          
-          <button class="filter-pill"> 
+
+          <button
+            class="filter-pill"
+            :class="{ 'active': rangoTemporal === '30dias' }"
+            @click="toggleRangoTemporal"
+          >
             <img src="/images/images-reportes/calendaricon.png" style="width:10px;opacity:0.6;" />
             Últimos 30 días
           </button>
@@ -35,12 +39,12 @@
           <div class="filtros-titulo">Categoría</div>
           <div class="filtros-opciones">
             <span
-              v-for="cat in ['Todas', 'Electrónica', 'Hogar', 'Comida']"
+              v-for="cat in ['Todas', ...productosStore.categorias]"
               :key="cat"
               :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
               @click="filtroCategoria = cat"
             >
-              {{ cat }}
+              {{ cat === 'Todas' ? 'Todas' : cat.charAt(0).toUpperCase() + cat.slice(1) }}
             </span>
           </div>
         </div>
@@ -109,25 +113,15 @@
             <div class="donut-wrap">
               <canvas id="graficaDona"></canvas>
               <div class="donut-center">
-                <span class="donut-number">2,854</span>
+                <span class="donut-number">{{ productos.length }}</span>
                 <span class="donut-label">TOTAL SKU</span>
               </div>
             </div>
             <div class="category-list">
-              <div class="category-row">
-                <span class="legend-dot dark-blue"></span>
-                <span class="category-name">{{ categoriaPopular.nombre }}</span>
-                <span class="category-pct">45%</span>
-              </div>
-              <div class="category-row">
-                <span class="legend-dot mid-blue"></span>
-                <span class="category-name">Hogar</span>
-                <span class="category-pct">32%</span>
-              </div>
-              <div class="category-row">
-                <span class="legend-dot light-blue"></span>
-                <span class="category-name">Comida</span>
-                <span class="category-pct">23%</span>
+              <div v-for="(val, cat) in categoriaSumaStock" :key="cat" class="category-row">
+                <span class="legend-dot" :style="{ backgroundColor: getDonaColor(cat) }"></span>
+                <span class="category-name">{{ cat.charAt(0).toUpperCase() + cat.slice(1) }}</span>
+                <span class="category-pct">{{ Math.round((val / totalStockSuma) * 100) }}%</span>
               </div>
             </div>
           </div>
@@ -196,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue'
+import { ref, onMounted, computed, inject, watch } from 'vue'
 import Chart from 'chart.js/auto'
 import Sidebar from "../components/Sidebar.vue";
 import ModalExportarPDF from '../components/ModalExportarPDF.vue'
@@ -227,6 +221,11 @@ const busqueda = ref('')
 const mostrarFiltros = ref(false)
 const filtroCategoria = ref('Todas')
 const filtroEstado = ref('Todos')
+const rangoTemporal = ref('todos') // 'todos' o '30dias'
+
+const toggleRangoTemporal = () => {
+  rangoTemporal.value = rangoTemporal.value === 'todos' ? '30dias' : 'todos'
+}
 
 // KPIs del store de productos
 const productos = computed(() => productosStore.productos)
@@ -243,18 +242,39 @@ const porcentajeCrecimiento = computed(() => {
 
 const totalEntradasMes = computed(() => {
   const hoy = new Date()
-  const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+  let fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+
+  if (rangoTemporal.value === '30dias') {
+    fechaInicio = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000)
+  }
+
   return productosStore.historialMovimientos
-    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Entrada')
+    .filter(m => new Date(m.fecha) >= fechaInicio && m.tipo === 'Entrada')
     .reduce((sum, mov) => sum + mov.cantidad, 0)
 })
 
 const totalSalidasMes = computed(() => {
   const hoy = new Date()
-  const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+  let fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+
+  if (rangoTemporal.value === '30dias') {
+    fechaInicio = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000)
+  }
+
   return productosStore.historialMovimientos
-    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Salida')
+    .filter(m => new Date(m.fecha) >= fechaInicio && m.tipo === 'Salida')
     .reduce((sum, mov) => sum + mov.cantidad, 0)
+})
+
+const totalStockSuma = computed(() => {
+  return productos.value.reduce((acc, p) => acc + p.stock, 0)
+})
+
+const categoriaSumaStock = computed(() => {
+  return productos.value.reduce((acc, p) => {
+    acc[p.categoria] = (acc[p.categoria] || 0) + p.stock
+    return acc
+  }, {})
 })
 
 const stockBajoCount = computed(() => {
@@ -283,17 +303,19 @@ const alertasFiltradas = computed(() => {
 
     const porCategoria = filtroCategoria.value === 'Todas' || p.categoria === filtroCategoria.value.toLowerCase()
 
-    // La lógica de estado crítico/bajo/normal se aplica al stock bajo, no es un filtro adicional aquí
-    // Si queremos filtrar por "Crítico", "Bajo", "Normal" en las alertas, necesitamos definir rangos
-    // Por ahora, solo filtramos por categoría y búsqueda en los productos con stock bajo.
     const porEstado = filtroEstado.value === 'Todos' ||
-      (filtroEstado.value === 'Crítico' && p.stock <= (p.stockMinimo * 0.5)) || // Ejemplo: crítico si es la mitad del mínimo
+      (filtroEstado.value === 'Crítico' && p.stock <= (p.stockMinimo * 0.5)) ||
       (filtroEstado.value === 'Bajo'    && p.stock > (p.stockMinimo * 0.5) && p.stock <= p.stockMinimo) ||
-      (filtroEstado.value === 'Normal'  && p.stock > p.stockMinimo) // Esto no debería aparecer en alertas de stock bajo
+      (filtroEstado.value === 'Normal'  && p.stock > p.stockMinimo)
 
-    // Para alertas de stock bajo, solo nos interesan los que están por debajo del mínimo
-    return porBusqueda && porCategoria && p.stock <= p.stockMinimo
-  })
+    return porBusqueda && porCategoria && porEstado
+  }).map(p => ({
+    id: p.id,
+    nombre: p.nombre,
+    categoria: p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1),
+    enStock: p.stock,
+    minimoRequerido: p.stockMinimo
+  }))
 })
 
 const limpiarFiltros = () => {
@@ -315,6 +337,12 @@ const getCatIcon = (categoria) => {
     Comida:      '/images/images-dashboard/manzanaicon.png',
   }
   return iconos[categoria] || '/images/images-dashboard/macbookicon.png'
+}
+
+const getDonaColor = (cat) => {
+  const colors = ['#1e4d7b', '#378ADD', '#93c5fd', '#60a5fa', '#94a3b8', '#cbd5e1', '#f1f5f9']
+  const index = productosStore.categorias.indexOf(cat.toLowerCase())
+  return colors[index % colors.length]
 }
 
 // ── ABRIR MODAL REPONER ──
@@ -349,23 +377,66 @@ const onReponerExitoso = (data) => {
 }
 
 // ── GRAFICAS ──
+let chartBarras = null
+let chartDona = null
+
+const updateCharts = () => {
+  if (!chartBarras || !chartDona) return
+
+  // 1. Datos para Gráfica de Barras (Tendencia)
+  const hoy = new Date()
+  const fechaCorte = new Date(hoy.getTime() - (rangoTemporal.value === '30dias' ? 30 : 90) * 24 * 60 * 60 * 1000)
+
+  const dias = []
+  const entradas = []
+  const salidas = []
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(hoy)
+    d.setDate(d.getDate() - i)
+    const fechaStr = d.toISOString().split('T')[0]
+    dias.push(d.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit' }).toUpperCase())
+
+    const movsDia = productosStore.historialMovimientos.filter(m => m.fecha === fechaStr)
+    entradas.push(movsDia.filter(m => m.tipo === 'Entrada').reduce((s, m) => s + m.cantidad, 0))
+    salidas.push(movsDia.filter(m => m.tipo === 'Salida').reduce((s, m) => s + m.cantidad, 0))
+  }
+
+  chartBarras.data.labels = dias
+  chartBarras.data.datasets[0].data = entradas
+  chartBarras.data.datasets[1].data = salidas
+  chartBarras.update()
+
+  // 2. Datos para Gráfica de Dona (Categorías)
+  const cats = productosStore.categorias
+  const dataDona = cats.map(cat => {
+    return productosStore.productos
+      .filter(p => p.categoria === cat)
+      .reduce((acc, p) => acc + p.stock, 0)
+  })
+
+  chartDona.data.labels = cats.map(c => c.charAt(0).toUpperCase() + c.slice(1))
+  chartDona.data.datasets[0].data = dataDona
+  chartDona.update()
+}
+
 onMounted(() => {
 
   // BARRAS
-  new Chart(document.getElementById('graficaBarras'), {
+  chartBarras = new Chart(document.getElementById('graficaBarras'), {
     type: 'bar',
     data: {
-      labels: ['LUN 01', 'MAR 02', 'MIE 03', 'JUE 04', 'VIE 05', 'SAB 06', 'DOM 07'],
+      labels: [],
       datasets: [
         {
           label: 'Entradas',
-          data: [120, 200, 180, 350, 300, 420, 500],
+          data: [],
           backgroundColor: '#1e4d7b',
           borderRadius: 6,
         },
         {
           label: 'Salidas',
-          data: [80, 150, 100, 200, 180, 300, 350],
+          data: [],
           backgroundColor: '#94a3b8',
           borderRadius: 6,
         }
@@ -382,13 +453,13 @@ onMounted(() => {
   })
 
   // DONA
-  new Chart(document.getElementById('graficaDona'), {
+  chartDona = new Chart(document.getElementById('graficaDona'), {
     type: 'doughnut',
     data: {
-      labels: ['Electrónica', 'Hogar', 'Comida'],
+      labels: [],
       datasets: [{
-        data: [45, 32, 23],
-        backgroundColor: ['#1e4d7b', '#378ADD', '#93c5fd'],
+        data: [],
+        backgroundColor: ['#1e4d7b', '#378ADD', '#93c5fd', '#60a5fa', '#94a3b8'],
         borderWidth: 0,
       }]
     },
@@ -399,6 +470,11 @@ onMounted(() => {
     }
   })
 
+  updateCharts()
+})
+
+watch([rangoTemporal, filtroCategoria], () => {
+  updateCharts()
 })
 </script>
 
