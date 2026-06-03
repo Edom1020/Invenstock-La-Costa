@@ -153,6 +153,18 @@
               <!-- Campos de Lote (solo si está activo) -->
               <transition name="lotes-fade">
                 <div v-if="usaLotes" class="lotes-campos">
+
+                  <div class="lotes-switch-row" style="margin-bottom: 14px; background: var(--bg-card); border: 1px solid var(--borde);">
+                    <div class="lotes-switch-info">
+                      <div class="lotes-switch-titulo">Habilitar Fecha de Vencimiento</div>
+                      <div class="lotes-switch-desc">Activar si este lote tiene una fecha de expiración específica</div>
+                    </div>
+                    <button
+                      class="modal-toggle"
+                      :class="{ on: lote.usaVencimiento }"
+                      @click="lote.usaVencimiento = !lote.usaVencimiento"
+                    ></button>
+                  </div>
                   
                   <!-- Código Lote + Fecha Vencimiento -->
                   <div class="two-col" style="margin-bottom:14px;">
@@ -171,6 +183,7 @@
                         v-model="lote.fechaVencimiento"
                         class="field-input"
                         type="date"
+                        :disabled="!lote.usaVencimiento"
                       />
                     </div>
                   </div>
@@ -334,6 +347,7 @@ const lote = reactive({
   codigo:              '',
   fechaEntrada:        new Date().toISOString().split('T')[0], // Añadir fecha de entrada por defecto
   fechaVencimiento:   '',
+  usaVencimiento:     false,
   diasAlerta:         30,
   observacion:        ''
 })
@@ -363,7 +377,7 @@ const guardarProducto = () => {
       return
     }
 
-    if (!lote.fechaVencimiento) {
+    if (lote.usaVencimiento && !lote.fechaVencimiento) {
       alert('La fecha de vencimiento es obligatoria.')
       return
     }
@@ -394,6 +408,7 @@ const guardarProducto = () => {
     datosProducto.lote = {
       codigo:              lote.codigo,
       fechaEntrada:        lote.fechaEntrada,
+      usaVencimiento:     lote.usaVencimiento,
       fechaVencimiento:   lote.fechaVencimiento,
       diasAlerta:         lote.diasAlerta,
       observacion:        lote.observacion

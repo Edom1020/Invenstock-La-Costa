@@ -197,6 +197,7 @@ import ModalExportarPDF from '../components/ModalExportarPDF.vue'
 import ModalReponerStock from '../components/ModalReponerStock.vue'
 import { useProductosStore } from '../stores/productos'
 import Topbar from "../components/Topbar.vue";
+import { useNotificacionesStore } from '../stores/notificaciones'
 
 //Modal de exportar PDF//
 const mostrarModalPDF = ref(false)
@@ -204,8 +205,8 @@ const mostrarModalPDF = ref(false)
 //Modal de reponer stock//
 const mostrarModalReponer = ref(false)
 const productoSeleccionado = ref(null)
-
-
+const notificacionesStore = useNotificacionesStore()
+ 
 
 //DARK MODE o modo oscuro
 import { useTemaStore } from '../stores/tema'
@@ -215,6 +216,9 @@ const temaStore = useTemaStore()
 import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
 const productosStore = useProductosStore()
+
+import { useConfiguracionStore } from '../stores/configuracion'
+const configuracionStore = useConfiguracionStore()
 
 const busqueda = ref('')
 
@@ -278,7 +282,8 @@ const categoriaSumaStock = computed(() => {
 })
 
 const stockBajoCount = computed(() => {
-  return productos.value.filter(p => p.stock <= p.stockMinimo).length
+  const umbral = configuracionStore.inventario.stockMinimoGlobal
+  return productos.value.filter(p => p.stock <= umbral).length
 })
 
 const categoriaPopular = computed(() => {
@@ -297,7 +302,8 @@ const categoriaPopular = computed(() => {
 })
 
 const alertasFiltradas = computed(() => {
-  return productos.value.filter(p => p.stock <= p.stockMinimo).filter(p => {
+  const umbral = configuracionStore.inventario.stockMinimoGlobal
+  return productos.value.filter(p => p.stock <= umbral).filter(p => {
     const porBusqueda = p.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
                         p.categoria.toLowerCase().includes(busqueda.value.toLowerCase())
 
@@ -357,15 +363,12 @@ const onReponerExitoso = (data) => {
   // El stock ya se actualizó en el store por la acción registrarMovimiento
   // Aquí solo necesitamos la notificación y el mensaje de éxito
 
-  // TODO: Conectar con el store de notificaciones real
-  // Agregar notificación
-  if (notificacionesRef.value) {
-    notificacionesRef.value.agregarNotificacion(
-      'Stock repuesto correctamente',
-      `${data.producto} — ${data.cantidad} unidades agregadas. Stock actual: ${data.nuevoStock} unidades.`,
-      'entrada'
-    )
-  }
+  // Registramos una notificación informativa sobre la reposición exitosa
+  notificacionesStore.agregarNotificacion(
+    'Reposición de Inventario',
+    `Se han ingresado ${data.cantidad} unidades de "${data.producto}" al catálogo.`,
+    'entrada'
+  )
 
   // Mostrar mensaje de éxito
   alert(`✅ Stock actualizado correctamente\n\n${data.producto}\nCantidad agregada: ${data.cantidad} unidades\nNuevo stock: ${data.nuevoStock} unidades`)
@@ -374,6 +377,7 @@ const onReponerExitoso = (data) => {
   // - Refrescar datos del dashboard
   // - Actualizar gráficas
   // - Modificar notificaciones en tiempo real
+  mostrarModalReponer.value = false
 }
 
 // ── GRAFICAS ──

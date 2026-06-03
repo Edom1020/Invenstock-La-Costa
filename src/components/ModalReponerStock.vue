@@ -93,6 +93,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useUsuarioStore } from '../stores/usuario'
+import { useProductosStore } from '../stores/productos'
 
 const props = defineProps({
   producto: {
@@ -113,6 +114,7 @@ const emit = defineEmits(['cerrar', 'reponedor-exitoso'])
 const cantidad = ref(50)
 const cargando = ref(false)
 const usuarioStore = useUsuarioStore()
+const productosStore = useProductosStore()
 
 const incrementarCantidad = () => cantidad.value++
 const decrementarCantidad = () => {
@@ -132,62 +134,37 @@ const getCatIcon = (categoria) => {
   return iconos[categoria] || '/images/images-dashboard/macbookicon.png'
 }
 
-const reponer = async () => {
+const reponer = () => {
   if (cantidad.value < 1) {
     alert('La cantidad debe ser mayor a 0')
     return
   }
 
   cargando.value = true
+  
+  // Usamos el store de productos en lugar de fetch para evitar el error 404.
+  // Esto registra el movimiento localmente y dispara la creación automática del lote.
+  const result = productosStore.registrarMovimiento({
+    productoId: props.producto.id,
+    cantidad: cantidad.value,
+    tipo: 'entrada',
+    fecha: new Date().toISOString().split('T')[0],
+    notas: 'Reposición desde reportes'
+  })
 
-  try {
-    // LLAMAR AL ENDPOINT DEL BACKEND
-    const response = await fetch(`/api/productos/${props.producto.id}/reponer`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${usuarioStore.token}`
-      },
-      body: JSON.stringify({
-        cantidad: cantidad.value
-      })
-    })
-
-    // Leer la respuesta como texto primero
-    const responseText = await response.text()
-    
-    console.log('Response status:', response.status)
-    console.log('Response text:', responseText)
-
-    // Intentar parsear como JSON si hay contenido
-    let data = null
-    if (responseText) {
-      try {
-        data = JSON.parse(responseText)
-      } catch (e) {
-        console.warn('Respuesta no es JSON válido:', e)
-        data = {}
-      }
-    }
-
-    if (!response.ok) {
-      throw new Error(data?.message || `Error del servidor (${response.status})`)
-    }
-
+  if (result && result.success) {
     // EMITIR EVENTO DE ÉXITO
     emit('reponedor-exitoso', {
       producto: props.producto.nombre,
       cantidad: cantidad.value,
-      nuevoStock: data?.stockActual || props.producto.enStock + cantidad.value
+      nuevoStock: props.producto.enStock + cantidad.value
     })
-
     cerrarModal()
-  } catch (error) {
-    console.error('Error al reponer:', error)
-    alert(`Error: ${error.message}`)
-  } finally {
-    cargando.value = false
+  } else if (result && result.error) {
+    alert(`Error: ${result.error}`)
   }
+  
+  cargando.value = false
 }
 </script>
 

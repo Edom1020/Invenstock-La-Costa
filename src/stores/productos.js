@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useConfiguracionStore } from './configuracion'
+import { useNotificacionesStore } from './notificaciones'
 
 export const useProductosStore = defineStore('productos', () => {
   // Estado inicial con los productos que tenías en la vista
@@ -41,6 +43,7 @@ export const useProductosStore = defineStore('productos', () => {
         sku: nuevoProducto.sku,
         cantidad: nuevoProducto.stock,
         fechaEntrada: nuevoProducto.lote.fechaEntrada || new Date().toISOString().split('T')[0],
+        usaVencimiento: nuevoProducto.lote.usaVencimiento,
         fechaVencimiento: nuevoProducto.lote.fechaVencimiento,
         estado: 'activo',
         observaciones: nuevoProducto.lote.observacion
@@ -97,6 +100,18 @@ export const useProductosStore = defineStore('productos', () => {
         .filter(l => l.productoId === productoId)
         .reduce((acc, l) => acc + (l.cantidad || 0), 0)
       prod.stock = total
+
+      // Lógica de conexión con Notificaciones
+      const configStore = useConfiguracionStore()
+      const notificacionesStore = useNotificacionesStore()
+      
+      if (prod.stock <= configStore.inventario.stockMinimoGlobal) {
+        notificacionesStore.agregarNotificacion(
+          'Alerta de Stock Bajo',
+          `El producto "${prod.nombre}" ha alcanzado el nivel de alerta (${prod.stock} unidades).`,
+          'alerta'
+        )
+      }
     }
   }
 
@@ -114,6 +129,7 @@ export const useProductosStore = defineStore('productos', () => {
         sku: prod.sku,
         cantidad: mov.cantidad,
         fechaEntrada: mov.fecha || new Date().toISOString().split('T')[0],
+        usaVencimiento: false,
         fechaVencimiento: '', // El usuario puede editarlo luego en la pantalla Lotes
         estado: 'activo',
         observaciones: mov.notas || 'Entrada automática por movimiento'
@@ -162,7 +178,54 @@ export const useProductosStore = defineStore('productos', () => {
   const editarProducto = (productoEditado) => {
     const index = productos.value.findIndex(p => p.id === productoEditado.id)
     if (index !== -1) {
+      // RECONCILIACIÓN DE LOTES: 
+      // Si el usuario cambió el stock manualmente en la tabla de productos,
+      // debemos ajustar los lotes para que la suma sea igual al nuevo stock.
+      const currentSum = lotes.value
+        .filter(l => l.productoId === productoEditado.id)
+        .reduce((acc, l) => acc + (l.cantidad || 0), 0)
+      
+      const newStock = productoEditado.stock
+
+      if (currentSum !== newStock) {
+        let diff = newStock - currentSum
+        const productLots = lotes.value.filter(l => l.productoId === productoEditado.id)
+
+        if (diff > 0) {
+          // Si aumentó el stock, lo sumamos al lote más reciente o creamos uno de ajuste
+          if (productLots.length > 0) {
+            const lastLot = productLots[productLots.length - 1]
+            lastLot.cantidad += diff
+            lastLot.estado = 'activo'
+          } else {
+            agregarLote({
+              productoId: productoEditado.id,
+              numero: `ADJ-${Date.now().toString().slice(-4)}`,
+              producto: productoEditado.nombre,
+              sku: productoEditado.sku,
+              cantidad: diff,
+              fechaEntrada: new Date().toISOString().split('T')[0],
+              estado: 'activo',
+              observaciones: 'Ajuste manual desde catálogo'
+            })
+          }
+        } else {
+          // Si disminuyó el stock, restamos de los lotes (empezando por el más reciente - LIFO)
+          let toSubtract = Math.abs(diff)
+          const sortedLots = [...productLots].sort((a, b) => new Date(b.fechaEntrada) - new Date(a.fechaEntrada))
+          for (const lote of sortedLots) {
+            const deduction = Math.min(lote.cantidad, toSubtract)
+            lote.cantidad -= deduction
+            toSubtract -= deduction
+            if (lote.cantidad === 0) lote.estado = 'agotado'
+            if (toSubtract <= 0) break
+          }
+        }
+      }
+
       productos.value[index] = { ...productoEditado }
+      // Forzar sincronización final para asegurar consistencia
+      syncProductStock(productoEditado.id)
     }
   }
 
@@ -171,6 +234,21 @@ export const useProductosStore = defineStore('productos', () => {
     // También deberíamos limpiar los lotes asociados
     lotes.value = lotes.value.filter(l => l.productoId !== id) // Esto ya estaba bien
   }
+
+  // Sincronización proactiva: Si se cambia el umbral global en Configuración.vue, 
+  // el sistema analiza el catálogo y dispara notificaciones para los productos que entren en el rango.
+  watch(() => useConfiguracionStore().inventario.stockMinimoGlobal, (nuevoUmbral) => {
+    const notificacionesStore = useNotificacionesStore()
+    productos.value.forEach(prod => {
+      if (prod.stock <= nuevoUmbral) {
+        notificacionesStore.agregarNotificacion(
+          'Ajuste de Alerta Global',
+          `"${prod.nombre}" clasifica como stock bajo con el nuevo umbral de ${nuevoUmbral} unidades.`,
+          'alerta'
+        )
+      }
+    })
+  })
 
   return {
     productos,

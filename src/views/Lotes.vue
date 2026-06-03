@@ -158,14 +158,31 @@
 
           <div class="modal-body">
             <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">Número de Lote</label>
-                <input v-model="loteTrabajo.numero" class="form-input" type="text" placeholder="LOT-001" />
+              <div class="form-group full lotes-switch-row" style="margin-bottom: 8px;">
+                <div class="lotes-switch-info">
+                  <div class="lotes-switch-titulo">Habilitar Fecha de Vencimiento</div>
+                  <div class="lotes-switch-desc">Activar si este lote tiene una fecha de caducidad específica</div>
+                </div>
+                <button
+                  class="modal-toggle"
+                  :class="{ on: loteTrabajo.usaVencimiento }"
+                  @click="loteTrabajo.usaVencimiento = !loteTrabajo.usaVencimiento"
+                ></button>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label">Seleccionar Producto del Catálogo</label>
+                <select v-model="loteTrabajo.productoId" class="form-input" @change="vincularProducto">
+                  <option value="">-- Seleccione un producto --</option>
+                  <option v-for="p in productosStore.productos" :key="p.id" :value="p.id">
+                    {{ p.nombre }} ({{ p.sku }})
+                  </option>
+                </select>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Producto</label>
-                <input v-model="loteTrabajo.producto" class="form-input" type="text" placeholder="Nombre del producto" />
+                <label class="form-label">Número de Lote</label>
+                <input v-model="loteTrabajo.numero" class="form-input" type="text" placeholder="LOT-001" />
               </div>
 
               <div class="form-group">
@@ -185,7 +202,7 @@
 
               <div class="form-group">
                 <label class="form-label">Fecha de Vencimiento</label>
-                <input v-model="loteTrabajo.fechaVencimiento" class="form-input" type="date" />
+                <input v-model="loteTrabajo.fechaVencimiento" class="form-input" type="date" :disabled="!loteTrabajo.usaVencimiento" />
               </div>
 
               <div class="form-group full">
@@ -251,11 +268,13 @@ const modalEliminarVisible = ref(false)
 const loteAEliminar = ref(null)
 
 const loteTrabajo = ref({
+  productoId: '',
   numero: '',
   producto: '',
   sku: '',
   cantidad: 0,
   fechaEntrada: '',
+  usaVencimiento: false,
   fechaVencimiento: '',
   observaciones: '',
   estado: 'activo'
@@ -302,14 +321,25 @@ const lotesPorVencer = computed(() => {
   }).length
 })
 
+// Función para autocompletar nombre y SKU al seleccionar un producto
+const vincularProducto = () => {
+  const prodEncontrado = productosStore.productos.find(p => p.id === loteTrabajo.value.productoId)
+  if (prodEncontrado) {
+    loteTrabajo.value.producto = prodEncontrado.nombre
+    loteTrabajo.value.sku = prodEncontrado.sku
+  }
+}
+
 const abrirCrearLote = () => {
   modoEdicion.value = false
   loteTrabajo.value = {
+    productoId: '',
     numero: '',
     producto: '',
     sku: '',
     cantidad: 0,
     fechaEntrada: new Date().toISOString().split('T')[0],
+    usaVencimiento: false,
     fechaVencimiento: '',
     observaciones: '',
     estado: 'activo'
@@ -318,9 +348,11 @@ const abrirCrearLote = () => {
 }
 
 const abrirEditar = (lote) => {
-  // Asegurarse de que el objeto loteTrabajo sea una copia profunda para evitar mutaciones directas
   modoEdicion.value = true
-  loteTrabajo.value = { ...lote }
+  loteTrabajo.value = { 
+    usaVencimiento: lote.usaVencimiento !== undefined ? lote.usaVencimiento : !!lote.fechaVencimiento,
+    ...lote 
+  }
   modalVisible.value = true
 }
 
@@ -333,6 +365,7 @@ const cerrarModal = () => {
     sku: '',
     cantidad: 0,
     fechaEntrada: '',
+    usaVencimiento: false,
     fechaVencimiento: '',
     observaciones: '',
     estado: 'activo'
@@ -342,13 +375,13 @@ const cerrarModal = () => {
 const guardarLote = () => {
   // Validación básica
   if (
+    !loteTrabajo.value.productoId ||
     !loteTrabajo.value.numero?.trim() ||
-    !loteTrabajo.value.producto?.trim() ||
     loteTrabajo.value.cantidad === null ||
     loteTrabajo.value.cantidad === undefined ||
-    !loteTrabajo.value.fechaVencimiento
+    (loteTrabajo.value.usaVencimiento && !loteTrabajo.value.fechaVencimiento)
   ) {
-    alert('Por favor, completa todos los campos obligatorios (Número de Lote, Producto, Cantidad, Fecha de Vencimiento).')
+    alert('Por favor, completa todos los campos obligatorios (Número de Lote, Producto, Cantidad' + (loteTrabajo.value.usaVencimiento ? ', Fecha de Vencimiento' : '') + ').')
     return
   }
 
@@ -690,6 +723,74 @@ tbody td {
 
 .btn-edit:hover { background: rgba(56, 189, 248, 0.1); border-color: var(--azul); }
 .btn-del:hover { background: rgba(239, 68, 68, 0.1); border-color: var(--rojo); }
+
+/* ── SWITCHES (Toggle) ── */
+.lotes-switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  transition: background 0.3s;
+}
+
+.lotes-switch-info {
+  flex: 1;
+}
+
+.lotes-switch-titulo {
+  font-weight: 700;
+  color: var(--txt-titulo);
+  margin-bottom: 2px;
+  transition: color 0.3s;
+}
+
+.lotes-switch-desc {
+  font-size: 10px;
+  color: var(--txt-suave);
+  transition: color 0.3s;
+}
+
+.modal-toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 14px;
+  border: none;
+  background: #cbd5e1;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.3s;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.modal-toggle::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: left 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-toggle.on {
+  background: var(--azul);
+}
+
+.modal-toggle.on::after {
+  left: 24px;
+  left: 22px;
+}
+
+.layout.dark-mode .modal-toggle {
+  background: #475569;
+}
 
 .empty-state {
   text-align: center;

@@ -281,6 +281,7 @@ import Sidebar from "../components/Sidebar.vue";
 import { ref, computed, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProductosStore } from '../stores/productos' // Importar store
+import { useConfiguracionStore } from '../stores/configuracion'
 
 import Topbar from "../components/Topbar.vue";
 //Script para notificaciones//
@@ -290,6 +291,7 @@ import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
 
 const productosStore = useProductosStore()
+const configuracionStore = useConfiguracionStore()
 const router = useRouter()
 
 const irARegistrar = () => {
@@ -389,9 +391,13 @@ const porcentajeCrecimiento = computed(() => {
   return ((totalInventarioValor.value - valorMesAnterior) / valorMesAnterior) * 100
 })
 
-// KPI: Conteo de productos con stock bajo (Menor a 10)
+// KPI: Conteo total de productos en el catálogo
+const totalProductosCount = computed(() => productos.value.length)
+
+// KPI: Conteo de productos con stock bajo (Sincronizado con Configuración)
 const stockBajoCount = computed(() => {
-  return productosStore.productos.filter(p => p.stock < 10).length
+  const umbral = configuracionStore.inventario.stockMinimoGlobal
+  return productos.value.filter(p => p.stock <= umbral).length
 })
 
 // KPI: Categoría más popular (con más ítems en stock)
@@ -677,7 +683,7 @@ const totalPaginas = computed(() =>
 }
 
 .stat-growth.positive {
-  color: var(--stock-low);
+  color: var(--verde-growth);
 }
 
 .stat-sub {

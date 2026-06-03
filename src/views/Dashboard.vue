@@ -147,13 +147,17 @@ const usuarioStore = useUsuarioStore()
 import { useProductosStore } from '../stores/productos'
 const productosStore = useProductosStore()
 
+import { useConfiguracionStore } from '../stores/configuracion'
+const configuracionStore = useConfiguracionStore()
+
 // Para el buscador de productos en el topbar //
 const busqueda = ref('')
 
 const totalProductos = computed(() => productosStore.productos.length)
 
 const bajoStock = computed(() => {
-  return productosStore.productos.filter(p => p.stock < 10).length
+  const umbral = configuracionStore.inventario.stockMinimoGlobal
+  return productosStore.productos.filter(p => p.stock <= umbral).length
 })
 
 
