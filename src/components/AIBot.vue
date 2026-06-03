@@ -14,7 +14,7 @@
           <div class="modal-header-izq">
             <div class="modal-icono">🤖</div>
             <div>
-              <h2 class="modal-titulo">Asistente IA</h2>
+              <h2 class="modal-titulo">Asistente</h2>
               <p class="modal-subtitulo">Recomendaciones inteligentes para tu inventario</p>
             </div>
           </div>
@@ -23,13 +23,25 @@
 
         <!-- CONTENIDO -->
         <div class="modal-content">
+          <!-- ESTADO DE CARGA -->
+          <div v-if="isLoading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Consultando al asistente...</p>
+          </div>
+
+          <!-- MENSAJE DE ERROR -->
+          <div v-else-if="error" class="error-state">
+            <p>{{ error }}</p>
+            <button @click="fetchSugerencias">Reintentar</button>
+          </div>
+
           <!-- LISTA DE SUGERENCIAS -->
-          <div v-if="sugerencias.length > 0" class="sugerencias-lista">
+          <div v-else-if="sugerencias.length > 0" class="sugerencias-lista">
             <div
               v-for="(sugerencia, index) in sugerencias"
-              :key="index"
+              :key="sugerencia.id"
               class="sugerencia-item"
-              @click="marcarLeida(index)"
+              @click="handleMarcarLeida(sugerencia.id, index)"
               :class="[sugerencia.leida ? 'leida' : '']"
             >
               <div class="sugerencia-icono">
@@ -38,14 +50,14 @@
               <div class="sugerencia-texto">
                 <div class="sugerencia-titulo">{{ sugerencia.titulo }}</div>
                 <div class="sugerencia-descripcion">{{ sugerencia.descripcion }}</div>
-                <div class="sugerencia-tiempo">{{ sugerencia.tiempo }}</div>
+                <div class="sugerencia-tiempo">{{ formatTiempo(sugerencia.createdAt) }}</div>
               </div>
               <span v-if="!sugerencia.leida" class="sugerencia-punto"></span>
             </div>
           </div>
 
           <!-- MENSAJE CUANDO NO HAY SUGERENCIAS -->
-          <div v-else class="sin-sugerencias">
+          <div v-else-if="!isLoading" class="sin-sugerencias">
             <div class="sin-sugerencias-icono">😊</div>
             <p class="sin-sugerencias-texto">No hay recomendaciones en este momento. ¡Vuelve más tarde!</p>
           </div>
@@ -66,16 +78,19 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useProductosStore } from '../stores/productos'
 
+const productosStore = useProductosStore()
 const modalAbierto = ref(false)
 const sugerencias = ref([])
+const isLoading = ref(false)
+const error = ref(null)
 
 const toggleModal = () => {
   modalAbierto.value = !modalAbierto.value
   if (modalAbierto.value) {
-    // Generar sugerencias al abrir
-    generarSugerencias()
+    fetchSugerencias()
   }
 }
 
@@ -83,91 +98,111 @@ const cerrarModal = () => {
   modalAbierto.value = false
 }
 
-const marcarLeida = (index) => {
-  if (sugerencias.value[index]) {
-    sugerencias.value[index].leida = true
+const fetchSugerencias = async () => {
+  isLoading.value = true
+  error.value = null
+  
+  try {
+    // PREPARACIÓN BACKEND:
+    // const response = await fetch('/api/ai/suggestions')
+    // if (!response.ok) throw new Error('Error al cargar sugerencias')
+    // sugerencias.value = await response.json()
+    
+    // Simulación de delay de red
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    generarSugerencias() // Mantener generador local por ahora
+  } catch (err) {
+    error.value = "No pudimos conectar con el asistente. Intenta de nuevo."
+    console.error(err)
+  } finally {
+    isLoading.value = false
   }
 }
 
-const marcarTodoLeido = () => {
-  sugerencias.value.forEach(s => s.leida = true)
+const handleMarcarLeida = async (id, index) => {
+  if (sugerencias.value[index].leida) return
+
+  try {
+    // PREPARACIÓN BACKEND:
+    // await fetch(`/api/ai/suggestions/${id}/read`, { method: 'PATCH' })
+    
+    sugerencias.value[index].leida = true
+  } catch (err) {
+    console.error("Error al marcar como leída", err)
+  }
+}
+
+const marcarTodoLeido = async () => {
+  try {
+    // PREPARACIÓN BACKEND:
+    // await fetch('/api/ai/suggestions/read-all', { method: 'POST' })
+    
+    sugerencias.value.forEach(s => s.leida = true)
+  } catch (err) {
+    console.error("Error al marcar todo como leído", err)
+  }
 }
 
 const actualizarSugerencias = () => {
-  generarSugerencias()
+  fetchSugerencias()
+}
+
+const formatTiempo = (dateString) => {
+  if (!dateString) return 'Reciente'
+  // Aquí se podría usar dayjs o date-fns para formato relativo real
+  return dateString 
 }
 
 // Sugerencias simuladas de IA
 function generarSugerencias() {
-  const ahora = new Date()
-
-  const sugerenciasBase = [
-    {
-      id: 1,
+  // 1. ALERTAS REALES: Filtrar productos con stock bajo directamente del store
+  const alertasStockBajo = productosStore.productos
+    .filter(p => p.stock <= p.stockMinimo)
+    .map(p => ({
+      id: `stock-${p.id}`,
       tipo: 'alerta',
       icono: '⚠️',
-      titulo: 'Stock bajo detectado',
-      descripcion: 'Los auriculares inalámbricos tienen solo 3 unidades restantes. ¿Deseas generar una orden de compra?',
-      tiempo: 'Hace 2 min',
+      titulo: `Stock Crítico: ${p.nombre}`,
+      descripcion: `Solo quedan ${p.stock} unidades. El mínimo configurado es ${p.stockMinimo}.`,
+      createdAt: 'Ahora mismo',
       leida: false
-    },
+    }))
+
+  // 2. SUGERENCIAS DE IA (Simuladas hasta tener el endpoint del backend)
+  const sugerenciasIA = [
     {
-      id: 2,
+      id: 'ia-1',
       tipo: 'sugerencia',
       icono: '📈',
       titulo: 'Tendencia de ventas',
-      descripcion: 'Las ventas de tablets han aumentado un 25% esta semana. Considera aumentar el stock.',
-      tiempo: 'Hace 15 min',
+      descripcion: 'Se detecta un aumento del 25% en la salida de productos de electrónica.',
+      createdAt: 'Hace 15 min',
       leida: false
     },
     {
-      id: 3,
+      id: 'ia-2',
       tipo: 'recordatorio',
       icono: '📅',
       titulo: 'Inventario mensual',
       descripcion: 'Recuerda realizar el conteo físico de inventario para este viernes a las 9:00 AM.',
-      tiempo: 'Hoy a las 9:00',
-      leida: false
-    },
-    {
-      id: 4,
-      tipo: 'oferta',
-      icono: '💰',
-      titulo: 'Oportunidad de promoción',
-      descripcion: 'Los cargadores inalámbricos tienen alto margen. Sugerimos crear un paquete con fundas.',
-      tiempo: 'Hace 30 min',
-      leida: false
-    },
-    {
-      id: 5,
-      tipo: 'mantenimiento',
-      icono: '🔧',
-      titulo: 'Actualización de sistema',
-      descripcion: 'Se recomienda respaldar la base de datos antes de las 2:00 AM para evitar pérdida de datos.',
-      tiempo: 'Esta noche',
+      createdAt: 'Programado',
       leida: false
     }
   ]
 
-  // Simular variabilidad - mostrar diferentes sugerencias cada vez
-  const numSugerencias = Math.floor(Math.random() * 3) + 2 // 2-4 sugerencias
-  const sugerenciasSeleccionadas = sugerenciasBase
-    .sort(() => Math.random() - 0.5)
-    .slice(0, numSugerencias)
-
-  sugerencias.value = sugerenciasSeleccionadas.map(s => ({
-    ...s,
-    tiempo: calcularTiempoRelativo(s.tiempo) // Convertir a formato relativo
-  }))
+  // Combinar alertas reales con sugerencias inteligentes
+  sugerencias.value = [...alertasStockBajo, ...sugerenciasIA]
 }
 
-function calcularTiempoRelativo(tiempo) {
-  // Simplificado - en una app real usarías una librería como day.js
-  if (tiempo.includes('Hace')) return tiempo
-  if (tiempo.includes('Hoy')) return tiempo
-  if (tiempo.includes('Esta noche')) return tiempo
-  return 'Hace un momento'
-}
+// OPCIONAL: Escuchar cambios en el inventario para actualizar el contador del bot automáticamente
+watch(() => productosStore.productos, () => {
+  // Solo regeneramos si hay cambios significativos en el stock
+  generarSugerencias()
+}, { deep: true })
+
+onMounted(() => {
+  generarSugerencias()
+})
 
 const sugerenciasCount = computed(() => {
   return sugerencias.value.filter(s => !s.leida).length
@@ -297,6 +332,39 @@ const sugerenciasCount = computed(() => {
 
 .modal-content {
   padding: 24px;
+}
+
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--txt-suave);
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--borde);
+  border-top-color: var(--azul);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-state button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: var(--azul-dark);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .sugerencias-lista {

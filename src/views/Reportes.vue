@@ -332,7 +332,7 @@ const puede = (permiso) => {
 // ── ICONO POR CATEGORIA ──
 const getCatIcon = (categoria) => {
   const iconos = {
-    Electrónica: '/images/images-dashboard/macbookicon.png',
+    Electronica: '/images/images-dashboard/macbookicon.png',
     Hogar:       '/images/images-dashboard/sofagrande.png',
     Comida:      '/images/images-dashboard/manzanaicon.png',
   }

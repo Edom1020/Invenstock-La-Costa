@@ -11,7 +11,7 @@
         <div class="input-group">
           <label>Nombre</label>
           <div class="input-container">
-            <input type="text" />
+            <input v-model="nombre" type="text" />
           </div>
         </div>
 
@@ -19,7 +19,7 @@
         <div class="input-group">
           <label>Apellido</label>
           <div class="input-container">
-            <input type="text" />
+            <input v-model="apellido" type="text" />
           </div>
         </div>
 
@@ -27,7 +27,7 @@
         <div class="input-group">
           <label>Email</label>
           <div class="input-container">
-            <input type="email" />
+            <input v-model="email" type="email" />
           </div>
         </div>
 
@@ -35,12 +35,18 @@
         <div class="input-group">
           <label>Contraseña</label>
           <div class="input-container">
-            <input :type="showPassword ? 'text' : 'password'" />
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" />
             <img 
               :src="showPassword ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'"
               class="eye-icon"
               @click="togglePassword"
             />
+          </div>
+          <div class="password-requirements">
+            <p :class="{ met: password.length >= 12 }">● Mínimo 12 caracteres</p>
+            <p :class="{ met: /[A-Z]/.test(password) }">● Al menos una mayúscula</p>
+            <p :class="{ met: /[0-9]/.test(password) }">● Al menos un número</p>
+            <p :class="{ met: /[!@#$%^&*]/.test(password) }">● Al menos un caracter especial (!@#$%^&*)</p>
           </div>
         </div>
 
@@ -48,19 +54,20 @@
         <div class="input-group">
           <label>Confirmar contraseña</label>
           <div class="input-container">
-            <input :type="showConfirm ? 'text' : 'password'" />
+            <input v-model="confirmPassword" :type="showConfirm ? 'text' : 'password'" />
             <img 
               :src="showConfirm ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'"
               class="eye-icon"
               @click="toggleConfirm"
             />
           </div>
+          <p v-if="confirmPassword && password !== confirmPassword" class="error-text">Las contraseñas no coinciden</p>
         </div>
 
       </div>
 
       <!-- BOTÓN -->
-      <button class="login-btn">Registrarse</button>
+      <button class="login-btn" @click="registrarse">Registrarse</button>
 
       <!-- VOLVER AL SELECTOR -->
       <button class="back-btn" @click="$router.push('/')">Volver</button>
@@ -71,7 +78,15 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
+
+const nombre = ref("");
+const apellido = ref("");
+const email = ref("");
+const password = ref("");
+const confirmPassword = ref("");
 const showPassword = ref(false);
 const showConfirm = ref(false);
 
@@ -81,6 +96,35 @@ const togglePassword = () => {
 
 const toggleConfirm = () => {
   showConfirm.value = !showConfirm.value;
+};
+
+const registrarse = () => {
+  // Validar campos vacíos
+  if (!nombre.value || !apellido.value || !email.value) {
+    alert("Por favor, completa todos los campos.");
+    return;
+  }
+
+  // Validar requisitos de contraseña
+  const isLengthValid = password.value.length >= 12;
+  const hasUpper = /[A-Z]/.test(password.value);
+  const hasNumber = /[0-9]/.test(password.value);
+  const hasSpecial = /[!@#$%^&*]/.test(password.value);
+
+  if (!isLengthValid || !hasUpper || !hasNumber || !hasSpecial) {
+    alert("La contraseña no cumple con los requisitos mínimos de seguridad.");
+    return;
+  }
+
+  if (password.value !== confirmPassword.value) {
+    alert("Las contraseñas no coinciden.");
+    return;
+  }
+
+  // Simulación de registro exitoso
+  console.log("Registrando:", { nombre: nombre.value, email: email.value });
+  alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+  router.push("/login");
 };
 </script>
 
@@ -109,7 +153,9 @@ const toggleConfirm = () => {
 
 .login-box {
   width: 592px;
-  height: 419px;
+  height: auto;
+  min-height: 419px;
+  padding: 30px 0;
   background: rgba(217, 217, 217, 0.8);
   border-radius: 10px;
 
@@ -163,6 +209,30 @@ label {
   width: 20px;
   height: 20px;
   cursor: pointer;
+}
+
+.password-requirements {
+  font-size: 10px;
+  color: #666;
+  margin-top: 5px;
+  text-align: left;
+  width: 295px;
+}
+
+.password-requirements p {
+  margin: 2px 0;
+  transition: color 0.3s;
+}
+
+.password-requirements p.met {
+  color: #16a34a; /* Verde */
+  font-weight: bold;
+}
+
+.error-text {
+  font-size: 10px;
+  color: #dc2626;
+  margin-top: 2px;
 }
 
 .login-btn {

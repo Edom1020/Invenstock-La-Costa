@@ -4,9 +4,9 @@ import { ref } from 'vue'
 export const useProductosStore = defineStore('productos', () => {
   // Estado inicial con los productos que tenías en la vista
   const productos = ref([
-    { id: 1, nombre: 'Tablet Pro 12.9"', descripcion: 'Apple Inc. - Silver Edition', sku: 'TAB-2024-001', categoria: 'electronica', stock: 45, stockMax: 50, precio: 1299000 },
-    { id: 2, nombre: 'Escritorio Nórdico', descripcion: 'Madera Maciza de Roble', sku: 'FUR-WAL-120', categoria: 'hogar', stock: 3, stockMax: 20, precio: 450000 },
-    { id: 3, nombre: 'Caja de Manzanas x40', descripcion: 'Manzana Red Delicious', sku: 'COM-APL-040', categoria: 'comida', stock: 120, stockMax: 200, precio: 85000 },
+    { id: 1, nombre: 'Tablet Pro 12.9"', descripcion: 'Apple Inc. - Silver Edition', sku: 'TAB-2024-001', categoria: 'electronica', stock: 45, stockMinimo: 10, stockMax: 50, precio: 1299000 },
+    { id: 2, nombre: 'Escritorio Nórdico', descripcion: 'Madera Maciza de Roble', sku: 'FUR-WAL-120', categoria: 'hogar', stock: 3, stockMinimo: 5, stockMax: 20, precio: 450000 },
+    { id: 3, nombre: 'Caja de Manzanas x40', descripcion: 'Manzana Red Delicious', sku: 'COM-APL-040', categoria: 'comida', stock: 120, stockMinimo: 50, stockMax: 200, precio: 85000 },
   ])
 
   // Estado para los lotes

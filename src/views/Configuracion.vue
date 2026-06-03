@@ -107,7 +107,7 @@
                 <label class="conf-label">Alertas de stock bajo</label>
                 <div class="conf-stock-wrap">
                   <img src="/images/images-dashboard/warningtriangular.png" style="width:16px;height:16px;object-fit:contain;" />
-                  <input type="number" v-model.number="inventario.stockMinimo" class="conf-stock-input" min="0" />
+                  <input type="number" v-model.number="inventario.stockMinimoGlobal" class="conf-stock-input" min="0" />
                   <span class="conf-unit">UNIDADES</span>
                 </div>
               </div>
@@ -206,12 +206,13 @@
               <div class="permiso-container">
                 <!-- Selector de Usuario -->
                 <div class="permiso-field">
-                  <label class="permiso-label">Seleccionar Usuario</label>
-                  <select v-model="usuarioSeleccionado" class="permiso-select" @change="cargarPermisosUsuario">
-                    <option v-for="usuario in usuarios" :key="usuario.id" :value="usuario.id">
-                      {{ usuario.nombre }} ({{ usuario.email }})
-                    </option>
-                  </select>
+                  <label class="permiso-label">Correo electrónico del usuario</label>
+                  <input 
+                    v-model="usuarioBusqueda" 
+                    class="permiso-input" 
+                    placeholder="Ej: colaborador@invenstock.com"
+                    @input="cargarPermisosUsuario"
+                  />
                 </div>
 
                 <!-- Lista de Permisos Disponibles -->
@@ -220,6 +221,7 @@
                     v-for="permiso in permisosDisponibles"
                     :key="permiso.id"
                     class="permiso-item"
+                    :class="{ 'permiso-disabled': !usuarioEncontrado }"
                   >
                     <div class="permiso-info">
                       <img :src="permiso.icono" :alt="permiso.nombre" class="permiso-icono">
@@ -234,6 +236,7 @@
                       <input
                         type="checkbox"
                         :id="`permiso-${permiso.id}`"
+                        :disabled="!usuarioEncontrado"
                         :checked="permisosActual.includes(permiso.id)"
                         @change="togglePermiso(permiso.id)"
                       />
@@ -241,12 +244,13 @@
                     </div>
                   </div>
                 </div>
+                <p v-if="!usuarioEncontrado && usuarioBusqueda" class="mensaje-error-email">⚠️ Usuario no encontrado en el sistema.</p>
 
                 <!-- Botón de Guardar -->
                 <button
                   class="btn-permisos"
                   @click="guardarPermisos"
-                  :disabled="guardando"
+                  :disabled="guardando || !usuarioEncontrado"
                 >
                   <span v-if="guardando">Guardando...</span>
                   <span v-else>Guardar Permisos</span>
@@ -431,7 +435,7 @@ const usuarios = ref([
 ])
 
 // Usuario actualmente seleccionado para editar permisos
-const usuarioSeleccionado = ref(usuarios.value[0].id)
+const usuarioBusqueda = ref(usuarios.value[0].email)
 
 // Permisos disponibles que se pueden otorgar
 const permisosDisponibles = ref([
@@ -487,12 +491,13 @@ const tipoMensaje = ref('') // 'exito' o 'error'
  * Carga los permisos del usuario seleccionado cuando cambia la selección
  * Esto asegura que siempre veamos los permisos actuales del usuario
  */
+const usuarioEncontrado = computed(() => {
+  return !!usuarios.value.find(u => u.email === usuarioBusqueda.value)
+})
+
 function cargarPermisosUsuario() {
-  // En una aplicación real, aquí haríamos una llamada al API
-  // Para este ejemplo, usamos los datos locales
-  const usuario = usuarios.value.find(u => u.id === usuarioSeleccionado.value)
+  const usuario = usuarios.value.find(u => u.email === usuarioBusqueda.value)
   if (usuario) {
-    // Ya tenemos los permisos en el objeto usuario, no necesitamos hacer nada extra
     console.log(`Cargando permisos para ${usuario.nombre}:`, usuario.permisos)
   }
 }
@@ -502,7 +507,7 @@ function cargarPermisosUsuario() {
  * @param {string} permisoId - ID del permiso a activar/desactivar
  */
 function togglePermiso(permisoId) {
-  const usuario = usuarios.value.find(u => u.id === Number(usuarioSeleccionado.value))
+  const usuario = usuarios.value.find(u => u.email === usuarioBusqueda.value)
   if (!usuario) return
 
   const indice = usuario.permisos.indexOf(permisoId)
@@ -524,10 +529,10 @@ async function guardarPermisos() {
 
   try {
     // Simulamos una llamada al API (en producción sería algo como:)
-    // await api.actualizarPermisosUsuario(usuarioSeleccionado.value, permisosActualizados)
+    // await api.actualizarPermisosUsuario(usuarioBusqueda.value, permisosActualizados)
 
     // Obtener el usuario actualizado
-    const usuarioActualizado = usuarios.value.find(u => u.id === usuarioSeleccionado.value)
+    const usuarioActualizado = usuarios.value.find(u => u.email === usuarioBusqueda.value)
 
     // En una aplicación real, aquí guardaríamos en el backend
     // Por ahora, solo actualizamos localmente y mostramos mensaje
@@ -555,7 +560,7 @@ async function guardarPermisos() {
  * Útil para mostrar información adicional o validaciones
  */
 const permisosActual = computed(() => {
-  const usuario = usuarios.value.find(u => u.id === Number(usuarioSeleccionado.value))
+  const usuario = usuarios.value.find(u => u.email === usuarioBusqueda.value)
   return usuario ? usuario.permisos : []
 })
 
@@ -1304,7 +1309,7 @@ const guardarCambios = () => {
   letter-spacing: 0.4px;
 }
 
-.permiso-select {
+.permiso-input {
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
@@ -1314,18 +1319,12 @@ const guardarCambios = () => {
   color: var(--txt-normal);
   font-family: inherit;
   outline: none;
-  appearance: none;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.permiso-select:focus {
+.permiso-input:focus {
   border-color: var(--azul);
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
-}
-
-.permiso-select::-ms-expand {
-  display: none; /* Ocultar flecha en IE */
 }
 
 /* LISTA DE PERMISOS */
@@ -1350,6 +1349,11 @@ const guardarCambios = () => {
   background: var(--bg-card);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.permiso-item.permiso-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* INFORMACIÓN DEL PERMISO */
@@ -1487,6 +1491,13 @@ const guardarCambios = () => {
   background: #fee2e2;
   color: #991b1b;
   border: 1px solid #fecaca;
+}
+
+.mensaje-error-email {
+  font-size: 11px;
+  color: #dc2626;
+  margin-top: -10px;
+  font-weight: 600;
 }
 
 /* ICONOS EN LOS MENSAJES */
