@@ -47,12 +47,12 @@
             <select v-model="form.productoId" class="mov-select">
               <option value="">Seleccionar producto...</option>
               <optgroup v-for="cat in productosStore.categorias" :key="cat" :label="cat.charAt(0).toUpperCase() + cat.slice(1)">
-                <option v-for="p in productosStore.productos.filter(prod => prod.categoria === cat)" :key="p.id" :value="p.id">
+                <option v-for="p in productosStore.productos.filter(prod => (prod.categoria?.nombre || prod.categoria) === cat)" :key="p._id || p.id" :value="p._id || p.id">
                   {{ p.nombre }}
                 </option>
               </optgroup>
-              <optgroup v-if="productosStore.productos.some(p => !p.categoria || !productosStore.categorias.includes(p.categoria))" label="Otros">
-                <option v-for="p in productosStore.productos.filter(prod => !prod.categoria || !productosStore.categorias.includes(prod.categoria))" :key="p.id" :value="p.id">
+              <optgroup v-if="productosStore.productos.some(p => !p.categoria || !productosStore.categorias.includes(p.categoria?.nombre || p.categoria))" label="Otros">
+                <option v-for="p in productosStore.productos.filter(prod => !prod.categoria || !productosStore.categorias.includes(prod.categoria?.nombre || prod.categoria))" :key="p._id || p.id" :value="p._id || p.id">
                   {{ p.nombre }}
                 </option>
               </optgroup>
@@ -163,14 +163,14 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="mov in historialFiltrado" :key="mov.id">
+                <tr v-for="mov in historialFiltrado" :key="mov._id || mov.id">
                   <td>
                     <div class="mov-fecha-col">{{ mov.fechaFormato }}</div>
                   </td>
                   <td>
                     <div class="mov-prod-col">
                       <div class="mov-prod-thumb">
-                        <img :src="getCatIcon(mov.categoria)"
+                        <img :src="getCatIcon(mov.categoria?.nombre || mov.categoria)"
                           style="width:18px;height:18px;object-fit:contain;opacity:0.6;" />
                       </div>
                       <span class="mov-prod-name">{{ mov.producto }}</span>
@@ -237,10 +237,9 @@
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onActivated, onMounted } from 'vue'
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
-
 
 
 import { useUsuarioStore } from '../stores/usuario'
@@ -267,7 +266,7 @@ const form = ref({
 const errorStock = ref('')
 
 const productoSeleccionado = computed(() =>
-  productosStore.productos.find(p => p.id === form.value.productoId) || null
+  productosStore.productos.find(p => (p._id || p.id) === form.value.productoId) || null
 )
 
 
@@ -324,9 +323,9 @@ const totalSalidasMes = computed(() => {
 })
 
 const puede = (permiso) => {
-  if (usuarioStore.rol === 'administrador') return true
-  const permisos = usuarioStore.permisos || []
-  return permisos.includes(permiso)
+  const perms = usuarioStore.permisos || []
+  if (perms.includes('*')) return true
+  return perms.includes(permiso)
 }
 
 const registrarMovimiento = () => {
@@ -373,6 +372,11 @@ const registrarMovimiento = () => {
   }
   errorStock.value = ''
 }
+
+onMounted(async () => {
+  await productosStore.cargarProductos()
+  await productosStore.cargarMovimientos()
+})
 </script>
 
 <style scoped>

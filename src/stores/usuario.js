@@ -1,18 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import api from '../views/api'
 
 export const useUsuarioStore = defineStore('usuario', () => {
     const fotoPerfil = ref(localStorage.getItem('fotoPerfil-invenstock') || '/images/User/capibara.png')
-    const rol = ref(localStorage.getItem('rol-usuario') || '') // 'administrador' o 'usuario'
+    const rol = ref(localStorage.getItem('rol-usuario') || '')
     const token = ref(localStorage.getItem('token-auth') || '')
     const estaAutenticado = ref(!!localStorage.getItem('token-auth'))
+    const permisos = ref(JSON.parse(localStorage.getItem('permisos-usuario') || '[]'))
 
-    // Estado del perfil con persistencia
     const perfil = ref(JSON.parse(localStorage.getItem('usuario-perfil-invenstock')) || {
-      nombre: 'Ricardo Alcaraz',
-      correo: 'r.alcaraz@invenstock.com',
-      cargo: 'Administrador de Inventario',
-      ubicacion: 'Sede La Costa'
+        nombre: '',
+        correo: '',
+        cargo: '',
+        ubicacion: ''
     })
 
     const cambiarFotoPerfil = (nuevaFoto) => {
@@ -21,25 +22,86 @@ export const useUsuarioStore = defineStore('usuario', () => {
     }
 
     const actualizarPerfil = (nuevoPerfil) => {
-      perfil.value = { ...nuevoPerfil }
-      localStorage.setItem('usuario-perfil-invenstock', JSON.stringify(perfil.value))
+        perfil.value = { ...nuevoPerfil }
+        localStorage.setItem('usuario-perfil-invenstock', JSON.stringify(perfil.value))
     }
 
-    const iniciarSesion = (email, password, userRole) => {
-        // En una aplicación real, aquí harías una llamada a tu backend para validar las credenciales y obtener el rol y token
-        // por ahora, simularemos esto con una validación simple y asignaremos un rol basado en el email
-        if (email && password) {
+    // 🔥 LOGIN REAL
+    const iniciarSesion = async (email, password) => {
+        try {
+            const res = await api.post('/auth/login', { email, password })
+            const { token: nuevoToken, usuario } = res.data
+
+            token.value = nuevoToken
+            rol.value = usuario.rol
             estaAutenticado.value = true
-            rol.value = userRole || 'usuario' // Se puede asignar 'administrador' o 'usuario' según el caso
-            token.value = 'fake-token-' + Math.random().toString(36).substr(2, 9)
+            permisos.value = usuario.permisos || []
 
-            // Guardar en localStorage para persistencia
-            localStorage.setItem('rol-usuario', rol.value)
-            localStorage.setItem('token-auth', token.value)
+            perfil.value = {
+                nombre: `${usuario.nombre} ${usuario.apellido || ''}`.trim(),
+                correo: usuario.email,
+                cargo: usuario.rol,
+                ubicacion: usuario.ubicacion || ''
+            }
 
-            return true
+            localStorage.setItem('token-auth', nuevoToken)
+            localStorage.setItem('rol-usuario', usuario.rol)
+            localStorage.setItem('permisos-usuario', JSON.stringify(usuario.permisos || []))
+            localStorage.setItem('usuario-perfil-invenstock', JSON.stringify(perfil.value))
+
+            return { success: true }
+        } catch (error) {
+            const mensaje = error.response?.data?.error || 'Error al iniciar sesión'
+            return { success: false, error: mensaje }
         }
-        return false
+    }
+
+    // REGISTRO REAL
+    const registrarse = async (nombre, apellido, email, password, confirmPassword) => {
+        try {
+            const res = await api.post('/auth/register', { nombre, apellido, email, password, confirmPassword })
+            return { success: true }
+        } catch (error) {
+            const mensaje = error.response?.data?.error || 'Error en el registro'
+            return { success: false, error: mensaje }
+        }
+    }
+
+    //CARGAR PERFIL DESDE BACKEND
+    const cargarPerfil = async () => {
+        try {
+            const res = await api.get('/usuario/perfil')
+            // El backend devuelve los datos en res.data.data
+            const datos = res.data.data
+            perfil.value = {
+                nombre: datos.nombre,
+                correo: datos.correo,
+                cargo: datos.cargo,
+                ubicacion: datos.ubicacion
+            }
+            if (datos.fotoPerfil) {
+                fotoPerfil.value = datos.fotoPerfil
+            }
+            localStorage.setItem('usuario-perfil-invenstock', JSON.stringify(perfil.value))
+        } catch (error) {
+            console.error('Error al cargar perfil:', error)
+        }
+    }
+
+    // GUARDAR PERFIL EN BACKEND
+    const guardarPerfil = async (nuevosDatos) => {
+        try {
+            const res = await api.put('/usuario/perfil', {
+                nombre: nuevosDatos.nombre,
+                cargo: nuevosDatos.cargo,
+                ubicacion: nuevosDatos.ubicacion,
+                fotoPerfil: nuevosDatos.fotoPerfil || fotoPerfil.value
+            })
+            actualizarPerfil(nuevosDatos)
+            return { success: true }
+        } catch (error) {
+            return { success: false, error: 'Error al guardar perfil' }
+        }
     }
 
     const cerrarSesion = () => {
@@ -47,12 +109,13 @@ export const useUsuarioStore = defineStore('usuario', () => {
         rol.value = ''
         token.value = ''
         estaAutenticado.value = false
+        permisos.value = []
 
-        // Limpiar localStorage
         localStorage.removeItem('fotoPerfil-invenstock')
         localStorage.removeItem('rol-usuario')
         localStorage.removeItem('token-auth')
         localStorage.removeItem('usuario-perfil-invenstock')
+        localStorage.removeItem('permisos-usuario')
     }
 
     return {
@@ -61,9 +124,13 @@ export const useUsuarioStore = defineStore('usuario', () => {
         rol,
         token,
         estaAutenticado,
+        permisos,
         iniciarSesion,
+        registrarse,
         cerrarSesion,
         perfil,
-        actualizarPerfil
+        actualizarPerfil,
+        cargarPerfil,
+        guardarPerfil
     }
 })

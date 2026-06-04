@@ -98,14 +98,16 @@ const toggleConfirm = () => {
   showConfirm.value = !showConfirm.value;
 };
 
-const registrarse = () => {
-  // Validar campos vacíos
+// VALIDACIÓN Y REGISTRO
+import { useUsuarioStore } from '../stores/usuario'
+const usuarioStore = useUsuarioStore()
+
+const registrarse = async () => {
   if (!nombre.value || !apellido.value || !email.value) {
     alert("Por favor, completa todos los campos.");
     return;
   }
 
-  // Validar requisitos de contraseña
   const isLengthValid = password.value.length >= 12;
   const hasUpper = /[A-Z]/.test(password.value);
   const hasNumber = /[0-9]/.test(password.value);
@@ -121,10 +123,20 @@ const registrarse = () => {
     return;
   }
 
-  // Simulación de registro exitoso
-  console.log("Registrando:", { nombre: nombre.value, email: email.value });
-  alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
-  router.push("/login");
+  const resultado = await usuarioStore.registrarse(
+    nombre.value,
+    apellido.value,
+    email.value,
+    password.value,
+    confirmPassword.value
+  )
+
+  if (resultado.success) {
+    alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+    router.push("/login");
+  } else {
+    alert(resultado.error || "Error al registrarse");
+  }
 };
 </script>
 

@@ -69,23 +69,19 @@ const irARecuperacion = () => {
   router.push("/recuperar-contrasena");
 };
 
-const iniciarSesion = () => {
+const iniciarSesion = async () => {
   if (!email.value || !password.value) {
     alert("Por favor, completa todos los campos.");
     return;
   }
 
-  // Simula la validación del usuario y asigna un rol (en una app real, esto vendría del backend)
-  const userRole = email.value === 'admin@test.com' ? 'administrador' : 'usuario';
+  const resultado = await usuarioStore.iniciarSesion(email.value, password.value)
 
-  // llama el método del store para iniciar sesión y redirige al dashboard si es exitoso
-  const success = usuarioStore.iniciarSesion(email.value, password.value, userRole);
-
-  if (success) {
+  if (resultado.success) {
     notificacionesStore.conectar()
     router.push("/dashboard");
   } else {
-    alert("Error al iniciar sesión");
+    alert(resultado.error || "Error al iniciar sesión");
   }
 }
 

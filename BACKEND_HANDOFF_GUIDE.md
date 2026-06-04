@@ -54,29 +54,7 @@ Para alimentar la vista de **Reportes** y las tablas de alertas, el objeto `Prod
 
 ---
 
-## 4. API del Asistente IA (AIBot)
 
-El componente `AIBot` requiere los siguientes endpoints para funcionar de manera reactiva:
-
-### Endpoints Requeridos:
-
-1.  **`GET /api/ai/suggestions`**: Retorna recomendaciones inteligentes.
-2.  **`PATCH /api/ai/suggestions/{id}/read`**: Marca una notificación como leída.
-3.  **`POST /api/ai/suggestions/read-all`**: Marca todas como leídas.
-
-### Modelo de Sugerencia:
-
-```json
-{
-  "id": "UUID",
-  "tipo": "alerta | sugerencia | recordatorio | oferta | mantenimiento",
-  "icono": "emoji o string",
-  "titulo": "String",
-  "descripcion": "String",
-  "createdAt": "ISO DateTime",
-  "leida": "boolean"
-}
-```
 
 ### Lógica de generación (Backend):
 

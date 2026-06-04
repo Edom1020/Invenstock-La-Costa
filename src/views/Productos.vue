@@ -278,7 +278,7 @@
 
 <script setup>
 import Sidebar from "../components/Sidebar.vue";
-import { ref, computed, inject, watch } from 'vue'
+import { ref, computed, inject, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProductosStore } from '../stores/productos' // Importar store
 import { useConfiguracionStore } from '../stores/configuracion'
@@ -358,8 +358,7 @@ const confirmarEliminar = (prod) => {
 }
 
 const eliminar = () => {
-  productosStore.eliminarProducto(productoAEliminar.value.id)
-  // Cuando tengas backend: await fetch(`/api/productos/${productoAEliminar.value.id}`, { method: 'DELETE' })
+await productosStore.eliminarProducto(productoAEliminar.value.id || productoAEliminar.value._id)
   modalEliminarVisible.value = false
   productoAEliminar.value = null
 }
@@ -443,6 +442,10 @@ watch([busqueda, categoriaActiva], () => {
 const totalPaginas = computed(() =>
   Math.max(1, Math.ceil(productosFiltrados.value.length / porPagina))
 )
+
+onMounted(async () => {
+  await productosStore.cargarProductos()
+})
 </script>
 
 <style scoped>

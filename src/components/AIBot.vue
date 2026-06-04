@@ -103,14 +103,16 @@ const fetchSugerencias = async () => {
   error.value = null
   
   try {
-    // PREPARACIÓN BACKEND:
-    // const response = await fetch('/api/ai/suggestions')
-    // if (!response.ok) throw new Error('Error al cargar sugerencias')
-    // sugerencias.value = await response.json()
-    
-    // Simulación de delay de red
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    generarSugerencias() // Mantener generador local por ahora
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/ai/suggestions`,
+      {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token-auth')}`
+        }
+      }
+    )
+    if (!response.ok) throw new Error('Error al cargar sugerencias')
+    sugerencias.value = await response.json()
   } catch (err) {
     error.value = "No pudimos conectar con el asistente. Intenta de nuevo."
     console.error(err)
@@ -120,12 +122,14 @@ const fetchSugerencias = async () => {
 }
 
 const handleMarcarLeida = async (id, index) => {
-  if (sugerencias.value[index].leida) return
-
   try {
-    // PREPARACIÓN BACKEND:
-    // await fetch(`/api/ai/suggestions/${id}/read`, { method: 'PATCH' })
-    
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/ai/suggestions/${id}/read`,
+      {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token-auth')}` }
+      }
+    )
     sugerencias.value[index].leida = true
   } catch (err) {
     console.error("Error al marcar como leída", err)

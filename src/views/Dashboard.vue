@@ -135,7 +135,7 @@
 <script setup>
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onMounted } from 'vue'
 
 
 import { useTemaStore } from '../stores/tema'
@@ -206,6 +206,11 @@ const limpiarFiltros = () => {
   filtroTipo.value = 'Todos'
   filtroCategoria.value = 'Todas'
 }
+
+onMounted(async () => {
+  await productosStore.cargarProductos()
+  await productosStore.cargarMovimientos()
+})
 
 </script>
 

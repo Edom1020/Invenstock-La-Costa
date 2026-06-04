@@ -249,7 +249,7 @@
 
 <script setup>
 import Sidebar from "../components/Sidebar.vue"
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useTemaStore } from '../stores/tema'
 import { useUsuarioStore } from '../stores/usuario'
 import { useProductosStore } from '../stores/productos'
@@ -433,6 +433,11 @@ const estadoTexto = (estado) => {
   }
   return textos[estado] || estado
 }
+
+onMounted(async () => {
+  await productosStore.cargarLotes()
+  await productosStore.cargarProductos()
+})
 </script>
 
 <style scoped>
