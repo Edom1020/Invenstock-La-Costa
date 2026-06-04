@@ -357,7 +357,7 @@ const confirmarEliminar = (prod) => {
   modalEliminarVisible.value = true
 }
 
-const eliminar = () => {
+const eliminar = async () => {
 await productosStore.eliminarProducto(productoAEliminar.value.id || productoAEliminar.value._id)
   modalEliminarVisible.value = false
   productoAEliminar.value = null
