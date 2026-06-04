@@ -85,7 +85,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="prod in productosFiltrados" :key="prod.id">
+              <tr v-for="prod in productosPaginados" :key="prod.id">
                 <td>
                   <div class="prod-img-container">
                     <img v-if="prod.imagen" :src="prod.imagen" class="prod-img-thumb" />
@@ -278,7 +278,7 @@
 
 <script setup>
 import Sidebar from "../components/Sidebar.vue";
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProductosStore } from '../stores/productos' // Importar store
 import { useConfiguracionStore } from '../stores/configuracion'
@@ -426,6 +426,18 @@ const productosFiltrados = computed(() => {
       p.sku.toLowerCase().includes(busqueda.value.toLowerCase())
     )
   return lista
+})
+
+// ── PRODUCTOS PAGINADOS (Rebanada de la lista filtrada) ──
+const productosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * porPagina
+  const fin = inicio + porPagina
+  return productosFiltrados.value.slice(inicio, fin)
+})
+
+// Resetear a la página 1 cuando cambian los filtros
+watch([busqueda, categoriaActiva], () => {
+  paginaActual.value = 1
 })
 
 const totalPaginas = computed(() =>

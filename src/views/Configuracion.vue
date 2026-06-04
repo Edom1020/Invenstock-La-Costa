@@ -66,7 +66,13 @@
               </div>
             </div>
 
-            <button class="conf-btn-edit" @click="modoEdicion = !modoEdicion">
+            <!-- Aviso de validación de email -->
+            <div v-if="esperandoValidacionEmail" class="email-validation-alert">
+              <p>Se ha enviado un enlace de validación al correo original. <strong>Verifica tu email</strong> para aplicar el cambio.</p>
+              <button class="btn-verify-sim" @click="confirmarCambioEmail">Simular Verificación ✅</button>
+            </div>
+
+            <button class="conf-btn-edit" @click="toggleEdicion">
               {{ modoEdicion ? 'Guardar' : 'Editar Perfil' }}
             </button>
           </div>
@@ -360,13 +366,10 @@ const cambiarFoto = (e) => {
 }
 
 const modoEdicion = ref(false)
+const esperandoValidacionEmail = ref(false)
+const correoOriginal = ref('')
 
-const perfil = reactive({
-  nombre:    'Ricardo Alcaraz',
-  correo:    'r.alcaraz@invenstock.com',
-  cargo:     'Administrador de Inventario',
-  ubicacion: 'Sede La Costa'
-})
+const perfil = reactive({ ...usuarioStore.perfil })
 
 // Usar un store para la configuración de inventario si queremos que persista
 import { useConfiguracionStore } from '../stores/configuracion'
@@ -583,17 +586,42 @@ const esAdmin = computed(() => {
   return usuarioStore.rol === 'administrador'
 })
 
+const toggleEdicion = () => {
+  if (!modoEdicion.value) {
+    // Entrando en modo edición: Guardamos el correo actual para validarlo luego
+    correoOriginal.value = perfil.correo
+  } else {
+    // Al hacer clic en "Guardar"
+    guardarCambios()
+  }
+  modoEdicion.value = !modoEdicion.value
+}
+
+const confirmarCambioEmail = () => {
+  usuarioStore.actualizarPerfil(perfil)
+  esperandoValidacionEmail.value = false
+  modoEdicion.value = false
+  alert('¡Correo electrónico actualizado correctamente!')
+}
+
 const cancelar = () => {
-  // Revertir a los valores originales o del store
-  Object.assign(perfil, usuarioStore.perfil) // Asumiendo que el store de usuario guarda el perfil
+  // Revertir a los valores originales del store
+  Object.assign(perfil, usuarioStore.perfil)
   // Revertir configuración de inventario
   Object.assign(inventario, configuracionStore.inventario)
-  // Revertir notificaciones
-  // Object.assign(notif, configuracionStore.notificaciones) // Si tuvieras un store para notificaciones
   modoEdicion.value = false
+  esperandoValidacionEmail.value = false
 }
 
 const guardarCambios = () => {
+  // Si el correo cambió, requerimos validación
+  if (perfil.correo !== correoOriginal.value) {
+    esperandoValidacionEmail.value = true
+    alert(`Se ha enviado un enlace de validación al correo original: ${correoOriginal.value}. Por favor, verifícalo para completar el cambio.`)
+    return
+  }
+
+  usuarioStore.actualizarPerfil(perfil)
   modoEdicion.value = false
   alert('¡Configuración guardada!')
 }
@@ -848,6 +876,37 @@ const guardarCambios = () => {
 
 .conf-btn-edit:hover {
   background: #163d5e;
+}
+
+.email-validation-alert {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+.btn-verify-sim {
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-verify-sim:hover {
+  background: #d97706;
 }
 
 /* ── APARIENCIA ── */

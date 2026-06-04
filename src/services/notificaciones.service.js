@@ -12,27 +12,54 @@ const socket = io('http://localhost:3000', {
 const SONIDOS = {
   normal:      { archivo: '/sonidos/alert-normal.mp3',          volumen: 0.5, repetir: false },
   critico:     { archivo: '/sonidos/alert-critical.mp3',        volumen: 0.8, repetir: false },
-  muy_critico: { archivo: '/sonidos/alert-critical-urgent.mp3', volumen: 1.0, repetir: true  },
+  muy_critico: { archivo: '/sonidos/alert-critical-urgent.mp3', volumen: 1.0, repetir: false  },
 }
+
+let audioActual = null
 
 export const reproducirSonido = (tipoSonido) => {
   try {
+    console.log(`🔊 Intentando reproducir sonido: ${tipoSonido}`)
     const config = SONIDOS[tipoSonido]
-    if (!config) return
-    const audio = new Audio(config.archivo)
+    if (!config) {
+      console.warn(`⚠️ No se encontró configuración para el sonido: ${tipoSonido}`)
+      return
+    }
+
+    // Si ya hay un sonido sonando y es el mismo tipo, no reiniciar
+    if (audioActual && audioActual.src === config.archivo && config.repetir) {
+      return audioActual
+    }
+
+    // Detener sonido anterior si existe
+    if (audioActual) {
+      audioActual.pause()
+      audioActual.currentTime = 0
+    }
+
+    const audio = new Audio()
+    audio.src = config.archivo
     audio.volume = config.volumen
     if (config.repetir) audio.loop = true
-    audio.play().catch(err => console.error('Error al reproducir sonido:', err))
+
+    audioActual = audio
+
+    audio.play()
+      .then(() => console.log(`✅ Sonido ${tipoSonido} reproducido con éxito`))
+      .catch(err => console.error(`❌ Error al reproducir sonido ${tipoSonido}:`, err))
+
     return audio
   } catch (error) {
     console.error('Error en reproducirSonido:', error)
   }
 }
 
-export const detenerSonido = (audioElement) => {
-  if (audioElement) {
-    audioElement.pause()
-    audioElement.currentTime = 0
+export const detenerSonido = () => {
+  if (audioActual) {
+    audioActual.pause()
+    audioActual.currentTime = 0
+    audioActual = null
+    console.log('🛑 Sonido detenido')
   }
 }
 

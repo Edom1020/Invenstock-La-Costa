@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { useConfiguracionStore } from './configuracion'
 import { useNotificacionesStore } from './notificaciones'
+import { reproducirSonido } from '../services/notificaciones.service'
 
 export const useProductosStore = defineStore('productos', () => {
   // Estado inicial con los productos que tenías en la vista
@@ -101,16 +102,30 @@ export const useProductosStore = defineStore('productos', () => {
         .reduce((acc, l) => acc + (l.cantidad || 0), 0)
       prod.stock = total
 
+      console.log(`📦 Sincronizando stock para ${prod.nombre}: ${prod.stock} unidades`)
+
       // Lógica de conexión con Notificaciones
       const configStore = useConfiguracionStore()
       const notificacionesStore = useNotificacionesStore()
-      
+
       if (prod.stock <= configStore.inventario.stockMinimoGlobal) {
         notificacionesStore.agregarNotificacion(
           'Alerta de Stock Bajo',
           `El producto "${prod.nombre}" ha alcanzado el nivel de alerta (${prod.stock} unidades).`,
           'alerta'
         )
+      }
+
+      // ── Lógica de Sonidos según el stock ──
+      if (prod.stock <= 5) {
+        console.log(`🚨 Disparando sonido muy_critico para ${prod.nombre}`)
+        reproducirSonido('muy_critico')
+      } else if (prod.stock <= 15) {
+        console.log(`⚠️ Disparando sonido critico para ${prod.nombre}`)
+        reproducirSonido('critico')
+      } else if (prod.stock <= 30) {
+        console.log(`🔔 Disparando sonido normal para ${prod.nombre}`)
+        reproducirSonido('normal')
       }
     }
   }
@@ -246,6 +261,15 @@ export const useProductosStore = defineStore('productos', () => {
           `"${prod.nombre}" clasifica como stock bajo con el nuevo umbral de ${nuevoUmbral} unidades.`,
           'alerta'
         )
+
+        // Disparar sonido según el nivel de stock
+        if (prod.stock <= 5) {
+          reproducirSonido('muy_critico')
+        } else if (prod.stock <= 15) {
+          reproducirSonido('critico')
+        } else if (prod.stock <= 30) {
+          reproducirSonido('normal')
+        }
       }
     })
   })

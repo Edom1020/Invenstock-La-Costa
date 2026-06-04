@@ -7,9 +7,22 @@ export const useUsuarioStore = defineStore('usuario', () => {
     const token = ref(localStorage.getItem('token-auth') || '')
     const estaAutenticado = ref(!!localStorage.getItem('token-auth'))
 
+    // Estado del perfil con persistencia
+    const perfil = ref(JSON.parse(localStorage.getItem('usuario-perfil-invenstock')) || {
+      nombre: 'Ricardo Alcaraz',
+      correo: 'r.alcaraz@invenstock.com',
+      cargo: 'Administrador de Inventario',
+      ubicacion: 'Sede La Costa'
+    })
+
     const cambiarFotoPerfil = (nuevaFoto) => {
         fotoPerfil.value = nuevaFoto
         localStorage.setItem('fotoPerfil-invenstock', nuevaFoto)
+    }
+
+    const actualizarPerfil = (nuevoPerfil) => {
+      perfil.value = { ...nuevoPerfil }
+      localStorage.setItem('usuario-perfil-invenstock', JSON.stringify(perfil.value))
     }
 
     const iniciarSesion = (email, password, userRole) => {
@@ -39,6 +52,7 @@ export const useUsuarioStore = defineStore('usuario', () => {
         localStorage.removeItem('fotoPerfil-invenstock')
         localStorage.removeItem('rol-usuario')
         localStorage.removeItem('token-auth')
+        localStorage.removeItem('usuario-perfil-invenstock')
     }
 
     return {
@@ -48,6 +62,8 @@ export const useUsuarioStore = defineStore('usuario', () => {
         token,
         estaAutenticado,
         iniciarSesion,
-        cerrarSesion
+        cerrarSesion,
+        perfil,
+        actualizarPerfil
     }
 })
