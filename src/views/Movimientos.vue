@@ -389,6 +389,10 @@ const registrarMovimiento = async () => {
     return
   }
 
+  console.log('✅ Movimiento registrado. Historial en store:', productosStore.historialMovimientos.length)
+  console.log('✅ historialFiltrado:', historialFiltrado.value.length, '| paginaActual:', paginaActual.value)
+  console.log('✅ Primeros 2 del historial:', productosStore.historialMovimientos.slice(0,2).map(m => m.producto + ' ' + m.fechaFormato))
+
   // Limpiar formulario, filtros y volver a página 1 para ver el nuevo movimiento
   form.value = {
     productoId: '',
@@ -400,6 +404,8 @@ const registrarMovimiento = async () => {
   filtroTipo.value = 'Todos'
   filtroCategoria.value = 'Todas'
   paginaActual.value = 1
+
+  console.log('✅ Después del reset — historialPaginado tiene:', historialPaginado.value.length, 'items en página', paginaActual.value)
 }
 
 const formatearCategoria = (cat) => {
