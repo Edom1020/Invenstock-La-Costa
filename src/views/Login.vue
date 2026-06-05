@@ -78,7 +78,11 @@ const iniciarSesion = async () => {
   const resultado = await usuarioStore.iniciarSesion(email.value, password.value)
 
   if (resultado.success) {
-    notificacionesStore.conectar()
+    try {
+      notificacionesStore.conectar()
+    } catch (e) {
+      console.warn('Socket no disponible, continuando sin notificaciones en tiempo real.')
+    }
     router.push("/dashboard");
   } else {
     alert(resultado.error || "Error al iniciar sesión");
