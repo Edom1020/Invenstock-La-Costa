@@ -353,81 +353,83 @@ const lote = reactive({
 })
  
 // ── Guardar ──
-const guardarProducto = () => {
-  // ── Validación básica ──
-  if (!producto.nombre.trim()) {
-    alert('El nombre del producto es obligatorio.')
-    return
-  }
-
-  if (!producto.sku.trim()) {
-    alert('El SKU es obligatorio.')
-    return
-  }
-
-  if (!producto.categoria.trim()) {
-    alert('Debes seleccionar una categoría.')
-    return
-  }
-
-  // ── Validación de lote (si está activo) ──
-  if (usaLotes.value) {
-    if (!lote.codigo.trim()) {
-      alert('El código de lote es obligatorio cuando usas lotes.')
+  const guardarProducto = async () => {
+    // ── Validación básica ──
+    if (!producto.nombre.trim()) {
+      alert('El nombre del producto es obligatorio.')
       return
     }
-
-    if (lote.usaVencimiento && !lote.fechaVencimiento) {
-      alert('La fecha de vencimiento es obligatoria.')
+  
+    if (!producto.sku.trim()) {
+      alert('El SKU es obligatorio.')
       return
     }
-
-    if (!lote.diasAlerta || lote.diasAlerta < 1) {
-      alert('Los días de alerta deben ser al menos 1.')
+  
+    if (!producto.categoria.trim()) {
+      alert('Debes seleccionar una categoría.')
       return
     }
-  }
-
-  // ── Construir objeto para enviar ──
-  const datosProducto = {
-    nombre:        producto.nombre,
-    descripcion:   producto.descripcion,
-    sku:           producto.sku,
-    marca:         producto.marca,
-    categoria:     producto.categoria,
-    precio:        producto.precio,
-    stock:         producto.stockInicial,
-    stockMinimo:   producto.stockMinimo,
-    stockMax:      producto.stockMax,
-    usaLotes:      usaLotes.value,
-    imagen:        imagenPreview.value
-  }
-
-  // ── Si usa lotes, agregar datos del lote ──
-  if (usaLotes.value) {
-    datosProducto.lote = {
-      codigo:              lote.codigo,
-      fechaEntrada:        lote.fechaEntrada,
-      usaVencimiento:     lote.usaVencimiento,
-      fechaVencimiento:   lote.fechaVencimiento,
-      diasAlerta:         lote.diasAlerta,
-      observacion:        lote.observacion
+  
+    // ── Validación de lote (si está activo) ──
+    if (usaLotes.value) {
+      if (!lote.codigo.trim()) {
+        alert('El código de lote es obligatorio cuando usas lotes.')
+        return
+      }
+  
+      if (lote.usaVencimiento && !lote.fechaVencimiento) {
+        alert('La fecha de vencimiento es obligatoria.')
+        return
+      }
+  
+      if (!lote.diasAlerta || lote.diasAlerta < 1) {
+        alert('Los días de alerta deben ser al menos 1.')
+        return
+      }
     }
+  
+    // ── Construir objeto para enviar ──
+    const datosProducto = {
+      nombre:        producto.nombre,
+      descripcion:   producto.descripcion,
+      sku:           producto.sku,
+      marca:         producto.marca,
+      categoria:     producto.categoria,
+      precio:        producto.precio,
+      stock:         producto.stockInicial,
+      stockMinimo:   producto.stockMinimo,
+      stockMax:      producto.stockMax,
+      usaLotes:      usaLotes.value,
+      imagen:        imagenPreview.value
+    }
+  
+    // ── Si usa lotes, agregar datos del lote ──
+    if (usaLotes.value) {
+      datosProducto.lote = {
+        codigo:              lote.codigo,
+        fechaEntrada:        lote.fechaEntrada,
+        usaVencimiento:     lote.usaVencimiento,
+        fechaVencimiento:   lote.fechaVencimiento,
+        diasAlerta:         lote.diasAlerta,
+        observacion:        lote.observacion
+      }
+    }
+  
+    // ── Guardar en el store global ──
+  const resultado = await productosStore.agregarProducto(datosProducto)
+  if (resultado.success) {
+    alert(`✅ Producto "${producto.nombre}" guardado correctamente.`)
+    router.push('/productos')
+  } else {
+    alert(`❌ Error al guardar: ${resultado.error}`)
   }
-
-  // ── Guardar en el store global ──
-const resultado = await productosStore.agregarProducto(datosProducto)
-if (resultado.success) {
-  alert(`✅ Producto "${producto.nombre}" guardado correctamente.`)
-  router.push('/productos')
-} else {
-  alert(`❌ Error al guardar: ${resultado.error}`)
 }
- 
-// ── Cancelar ──
-const cancelar = () => {
-  router.push('/productos')
-}
+   
+  // ── Cancelar ──
+  const cancelar = () => {
+    router.push('/productos')
+  }
+
 </script>
  
  
