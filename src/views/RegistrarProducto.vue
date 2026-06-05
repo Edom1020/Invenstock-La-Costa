@@ -321,19 +321,41 @@ const productosStore = useProductosStore()
  
 const router = useRouter()
  
-// ── Imagen (solo preview local, no se envía al backend) ──
+// ── Imagen ──
 const imagenPreview = ref(null)
-const cargarImagen = (e) => {
+const imagenBase64 = ref(null)
+
+const comprimirImagen = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const img = new Image()
+      img.onload = () => {
+        const MAX = 300
+        let w = img.width, h = img.height
+        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX }
+        else if (h > MAX)     { w = Math.round(w * MAX / h); h = MAX }
+        const canvas = document.createElement('canvas')
+        canvas.width = w; canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', 0.75))
+      }
+      img.src = ev.target.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+const cargarImagen = async (e) => {
   const file = e.target.files[0]
   if (!file) return
-  // Validar tamaño máximo 5MB
   if (file.size > 5 * 1024 * 1024) {
     alert('La imagen no puede superar los 5MB.')
     e.target.value = ''
     return
   }
-  // Crear URL local solo para preview visual — no se envía al backend
   imagenPreview.value = URL.createObjectURL(file)
+  imagenBase64.value = await comprimirImagen(file)
 }
  
 // ── Datos del producto ──
@@ -407,8 +429,8 @@ const lote = reactive({
       stock:         producto.stockInicial,
       stockMinimo:   producto.stockMinimo,
       stockMax:      producto.stockMax,
-      usaLotes:      usaLotes.value
-      // imagen no se envía — el backend no tiene ese campo y el límite es 10kb
+      usaLotes:      usaLotes.value,
+      imagen:        imagenBase64.value || null
     }
   
     // ── Si usa lotes, agregar datos del lote ──

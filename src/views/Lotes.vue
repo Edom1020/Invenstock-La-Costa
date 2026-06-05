@@ -349,9 +349,24 @@ const abrirCrearLote = () => {
 
 const abrirEditar = (lote) => {
   modoEdicion.value = true
-  loteTrabajo.value = { 
+  loteTrabajo.value = {
+    id:             lote._id || lote.id,
+    productoId:     lote.productoId
+                      || (typeof lote.producto === 'object' ? lote.producto?._id : lote.producto)
+                      || '',
+    numero:         lote.numero || lote.lote || lote.codigo || '',
+    producto:       typeof lote.producto === 'object'
+                      ? (lote.producto?.nombre || '')
+                      : (lote.producto || ''),
+    sku:            lote.sku || '',
+    cantidad:       lote.cantidad ?? 0,
+    fechaEntrada:   lote.fechaEntrada
+                      ? lote.fechaEntrada.split('T')[0]
+                      : new Date().toISOString().split('T')[0],
     usaVencimiento: lote.usaVencimiento !== undefined ? lote.usaVencimiento : !!lote.fechaVencimiento,
-    ...lote 
+    fechaVencimiento: lote.fechaVencimiento ? lote.fechaVencimiento.split('T')[0] : '',
+    observaciones:  lote.observaciones || lote.observacionLote || '',
+    estado:         lote.estado || 'activo'
   }
   modalVisible.value = true
 }
