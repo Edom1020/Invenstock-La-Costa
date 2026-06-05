@@ -318,7 +318,7 @@ const alertasFiltradas = computed(() => {
   }).map(p => ({
     id: p.id,
     nombre: p.nombre,
-    categoria: p.categoria.charAt(0).toUpperCase() + p.categoria.slice(1),
+    categoria: (p.categoria?.nombre || p.categoria || '').charAt(0).toUpperCase() + (p.categoria?.nombre || p.categoria || '').slice(1),
     enStock: p.stock,
     minimoRequerido: p.stockMinimo
   }))
