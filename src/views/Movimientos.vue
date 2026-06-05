@@ -46,7 +46,11 @@
             <div class="mov-field-label">Producto</div>
             <select v-model="form.productoId" class="mov-select">
               <option value="">Seleccionar producto...</option>
-              <optgroup v-for="cat in productosStore.categorias" :key="cat" :label="cat.charAt(0).toUpperCase() + cat.slice(1)">
+              <optgroup
+                     v-for="cat in productosStore.categorias"
+                     :key="cat?.nombre || cat"
+                     :label="formatearCategoria(cat)"
+                      >
                 <option v-for="p in productosStore.productos.filter(prod => (prod.categoria?.nombre || prod.categoria) === cat)" :key="p._id || p.id" :value="p._id || p.id">
                   {{ p.nombre }}
                 </option>
@@ -145,7 +149,7 @@
                          :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
                          @click="filtroCategoria = cat"
                        >
-                         {{ cat === 'Todas' ? 'Todas' : cat.charAt(0).toUpperCase() + cat.slice(1) }}
+                          {{ cat === 'Todas' ? 'Todas' : formatearCategoria(cat) }}
                        </span>
                      </div>
                    </div>
@@ -371,6 +375,11 @@ const registrarMovimiento = () => {
     notas: ''
   }
   errorStock.value = ''
+}
+
+const formatearCategoria = (cat) => {
+  const nombre = cat?.nombre || cat || ''
+  return String(nombre).charAt(0).toUpperCase() + String(nombre).slice(1)
 }
 
 onMounted(async () => {
