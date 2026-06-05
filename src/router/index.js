@@ -10,7 +10,7 @@ import Movimientos from "../views/Movimientos.vue";
 import Reportes from "../views/Reportes.vue";
 import Configuracion from "../views/Configuracion.vue";
 import RegistrarProducto from "../views/RegistrarProducto.vue";
-import RecuperarContrasena from "../views/RecuperarContrasena.vue/index.js";
+import RecuperarContrasena from "../views/RecuperarContrasena.vue";
 
 
 const routes = [
