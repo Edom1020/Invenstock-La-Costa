@@ -10,13 +10,13 @@ import Movimientos from "../views/Movimientos.vue";
 import Reportes from "../views/Reportes.vue";
 import Configuracion from "../views/Configuracion.vue";
 import RegistrarProducto from "../views/RegistrarProducto.vue";
-import RecuperarContraseña from "../views/RecuperarContraseña.vue";
+import RecuperarContrasena from "../views/RecuperarContrasena.vue/index.js";
 
 
 const routes = [
   { path: "/", component: Selector, meta: { requiresAuth: false } },
   { path: "/login", component: Login, meta: { requiresAuth: false } },
-  { path: "/recuperar-contrasena", component: RecuperarContraseña, meta: { requiresAuth: false } },
+  { path: "/recuperar-contrasena", component: RecuperarContrasena, meta: { requiresAuth: false } },
   { path: "/registro", component: Registro, meta: { requiresAuth: false } },
   { path: "/registrar-producto", component: RegistrarProducto, meta: { requiresAuth: false } },
   { path: "/dashboard",     component: Dashboard,     meta: { requiresAuth: true, roles: ['administrador', 'admin', 'usuario'] } },

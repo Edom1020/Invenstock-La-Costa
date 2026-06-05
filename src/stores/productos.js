@@ -132,7 +132,7 @@ const editarProducto = async (productoEditado) => {
     verificarEstadoStock(prod)
     return { success: true }
   } catch (error) {
-    console.error('❌ Error respuesta backend:', error.response?.data)
+    console.error('❌ Error respuesta backend:', JSON.stringify(error.response?.data, null, 2))
     return { success: false, error: 'Error al editar producto' }
   }
 }
