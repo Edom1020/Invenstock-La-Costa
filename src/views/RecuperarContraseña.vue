@@ -32,7 +32,7 @@
 
       <!-- BOTONES -->
       <button class="send-btn" @click="enviarEmail" :disabled="enviando">
-        {{ enviando ? "Enviando..." : "Enviar Enlace" }}
+       {{ enviando ? "Enviando..." : cooldown > 0 ? `Espera ${cooldown}s` : "Enviar Enlace" }}
       </button>
 
       <button class="back-btn" @click="$router.push('/login')">Volver al Login</button>
@@ -51,37 +51,36 @@ const enviando = ref(false);
 const enviado = ref(false);
 const error = ref("");
 
-const enviarEmail = async () => {
-  // Validar email
-  if (!email.value) {
-    error.value = "Por favor ingresa tu email";
-    return;
-  }
+const cooldown = ref(0)
 
-  if (!email.value.includes("@")) {
-    error.value = "Email inválido";
-    return;
-  }
+const enviarEmail = async () => {
+  if (!email.value) { error.value = "Por favor ingresa tu email"; return; }
+  if (!email.value.includes("@")) { error.value = "Email inválido"; return; }
 
   enviando.value = true;
   error.value = "";
 
   try {
-   const res = await api.post('/auth/recuperar-password', { email: email.value }, { timeout: 10000 })
-    // Si la API retorna éxito:
+    await api.post('/auth/recuperar-password', { email: email.value }, { timeout: 10000 })
     enviado.value = true;
-
-    // Opcional: Volver al login después de 3 segundos
-    setTimeout(() => {
-      router.push("/login");
-    }, 3000);
-
+    setTimeout(() => router.push("/login"), 3000);
   } catch (err) {
-    error.value = "Error al enviar el email. Intenta nuevamente.";
+    if (err.response?.status === 429) {
+      error.value = "Demasiados intentos. Espera unos minutos antes de intentarlo de nuevo.";
+      // Cooldown de 60 segundos
+      cooldown.value = 60
+      const interval = setInterval(() => {
+        cooldown.value--
+        if (cooldown.value <= 0) clearInterval(interval)
+      }, 1000)
+    } else {
+      error.value = "Error al enviar el email. Intenta nuevamente.";
+    }
   } finally {
     enviando.value = false;
   }
 };
+
 </script>
 
 <style scoped>
