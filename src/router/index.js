@@ -19,13 +19,12 @@ const routes = [
   { path: "/recuperar-contrasena", component: RecuperarContraseña, meta: { requiresAuth: false } },
   { path: "/registro", component: Registro, meta: { requiresAuth: false } },
   { path: "/registrar-producto", component: RegistrarProducto, meta: { requiresAuth: false } },
-  { path: "/dashboard", component: Dashboard, meta: { requiresAuth: true, roles: ['administrador', 'usuario'] } },
-  { path: "/productos", component: Productos, meta: { requiresAuth: true, roles: ['administrador', 'usuario'] } },
-  { path: "/lotes", component: Lotes, meta: { requiresAuth: true, roles: ['administrador', 'usuario'] } },
-  { path: "/movimientos", component: Movimientos, meta: { requiresAuth: true, roles: ['administrador', 'usuario'] } },
-  { path: "/reportes", component: Reportes, meta: { requiresAuth: true, roles: ['administrador', 'usuario'] } },
-  { path: "/configuracion", component: Configuracion, meta: { requiresAuth: true, roles: ['administrador', 'usuario'] } },
-  { path: '/reset-password/:token', component: () => import('../views/ResetPassword.vue'), meta: { requiresAuth: false } }
+  { path: "/dashboard",     component: Dashboard,     meta: { requiresAuth: true, roles: ['administrador', 'admin', 'usuario'] } },
+  { path: "/productos",     component: Productos,     meta: { requiresAuth: true, roles: ['administrador', 'admin', 'usuario'] } },
+  { path: "/lotes",         component: Lotes,         meta: { requiresAuth: true, roles: ['administrador', 'admin', 'usuario'] } },
+  { path: "/movimientos",   component: Movimientos,   meta: { requiresAuth: true, roles: ['administrador', 'admin', 'usuario'] } },
+  { path: "/reportes",      component: Reportes,      meta: { requiresAuth: true, roles: ['administrador', 'admin', 'usuario'] } },
+  { path: "/configuracion", component: Configuracion, meta: { requiresAuth: true, roles: ['administrador', 'admin', 'usuario'] } },
      
 ];
 

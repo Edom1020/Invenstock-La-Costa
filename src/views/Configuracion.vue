@@ -575,7 +575,7 @@ const permisosActual = computed(() => {
  */
 const puede = (permisoId) => {
   // El administrador global siempre tiene permiso
-  if (usuarioStore.rol === 'administrador') return true
+  if (usuarioStore.rol === 'administrador' || usuarioStore.rol === 'admin') return true
   
   // Si no es admin, revisamos su lista de permisos en el store
   const permisosUser = usuarioStore.permisos || []
@@ -583,7 +583,7 @@ const puede = (permisoId) => {
 }
 
 const esAdmin = computed(() => {
-  return usuarioStore.rol === 'administrador'
+  return usuarioStore.rol === 'administrador' || usuarioStore.rol === 'admin'
 })
 
 const toggleEdicion = () => {

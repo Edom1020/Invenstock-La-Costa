@@ -406,7 +406,7 @@ const eliminarLote = () => {
 }
 
 const puede = (permiso) => {
-  if (usuarioStore.rol === 'administrador') return true
+  if (usuarioStore.rol === 'administrador' || usuarioStore.rol === 'admin') return true
   const permisos = usuarioStore.permisos || []
   return permisos.includes(permiso)
 }
@@ -436,7 +436,7 @@ const estadoTexto = (estado) => {
 
 onMounted(async () => {
   await productosStore.cargarProductos()
-  if (usuarioStore.rol === 'administrador') {
+  if (usuarioStore.rol === 'administrador' || usuarioStore.rol === 'admin') {
     await productosStore.cargarLotes()
   }
 })

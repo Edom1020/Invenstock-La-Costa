@@ -330,7 +330,7 @@ const limpiarFiltros = () => {
 }
 
 const puede = (permiso) => {
-  if (usuarioStore.rol === 'administrador') return true
+  if (usuarioStore.rol === 'administrador' || usuarioStore.rol === 'admin') return true
   const permisos = usuarioStore.permisos || []
   return permisos.includes(permiso)
 }
