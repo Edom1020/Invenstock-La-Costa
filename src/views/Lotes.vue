@@ -294,7 +294,7 @@ const lotesFiltrados = computed(() => {
     const q = busqueda.value.toLowerCase().trim()
     lista = lista.filter(l =>
       l.numero.toLowerCase().includes(q) ||
-      (l.producto?.nombre || l.producto).toLowerCase().includes(q) ||
+      String(l.producto?.nombre || l.producto || '').toLowerCase().includes(q) ||
       l.sku.toLowerCase().includes(q)
     )
   }
