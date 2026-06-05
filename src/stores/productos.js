@@ -91,15 +91,21 @@ const cargarLotes = async () => {
     lotes.value = raw.map(l => {
       const sub = l.lote && typeof l.lote === 'object' ? l.lote : null
       const productoId = l.productoId || (l.producto && typeof l.producto === 'object' ? l.producto._id : l.producto) || ''
-      const prodEncontrado = productos.value.find(p => (p._id || p.id) === productoId)
+      const skuLote    = l.sku || (l.producto && typeof l.producto === 'object' ? l.producto.sku : '') || ''
+
+      // Busca el producto por ID y, si no lo encuentra, por SKU como fallback
+      const prodEncontrado = productos.value.find(p =>
+        String(p._id || p.id) === String(productoId) ||
+        (skuLote && p.sku === skuLote)
+      )
 
       return {
         ...l,
         numero:           l.numero || (sub ? sub.codigo : l.lote) || l.codigo || '',
         productoId,
         producto:         l.producto && typeof l.producto === 'object' ? l.producto.nombre : (l.producto || ''),
-        sku:              l.sku || (l.producto && typeof l.producto === 'object' ? l.producto.sku : '') || '',
-        cantidad:         l.cantidad || (prodEncontrado ? prodEncontrado.stock : 0),
+        sku:              skuLote,
+        cantidad:         prodEncontrado ? prodEncontrado.stock : (l.cantidad ?? 0),
         fechaEntrada:     (l.fechaEntrada || (sub ? sub.fechaEntrada : null) || '').split('T')[0] || '',
         usaVencimiento:   l.usaVencimiento !== undefined ? l.usaVencimiento : (sub ? !!sub.usaVencimiento : !!l.fechaVencimiento),
         fechaVencimiento: (l.fechaVencimiento || (sub ? sub.fechaVencimiento : null) || '').split('T')[0] || '',
