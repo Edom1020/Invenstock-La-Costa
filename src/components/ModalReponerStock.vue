@@ -1,6 +1,5 @@
 <template>
-  <!-- OVERLAY -->
-  <div class="modal-overlay" @click.self="cerrarModal">
+<div class="modal-overlay" @click.self="cerrarModal">
 
     <!-- MODAL -->
     <div class="modal-container">
@@ -134,17 +133,17 @@ const getCatIcon = (categoria) => {
   return iconos[categoria] || '/images/images-dashboard/macbookicon.png'
 }
 
-const reponer = () => {
+const reponer = async () => {
   if (cantidad.value < 1) {
     alert('La cantidad debe ser mayor a 0')
     return
   }
 
   cargando.value = true
-  
-  // Usamos el store de productos en lugar de fetch para evitar el error 404.
-  // Esto registra el movimiento localmente y dispara la creación automática del lote.
-  const result = productosStore.registrarMovimiento({
+
+  // 1. producto: en lugar de productoId: — el backend valida body('producto')
+  // 2. await — registrarMovimiento es async, sin await result siempre es Promise
+  const result = await productosStore.registrarMovimiento({
     productoId: props.producto.id,
     cantidad: cantidad.value,
     tipo: 'entrada',
@@ -152,19 +151,20 @@ const reponer = () => {
     notas: 'Reposición desde reportes'
   })
 
-  if (result && result.success) {
-    // EMITIR EVENTO DE ÉXITO
+  cargando.value = false
+
+  // 3. result.success puede ser undefined si el store no lo retorna explícitamente
+  //    verificar ausencia de error en vez de presencia de success
+  if (!result?.error) {
     emit('reponedor-exitoso', {
       producto: props.producto.nombre,
       cantidad: cantidad.value,
       nuevoStock: props.producto.enStock + cantidad.value
     })
     cerrarModal()
-  } else if (result && result.error) {
+  } else {
     alert(`Error: ${result.error}`)
   }
-  
-  cargando.value = false
 }
 </script>
 
