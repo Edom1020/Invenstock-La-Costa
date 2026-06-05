@@ -212,6 +212,10 @@
             </div>
           </div>
 
+          <div v-if="errorModal" class="modal-error-banner">
+            {{ errorModal }}
+          </div>
+
           <div class="modal-footer">
             <button class="btn-cancelar" @click="cerrarModal">Cancelar</button>
             <button class="btn-guardar" @click="guardarLote">{{ modoEdicion ? 'Actualizar' : 'Crear' }} Lote</button>
@@ -266,6 +270,7 @@ const modalVisible = ref(false)
 const modoEdicion = ref(false)
 const modalEliminarVisible = ref(false)
 const loteAEliminar = ref(null)
+const errorModal = ref('')
 
 const loteTrabajo = ref({
   productoId: '',
@@ -373,7 +378,7 @@ const abrirEditar = (lote) => {
 
 const cerrarModal = () => {
   modalVisible.value = false
-  // Resetear loteTrabajo para el siguiente uso
+  errorModal.value = ''
   loteTrabajo.value = {
     numero: '',
     producto: '',
@@ -396,7 +401,7 @@ const guardarLote = () => {
     loteTrabajo.value.cantidad === undefined ||
     (loteTrabajo.value.usaVencimiento && !loteTrabajo.value.fechaVencimiento)
   ) {
-    alert('Por favor, completa todos los campos obligatorios (Número de Lote, Producto, Cantidad' + (loteTrabajo.value.usaVencimiento ? ', Fecha de Vencimiento' : '') + ').')
+    errorModal.value = 'Completa los campos obligatorios: Número de Lote, Producto, Cantidad' + (loteTrabajo.value.usaVencimiento ? ', Fecha de Vencimiento' : '') + '.'
     return
   }
 
@@ -918,6 +923,23 @@ tbody td {
 }
 
 .form-textarea { min-height: 80px; resize: vertical; }
+
+.modal-error-banner {
+  margin: 0 24px 4px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dark-mode .modal-error-banner {
+  background: #450a0a;
+  border-color: #7f1d1d;
+  color: #f87171;
+}
 
 .modal-footer {
   display: flex;
