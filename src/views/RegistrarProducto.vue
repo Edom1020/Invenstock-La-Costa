@@ -416,7 +416,7 @@ const lote = reactive({
       }
       
     }
-    console.log('📤 Enviando al backend:', JSON.stringify(datosProducto, null, 2))
+console.log('📤 Enviando al backend:', JSON.stringify(datosProducto, null, 2))
   
     // ── Guardar en el store global ──
   const resultado = await productosStore.agregarProducto(datosProducto)
