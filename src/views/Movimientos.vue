@@ -51,12 +51,12 @@
                      :key="cat?.nombre || cat"
                      :label="formatearCategoria(cat)"
                       >
-                <option v-for="p in productosStore.productos.filter(prod => (prod.categoria?.nombre || prod.categoria) === cat)" :key="p._id || p.id" :value="p._id || p.id">
+                <option v-for="p in productosStore.productos.filter(prod => prod.categoria === (cat?.nombre || cat))" :key="p._id || p.id" :value="p._id || p.id">
                   {{ p.nombre }}
                 </option>
               </optgroup>
-              <optgroup v-if="productosStore.productos.some(p => !p.categoria || !productosStore.categorias.includes(p.categoria?.nombre || p.categoria))" label="Otros">
-                <option v-for="p in productosStore.productos.filter(prod => !prod.categoria || !productosStore.categorias.includes(prod.categoria?.nombre || prod.categoria))" :key="p._id || p.id" :value="p._id || p.id">
+              <optgroup v-if="productosStore.productos.some(p => !p.categoria || !productosStore.categorias.some(c => (c?.nombre || c) === p.categoria))" label="Otros">
+                <option v-for="p in productosStore.productos.filter(prod => !prod.categoria || !productosStore.categorias.some(c => (c?.nombre || c) === prod.categoria))" :key="p._id || p.id" :value="p._id || p.id">
                   {{ p.nombre }}
                 </option>
               </optgroup>
@@ -145,9 +145,9 @@
                      <div class="filtros-opciones">
                        <span
                          v-for="cat in categoriasConTodas"
-                         :key="cat"
-                         :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
-                         @click="filtroCategoria = cat"
+                         :key="cat?.nombre || cat"
+                         :class="['filtro-pill', filtroCategoria === (cat?.nombre || cat) ? 'active' : '']"
+                         @click="filtroCategoria = cat?.nombre || cat"
                        >
                           {{ cat === 'Todas' ? 'Todas' : formatearCategoria(cat) }}
                        </span>
@@ -167,9 +167,9 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="mov in historialFiltrado" :key="mov._id || mov.id">
+                <tr v-for="mov in historialPaginado" :key="mov._id || mov.id">
                   <td>
-                    <div class="mov-fecha-col">{{ formatearFecha(mov) }}</div>
+                    <div class="mov-fecha-col">{{ mov.fechaFormato }}</div>
                   </td>
                   <td>
                     <div class="mov-prod-col">
@@ -191,11 +191,21 @@
             </table>
 
             <div class="mov-hist-footer">
-              <span v-if="historialFiltrado.length">Mostrando los últimos {{ historialFiltrado.length }} registros de un total de {{ productosStore.historialMovimientos.length }}</span>
+              <span v-if="historialFiltrado.length">
+                Página {{ paginaActual }} de {{ totalPaginas }} · {{ historialFiltrado.length }} registros
+              </span>
               <span v-else>No hay movimientos que coincidan con los filtros</span>
               <div class="mov-pag-arrows">
-                <button class="mov-pag-arrow">‹</button>
-                <button class="mov-pag-arrow">›</button>
+                <button
+                  class="mov-pag-arrow"
+                  :disabled="paginaActual <= 1"
+                  @click="paginaActual--"
+                >‹</button>
+                <button
+                  class="mov-pag-arrow"
+                  :disabled="paginaActual >= totalPaginas"
+                  @click="paginaActual++"
+                >›</button>
               </div>
             </div>
           </div>
@@ -241,7 +251,7 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, onActivated, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
 
@@ -302,19 +312,31 @@ const categoriasConTodas = computed(() => {
 
 const historialFiltrado = computed(() => {
   return productosStore.historialMovimientos.filter(m => {
-    const porTipo = filtroTipo.value === 'Todos' || m.tipo === filtroTipo.value
-    const porCategoria = filtroCategoria.value === 'Todas' || m.categoria === filtroCategoria.value
-    const porBusqueda = String(m.producto?.nombre || m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
+    const porTipo = filtroTipo.value === 'Todos' || (m.tipo || '').toLowerCase() === filtroTipo.value.toLowerCase()
+    const porCategoria = filtroCategoria.value === 'Todas' ||
+      (m.categoria || '').toLowerCase() === filtroCategoria.value.toLowerCase()
+    const porBusqueda = String(m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
     return porTipo && porCategoria && porBusqueda
   })
 })
+
+const POR_PAGINA = 8
+const paginaActual = ref(1)
+const totalPaginas = computed(() => Math.max(1, Math.ceil(historialFiltrado.value.length / POR_PAGINA)))
+
+const historialPaginado = computed(() => {
+  const inicio = (paginaActual.value - 1) * POR_PAGINA
+  return historialFiltrado.value.slice(inicio, inicio + POR_PAGINA)
+})
+
+watch(historialFiltrado, () => { paginaActual.value = 1 })
 
 // KPIs de Movimientos
 const totalEntradasMes = computed(() => {
   const hoy = new Date()
   const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
   return productosStore.historialMovimientos
-    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Entrada')
+    .filter(m => new Date(m.fecha || m.createdAt) >= primerDiaMes && (m.tipo || '').toLowerCase() === 'entrada')
     .reduce((sum, mov) => sum + mov.cantidad, 0)
 })
 
@@ -322,17 +344,18 @@ const totalSalidasMes = computed(() => {
   const hoy = new Date()
   const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
   return productosStore.historialMovimientos
-    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Salida')
+    .filter(m => new Date(m.fecha || m.createdAt) >= primerDiaMes && (m.tipo || '').toLowerCase() === 'salida')
     .reduce((sum, mov) => sum + mov.cantidad, 0)
 })
 
 const puede = (permiso) => {
+  if (usuarioStore.rol === 'admin') return true
   const perms = usuarioStore.permisos || []
   if (perms.includes('*')) return true
   return perms.includes(permiso)
 }
 
-const registrarMovimiento = () => {
+const registrarMovimiento = async () => {
   errorStock.value = ''
 
   if (!form.value.productoId) {
@@ -354,7 +377,7 @@ const registrarMovimiento = () => {
   }
 
   // Llama a la acción del store para registrar el movimiento
-  const result = productosStore.registrarMovimiento({
+  const result = await productosStore.registrarMovimiento({
     productoId: form.value.productoId,
     cantidad: cantidadNum,
     fecha: form.value.fecha,
@@ -367,7 +390,7 @@ const registrarMovimiento = () => {
     return
   }
 
-  // Limpiar formulario
+  // Limpiar formulario, filtros y volver a página 1 para ver el nuevo movimiento
   form.value = {
     productoId: '',
     cantidad: '',
@@ -375,14 +398,9 @@ const registrarMovimiento = () => {
     notas: ''
   }
   errorStock.value = ''
-}
-
-const formatearFecha = (mov) => {
-  const raw = mov.fechaFormato || mov.fecha || mov.createdAt || ''
-  if (!raw) return '-'
-  const dt = new Date(raw)
-  if (isNaN(dt.getTime())) return raw
-  return dt.toLocaleDateString('es-ES')
+  filtroTipo.value = 'Todos'
+  filtroCategoria.value = 'Todas'
+  paginaActual.value = 1
 }
 
 const formatearCategoria = (cat) => {
@@ -392,6 +410,7 @@ const formatearCategoria = (cat) => {
 
 onMounted(async () => {
   await productosStore.cargarProductos()
+  await productosStore.cargarCategorias()
   await productosStore.cargarMovimientos()
 })
 </script>
@@ -875,7 +894,8 @@ onMounted(async () => {
   transition: background 0.2s, border-color 0.2s;
 }
 
-.mov-pag-arrow:hover { background: var(--bg-input2); }
+.mov-pag-arrow:hover:not(:disabled) { background: var(--bg-input2); }
+.mov-pag-arrow:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* ── STATS FOOTER ── */
 .mov-stats-footer {
