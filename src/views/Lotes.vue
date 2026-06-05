@@ -174,7 +174,7 @@
                 <label class="form-label">Seleccionar Producto del Catálogo</label>
                 <select v-model="loteTrabajo.productoId" class="form-input" @change="vincularProducto">
                   <option value="">-- Seleccione un producto --</option>
-                  <option v-for="p in productosStore.productos" :key="p.id" :value="p.id">
+                  <option v-for="p in productosStore.productos" :key="p._id || p.id" :value="p._id || p.id">
                     {{ p.nombre }} ({{ p.sku }})
                   </option>
                 </select>
@@ -328,7 +328,8 @@ const lotesPorVencer = computed(() => {
 
 // Función para autocompletar nombre y SKU al seleccionar un producto
 const vincularProducto = () => {
-  const prodEncontrado = productosStore.productos.find(p => p.id === loteTrabajo.value.productoId)
+  const id = loteTrabajo.value.productoId
+  const prodEncontrado = productosStore.productos.find(p => (p._id || p.id) === id)
   if (prodEncontrado) {
     loteTrabajo.value.producto = prodEncontrado.nombre
     loteTrabajo.value.sku = prodEncontrado.sku
@@ -357,7 +358,7 @@ const abrirEditar = (lote) => {
   loteTrabajo.value = {
     id:             lote._id || lote.id,
     productoId:     lote.productoId
-                      || (typeof lote.producto === 'object' ? lote.producto?._id : lote.producto)
+                      || (lote.producto && typeof lote.producto === 'object' ? lote.producto._id : lote.producto)
                       || '',
     numero:         lote.numero || lote.lote || lote.codigo || '',
     producto:       typeof lote.producto === 'object'
@@ -393,15 +394,14 @@ const cerrarModal = () => {
 }
 
 const guardarLote = () => {
-  // Validación básica
-  if (
-    !loteTrabajo.value.productoId ||
-    !loteTrabajo.value.numero?.trim() ||
-    loteTrabajo.value.cantidad === null ||
-    loteTrabajo.value.cantidad === undefined ||
-    (loteTrabajo.value.usaVencimiento && !loteTrabajo.value.fechaVencimiento)
-  ) {
-    errorModal.value = 'Completa los campos obligatorios: Número de Lote, Producto, Cantidad' + (loteTrabajo.value.usaVencimiento ? ', Fecha de Vencimiento' : '') + '.'
+  const faltantes = []
+  if (!loteTrabajo.value.productoId)                                               faltantes.push('Producto')
+  if (!loteTrabajo.value.numero?.trim())                                           faltantes.push('Número de Lote')
+  if (loteTrabajo.value.cantidad == null || loteTrabajo.value.cantidad === '')      faltantes.push('Cantidad')
+  if (loteTrabajo.value.usaVencimiento && !loteTrabajo.value.fechaVencimiento)     faltantes.push('Fecha de Vencimiento')
+
+  if (faltantes.length) {
+    errorModal.value = `Falta completar: ${faltantes.join(', ')}.`
     return
   }
 
