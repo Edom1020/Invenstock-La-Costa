@@ -51,12 +51,12 @@ const cargarProductos = async () => {
   try {
     cargando.value = true
     const res = await api.get('/productos?limit=100')
-    console.log('🏷️ Primer producto del backend:', JSON.stringify(res.data.data?.[0], null, 2))
     productos.value = (res.data.data || []).map(p => ({
       ...p,
-      categoria: typeof p.categoria === 'string'
-        ? p.categoria
-        : (p.categoria?.nombre || 'sin-categoria')
+      categoriaId: p.categoria?._id || p.categoria,
+      categoria: typeof p.categoria === 'object'
+        ? (p.categoria?.nombre || 'sin-categoria')
+        : (p.categoria || 'sin-categoria')
     }))
   } catch (error) {
     console.error('Error al cargar productos:', error)
@@ -117,9 +117,7 @@ const editarProducto = async (productoEditado) => {
       descripcion:      productoEditado.descripcion,
       sku:              productoEditado.sku,
       marca:            productoEditado.marca,
-      categoria:        typeof productoEditado.categoria === 'string'
-                          ? productoEditado.categoria.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                          : productoEditado.categoria,
+      categoria:        productoEditado.categoriaId,
       precio:           productoEditado.precio,
       stock:            productoEditado.stock,
       stockMinimo:      productoEditado.stockMinimo,
