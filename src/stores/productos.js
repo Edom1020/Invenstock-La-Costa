@@ -84,7 +84,43 @@ const cargarProductos = async () => {
 const cargarLotes = async () => {
   try {
     const res = await api.get('/productos/lotes')
-    lotes.value = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.lotes || [])
+    const raw = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.lotes || [])
+
+    lotes.value = raw.map(l => {
+      // El backend embebe el lote como subdocumento en l.lote
+      const sub = l.lote && typeof l.lote === 'object' ? l.lote : null
+
+      const fechaEntrada     = (sub?.fechaEntrada     || l.fechaEntrada     || '').split('T')[0] || ''
+      const fechaVencimiento = (sub?.fechaVencimiento || l.fechaVencimiento || '').split('T')[0] || ''
+      const stock            = l.stock ?? l.cantidad ?? 0
+
+      let estado = 'activo'
+      if (stock === 0) {
+        estado = 'agotado'
+      } else if (fechaVencimiento) {
+        const diasAlerta = sub?.diasAlerta ?? 30
+        const hoy = new Date()
+        const vence = new Date(fechaVencimiento)
+        const diffDias = Math.ceil((vence - hoy) / (1000 * 60 * 60 * 24))
+        if (diffDias <= diasAlerta) estado = 'por vencer'
+      }
+
+      return {
+        ...l,
+        _id:             l._id || l.id,
+        id:              l._id || l.id,
+        productoId:      l._id || l.id,
+        numero:          l.numero || sub?.codigo || l.codigo || '',
+        producto:        l.producto || '',
+        sku:             l.sku || '',
+        cantidad:        stock,
+        fechaEntrada,
+        usaVencimiento:  sub ? !!sub.usaVencimiento : !!fechaVencimiento,
+        fechaVencimiento,
+        observaciones:   l.observaciones || sub?.observacion || '',
+        estado
+      }
+    })
   } catch (error) {
     if (error.response?.status === 403) {
       console.warn('Sin permisos para ver lotes — solo administradores')
