@@ -62,7 +62,7 @@
               :class="['pill', categoriaActiva === cat ? 'active' : '']"
               @click="categoriaActiva = cat"
             >
-              {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
+              {{ getCatNombre(cat) }}
             </div>
           </div>
           <span class="showing">
@@ -308,8 +308,10 @@ const categoriaActiva = ref('todas')
 const paginaActual = ref(1)
 const porPagina = 10
 
-const getCatNombre = (key) =>
-  key.charAt(0).toUpperCase() + key.slice(1)
+const getCatNombre = (key) => {
+  if (!key || typeof key !== 'string') return 'Sin categoría'
+  return key.charAt(0).toUpperCase() + key.slice(1)
+}
 
 const getCatIcon = (categoria) => {
   const icons = {
@@ -409,7 +411,8 @@ const categoriaPopular = computed(() => {
   let popularCat = { nombre: 'N/A', count: 0 }
   for (const cat in categoriaCounts) {
     if (categoriaCounts[cat] > popularCat.count) {
-      popularCat = { nombre: cat.charAt(0).toUpperCase() + cat.slice(1), count: categoriaCounts[cat] }
+    const nombreCat = (typeof cat === 'string' && cat) ? cat.charAt(0).toUpperCase() + cat.slice(1) : 'Sin categoría'
+    popularCat = { nombre: nombreCat, count: categoriaCounts[cat] }
     }
   }
   return popularCat
@@ -421,8 +424,8 @@ const productosFiltrados = computed(() => {
     lista = lista.filter(p => p.categoria === categoriaActiva.value)
   if (busqueda.value.trim())
     lista = lista.filter(p =>
-      p.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
-      p.sku.toLowerCase().includes(busqueda.value.toLowerCase())
+      (p.nombre || '').toLowerCase().includes(busqueda.value.toLowerCase()) ||
+      (p.sku || '').toLowerCase().includes(busqueda.value.toLowerCase())
     )
   return lista
 })

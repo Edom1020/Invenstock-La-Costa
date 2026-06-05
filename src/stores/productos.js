@@ -46,41 +46,57 @@ export const useProductosStore = defineStore('productos', () => {
     dispararSonidoStock(prod)
   }
 
-  // 🔥 CARGAR PRODUCTOS DESDE BACKEND
-  const cargarProductos = async () => {
-    try {
-      cargando.value = true
-      // El backend devuelve { success, data, pagination }
-      const res = await api.get('/productos?limit=100')
-      productos.value = res.data.data || []
-    } catch (error) {
-      console.error('Error al cargar productos:', error)
-    } finally {
-      cargando.value = false
-    }
+  //  CARGAR PRODUCTOS DESDE BACKEND
+const cargarProductos = async () => {
+  try {
+    cargando.value = true
+    const res = await api.get('/productos?limit=100')
+    productos.value = (res.data.data || []).map(p => ({
+      ...p,
+      categoria: typeof p.categoria === 'string'
+        ? p.categoria
+        : (p.categoria?.nombre || 'sin-categoria')
+    }))
+  } catch (error) {
+    console.error('Error al cargar productos:', error)
+  } finally {
+    cargando.value = false
   }
+}
 
-  // 🔥 CARGAR LOTES DESDE BACKEND
-  const cargarLotes = async () => {
-    try {
-      const res = await api.get('/productos/lotes')
-      lotes.value = res.data || []
-    } catch (error) {
+  //  CARGAR LOTES DESDE BACKEND
+const cargarLotes = async () => {
+  try {
+    const res = await api.get('/productos/lotes')
+    lotes.value = res.data || []
+  } catch (error) {
+    if (error.response?.status === 403) {
+      console.warn('Sin permisos para ver lotes — solo administradores')
+    } else {
       console.error('Error al cargar lotes:', error)
     }
   }
+}
 
-  // 🔥 CARGAR MOVIMIENTOS DESDE BACKEND
-  const cargarMovimientos = async () => {
-    try {
-      const res = await api.get('/movimientos')
-      historialMovimientos.value = res.data.data || res.data || []
-    } catch (error) {
-      console.error('Error al cargar movimientos:', error)
-    }
+  //  CARGAR MOVIMIENTOS DESDE BACKEND
+ const cargarMovimientos = async () => {
+  try {
+    const res = await api.get('/movimientos')
+    const data = res.data.data || res.data || []
+    historialMovimientos.value = data.map(m => ({
+      ...m,
+      // Normaliza producto si viene populado como objeto
+      productoNombre: m.producto?.nombre || m.producto || 'Producto desconocido',
+      categoria: typeof m.categoria === 'string'
+        ? m.categoria
+        : (m.producto?.categoria?.nombre || m.producto?.categoria || '')
+    }))
+  } catch (error) {
+    console.error('Error al cargar movimientos:', error)
   }
+}
 
-  // 🔥 AGREGAR PRODUCTO
+  //  AGREGAR PRODUCTO
   const agregarProducto = async (nuevoProducto) => {
     try {
       const res = await api.post('/productos', nuevoProducto)
@@ -92,7 +108,7 @@ export const useProductosStore = defineStore('productos', () => {
     }
   }
 
-  // 🔥 EDITAR PRODUCTO
+  //  EDITAR PRODUCTO
   const editarProducto = async (productoEditado) => {
     try {
       await api.put(`/productos/${productoEditado.id || productoEditado._id}`, productoEditado)
@@ -108,7 +124,7 @@ export const useProductosStore = defineStore('productos', () => {
     }
   }
 
-  // 🔥 ELIMINAR PRODUCTO
+  //  ELIMINAR PRODUCTO
   const eliminarProducto = async (id) => {
     try {
       await api.delete(`/productos/${id}`)
@@ -119,7 +135,7 @@ export const useProductosStore = defineStore('productos', () => {
     }
   }
 
-  // 🔥 EDITAR LOTE
+  //  EDITAR LOTE
   const editarLote = async (loteEditado) => {
     try {
       await api.put(`/productos/lotes/${loteEditado.id || loteEditado._id}`, {
@@ -141,7 +157,7 @@ export const useProductosStore = defineStore('productos', () => {
     }
   }
 
-  // 🔥 REGISTRAR MOVIMIENTO
+  //  REGISTRAR MOVIMIENTO
   const registrarMovimiento = async (mov) => {
     try {
       await api.post('/movimientos', {

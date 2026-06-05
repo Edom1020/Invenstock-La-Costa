@@ -173,7 +173,7 @@
                         <img :src="getCatIcon(mov.categoria?.nombre || mov.categoria)"
                           style="width:18px;height:18px;object-fit:contain;opacity:0.6;" />
                       </div>
-                      <span class="mov-prod-name">{{ mov.producto }}</span>
+                      <span class="mov-prod-name">{{ mov.producto?.nombre || mov.producto }}</span>
                     </div>
                   </td>
                   <td>
