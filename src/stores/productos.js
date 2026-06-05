@@ -225,7 +225,7 @@ const editarProducto = async (productoEditado) => {
   const registrarMovimiento = async (mov) => {
     try {
       await api.post('/movimientos', {
-        productoId: mov.productoId,
+        producto: mov.productoId,
         tipo: mov.tipo,
         cantidad: mov.cantidad,
         fecha: mov.fecha,
