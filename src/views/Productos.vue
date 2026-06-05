@@ -56,14 +56,10 @@
             >
               ▼ Categoría: Todas
             </div>
-            <div
-              v-for="cat in productosStore.categorias"
-              :key="cat"
-              :class="['pill', categoriaActiva === cat ? 'active' : '']"
-              @click="categoriaActiva = cat"
-            >
-              {{ getCatNombre(cat) }}
-            </div>
+            <div v-for="cat in productosStore.categorias" :key="cat._id" 
+                 @click="categoriaActiva = cat.nombre.toLowerCase()">
+                 {{ cat.nombre }}
+              </div>
           </div>
           <span class="showing">
             Mostrando 1-{{ productosFiltrados.length }} de {{ productos.length }} productos
@@ -193,11 +189,11 @@
      
                <div class="form-group">
                  <label class="form-label">Categoría</label>
-                 <select v-model="productoEditando.categoria" class="form-input form-select">
-                   <option v-for="cat in productosStore.categorias" :key="cat" :value="cat">
-                     {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
-                   </option>
-                 </select>
+                   <select v-model="productoEditando.categoriaId" class="form-input form-select">
+                      <option v-for="cat in productosStore.categorias" :key="cat._id" :value="cat._id">
+                         {{ cat.nombre }}
+                      </option>
+                    </select>
                </div>
      
                <div class="form-group">
@@ -309,7 +305,8 @@ const paginaActual = ref(1)
 const porPagina = 10
 
 const getCatNombre = (key) => {
-  if (!key || typeof key !== 'string') return 'Sin categoría'
+  if (!key) return 'Sin categoría'
+  // Busca en el store por si llega el nombre directamente
   return key.charAt(0).toUpperCase() + key.slice(1)
 }
 
@@ -449,6 +446,7 @@ const totalPaginas = computed(() =>
 
 onMounted(async () => {
   await productosStore.cargarProductos()
+  await productosStore.cargarCategorias()
 })
 </script>
 
