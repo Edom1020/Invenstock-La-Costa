@@ -39,9 +39,9 @@
           <div v-else-if="sugerencias.length > 0" class="sugerencias-lista">
             <div
               v-for="(sugerencia, index) in sugerencias"
-              :key="sugerencia.id"
+              :key="sugerencia._id || sugerencia.id"
               class="sugerencia-item"
-              @click="handleMarcarLeida(sugerencia.id, index)"
+              @click="handleMarcarLeida(sugerencia._id || sugerencia.id, index)"
               :class="[sugerencia.leida ? 'leida' : '']"
             >
               <div class="sugerencia-icono">
@@ -122,6 +122,11 @@ const fetchSugerencias = async () => {
 }
 
 const handleMarcarLeida = async (id, index) => {
+  if (!id) {
+    // Sin id válido, solo marcar localmente
+    sugerencias.value[index].leida = true
+    return
+  }
   try {
     await fetch(
       `${import.meta.env.VITE_API_URL}/ai/suggestions/${id}/read`,

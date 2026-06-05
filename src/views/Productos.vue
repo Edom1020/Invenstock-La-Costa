@@ -108,13 +108,13 @@
                       <span class="stock-actual">{{ prod.stock }}</span>
                       <span class="stock-max">/{{ prod.stockMax }}</span>
                       <span :class="['stock-pct', getStockNivel(prod.stock, prod.stockMax)]">
-                        {{ Math.round((prod.stock / prod.stockMax) * 100) }}%
+                        {{ prod.stockMax ? Math.round((prod.stock / prod.stockMax) * 100) : 0 }}%
                       </span>
                     </div>
                     <div class="progress-bar">
                       <div
                         :class="['progress-fill', getStockNivel(prod.stock, prod.stockMax)]"
-                        :style="{ width: Math.round((prod.stock / prod.stockMax) * 100) + '%' }"
+                        :style="{ width: (prod.stockMax ? Math.round((prod.stock / prod.stockMax) * 100) : 0) + '%' }"
                       ></div>
                     </div>
                   </div>
@@ -223,13 +223,13 @@
                      <span class="stock-actual">{{ productoEditando.stock }}</span>
                      <span class="stock-max">/{{ productoEditando.stockMax }}</span>
                      <span :class="['stock-pct', getStockNivel(productoEditando.stock, productoEditando.stockMax)]">
-                       {{ Math.round((productoEditando.stock / productoEditando.stockMax) * 100) }}%
+                       {{ productoEditando.stockMax ? Math.round((productoEditando.stock / productoEditando.stockMax) * 100) : 0 }}%
                      </span>
                    </div>
                    <div class="progress-bar" style="width: 100%; margin-top: 6px;">
                      <div
                        :class="['progress-fill', getStockNivel(productoEditando.stock, productoEditando.stockMax)]"
-                       :style="{ width: Math.min(100, Math.round((productoEditando.stock / productoEditando.stockMax) * 100)) + '%' }"
+                       :style="{ width: (productoEditando.stockMax ? Math.min(100, Math.round((productoEditando.stock / productoEditando.stockMax) * 100)) : 0) + '%' }"
                      ></div>
                    </div>
                  </div>
@@ -323,6 +323,7 @@ const getCatIcon = (categoria) => {
 }
 
 const getStockNivel = (stock, max) => {
+  if (!max) return 'low'
   const pct = (stock / max) * 100
   if (pct >= 50) return 'high'
   if (pct >= 20) return 'med'
