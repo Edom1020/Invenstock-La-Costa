@@ -69,7 +69,8 @@ const cargarProductos = async () => {
       categoriaId: p.categoria?._id || p.categoria,
       categoria: typeof p.categoria === 'object'
         ? (p.categoria?.nombre || 'sin-categoria')
-        : (p.categoria || 'sin-categoria')
+        : (p.categoria || 'sin-categoria'),
+      stockMax: p.stockMax || p.movimientoMaximo || 0
     }))
   } catch (error) {
     console.error('Error al cargar productos:', error)
@@ -82,7 +83,28 @@ const cargarProductos = async () => {
 const cargarLotes = async () => {
   try {
     const res = await api.get('/productos/lotes')
-    lotes.value = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.lotes || [])
+    const raw = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.lotes || [])
+
+    // El backend puede guardar el nro de lote como:
+    //   a) lote.lote = "A001"          (string plano)
+    //   b) lote.lote = { codigo: "A001", fechaEntrada: "...", ... }  (subdocumento)
+    lotes.value = raw.map(l => {
+      const sub = l.lote && typeof l.lote === 'object' ? l.lote : null
+
+      return {
+        ...l,
+        numero:           l.numero || (sub ? sub.codigo : l.lote) || l.codigo || '',
+        productoId:       l.productoId || (l.producto && typeof l.producto === 'object' ? l.producto._id : l.producto) || '',
+        producto:         l.producto && typeof l.producto === 'object' ? l.producto.nombre : (l.producto || ''),
+        sku:              l.sku || (l.producto && typeof l.producto === 'object' ? l.producto.sku : '') || '',
+        cantidad:         l.cantidad ?? 0,
+        fechaEntrada:     (l.fechaEntrada || (sub ? sub.fechaEntrada : null) || '').split('T')[0] || '',
+        usaVencimiento:   l.usaVencimiento !== undefined ? l.usaVencimiento : (sub ? !!sub.usaVencimiento : !!l.fechaVencimiento),
+        fechaVencimiento: (l.fechaVencimiento || (sub ? sub.fechaVencimiento : null) || ''),
+        observaciones:    l.observaciones || l.observacionLote || (sub ? sub.observacion : '') || '',
+        estado:           l.estado || 'activo'
+      }
+    })
   } catch (error) {
     if (error.response?.status === 403) {
       console.warn('Sin permisos para ver lotes — solo administradores')
@@ -134,7 +156,8 @@ const editarProducto = async (productoEditado) => {
       precio:           productoEditado.precio,
       stock:            productoEditado.stock,
       stockMinimo:      productoEditado.stockMinimo,
-      movimientoMaximo: productoEditado.stockMax || productoEditado.movimientoMaximo,
+      stockMax:         productoEditado.stockMax || productoEditado.movimientoMaximo || 0,
+      movimientoMaximo: productoEditado.stockMax || productoEditado.movimientoMaximo || 0,
       usaLotes:         productoEditado.usaLotes,
     }
     console.log('📤 Payload limpio:', payload)
