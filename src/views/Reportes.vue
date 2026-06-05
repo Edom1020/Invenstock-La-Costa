@@ -304,10 +304,10 @@ const categoriaPopular = computed(() => {
 const alertasFiltradas = computed(() => {
   const umbral = configuracionStore.inventario.stockMinimoGlobal
   return productos.value.filter(p => p.stock <= umbral).filter(p => {
-    const porBusqueda = p.nombre.toLowerCase().includes(busqueda.value.toLowerCase()) ||
-                        p.categoria.toLowerCase().includes(busqueda.value.toLowerCase())
+    const porBusqueda = (p.nombre || '').toLowerCase().includes(busqueda.value.toLowerCase()) ||
+                        (p.categoria?.nombre || p.categoria || '').toLowerCase().includes(busqueda.value.toLowerCase())
 
-    const porCategoria = filtroCategoria.value === 'Todas' || p.categoria === filtroCategoria.value.toLowerCase()
+    const porCategoria = filtroCategoria.value === 'Todas' || (p.categoria?.nombre || p.categoria) === filtroCategoria.value.toLowerCase()
 
     const porEstado = filtroEstado.value === 'Todos' ||
       (filtroEstado.value === 'Crítico' && p.stock <= (p.stockMinimo * 0.5)) ||
