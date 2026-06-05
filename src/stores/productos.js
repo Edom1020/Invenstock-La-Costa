@@ -127,14 +127,31 @@ const cargarLotes = async () => {
   try {
     const res = await api.get('/movimientos')
     const data = res.data.data || res.data || []
-    historialMovimientos.value = data.map(m => ({
-      ...m,
-      // Normaliza producto si viene populado como objeto
-      productoNombre: m.producto?.nombre || m.producto || 'Producto desconocido',
-      categoria: typeof m.categoria === 'string'
-        ? m.categoria
-        : (m.producto?.categoria?.nombre || m.producto?.categoria || '')
-    }))
+    historialMovimientos.value = data.map(m => {
+      let productoNombre = ''
+      let categoriaVal   = ''
+
+      if (m.producto && typeof m.producto === 'object') {
+        productoNombre = m.producto.nombre || ''
+        categoriaVal   = m.producto.categoria?.nombre || m.producto.categoria || m.categoria || ''
+      } else {
+        const pid  = m.productoId || m.producto || ''
+        const prod = pid ? productos.value.find(p => String(p._id || p.id) === String(pid)) : null
+        productoNombre = prod?.nombre || ''
+        categoriaVal   = prod?.categoria || m.categoria || ''
+      }
+
+      let fechaFormato = '-'
+      const fechaRaw = m.fecha || ''
+      if (fechaRaw) {
+        const clean = String(fechaRaw).split('T')[0]
+        const [y, mo, d] = clean.split('-')
+        const dt = new Date(Number(y), Number(mo) - 1, Number(d))
+        if (!isNaN(dt.getTime())) fechaFormato = dt.toLocaleDateString('es-ES')
+      }
+
+      return { ...m, producto: productoNombre, categoria: categoriaVal, fechaFormato }
+    })
   } catch (error) {
     console.error('Error al cargar movimientos:', error)
   }

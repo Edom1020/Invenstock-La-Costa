@@ -51,12 +51,12 @@
                      :key="cat?.nombre || cat"
                      :label="formatearCategoria(cat)"
                       >
-                <option v-for="p in productosStore.productos.filter(prod => (prod.categoria?.nombre || prod.categoria) === cat)" :key="p._id || p.id" :value="p._id || p.id">
+                <option v-for="p in productosStore.productos.filter(prod => prod.categoria === (cat?.nombre || cat))" :key="p._id || p.id" :value="p._id || p.id">
                   {{ p.nombre }}
                 </option>
               </optgroup>
-              <optgroup v-if="productosStore.productos.some(p => !p.categoria || !productosStore.categorias.includes(p.categoria?.nombre || p.categoria))" label="Otros">
-                <option v-for="p in productosStore.productos.filter(prod => !prod.categoria || !productosStore.categorias.includes(prod.categoria?.nombre || prod.categoria))" :key="p._id || p.id" :value="p._id || p.id">
+              <optgroup v-if="productosStore.productos.some(p => !p.categoria || !productosStore.categorias.some(c => (c?.nombre || c) === p.categoria))" label="Otros">
+                <option v-for="p in productosStore.productos.filter(prod => !prod.categoria || !productosStore.categorias.some(c => (c?.nombre || c) === prod.categoria))" :key="p._id || p.id" :value="p._id || p.id">
                   {{ p.nombre }}
                 </option>
               </optgroup>
@@ -145,9 +145,9 @@
                      <div class="filtros-opciones">
                        <span
                          v-for="cat in categoriasConTodas"
-                         :key="cat"
-                         :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
-                         @click="filtroCategoria = cat"
+                         :key="cat?.nombre || cat"
+                         :class="['filtro-pill', filtroCategoria === (cat?.nombre || cat) ? 'active' : '']"
+                         @click="filtroCategoria = cat?.nombre || cat"
                        >
                           {{ cat === 'Todas' ? 'Todas' : formatearCategoria(cat) }}
                        </span>
@@ -406,6 +406,7 @@ const formatearCategoria = (cat) => {
 
 onMounted(async () => {
   await productosStore.cargarProductos()
+  await productosStore.cargarCategorias()
   await productosStore.cargarMovimientos()
 })
 </script>
