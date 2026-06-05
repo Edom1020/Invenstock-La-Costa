@@ -113,7 +113,7 @@
                   </div>
                 </td>
                 <td>
-                  <span :class="['badge', mov.tipo.toLowerCase()]">
+                  <span :class="['badge', (mov.tipo || '').toLowerCase()]">
                     {{ mov.tipo }}
                   </span>
                 </td>
@@ -203,6 +203,11 @@ const limpiarFiltros = () => {
   filtroTipo.value = 'Todos'
   filtroCategoria.value = 'Todas'
 }
+
+onMounted(async () => {
+  await productosStore.cargarProductos()
+  await productosStore.cargarMovimientos()
+})
 
 </script>
 

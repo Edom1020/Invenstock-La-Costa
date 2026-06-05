@@ -416,11 +416,12 @@ const guardarProducto = () => {
   }
 
   // ── Guardar en el store global ──
-  productosStore.agregarProducto(datosProducto)
-  
-  // Por ahora, mostrar confirmación
+const resultado = await productosStore.agregarProducto(datosProducto)
+if (resultado.success) {
   alert(`✅ Producto "${producto.nombre}" guardado correctamente.`)
   router.push('/productos')
+} else {
+  alert(`❌ Error al guardar: ${resultado.error}`)
 }
  
 // ── Cancelar ──

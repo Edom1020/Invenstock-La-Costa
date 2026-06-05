@@ -68,7 +68,7 @@ const cargarProductos = async () => {
 const cargarLotes = async () => {
   try {
     const res = await api.get('/productos/lotes')
-    lotes.value = res.data || []
+    lotes.value = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.lotes || [])
   } catch (error) {
     if (error.response?.status === 403) {
       console.warn('Sin permisos para ver lotes — solo administradores')

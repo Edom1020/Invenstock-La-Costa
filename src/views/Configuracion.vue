@@ -210,16 +210,21 @@
               </div>
 
               <div class="permiso-container">
-                <!-- Selector de Usuario -->
-                <div class="permiso-field">
-                  <label class="permiso-label">Correo electrónico del usuario</label>
-                  <input 
-                    v-model="usuarioBusqueda" 
-                    class="permiso-input" 
-                    placeholder="Ej: colaborador@invenstock.com"
-                    @input="cargarPermisosUsuario"
-                  />
-                </div>
+               <!-- Selector de Usuario -->
+               <div class="permiso-field" style="display:flex; gap:8px; align-items:flex-end;">
+                 <div style="flex:1">
+                   <label class="permiso-label">Correo electrónico del usuario</label>
+                   <input 
+                     v-model="usuarioBusqueda" 
+                     class="permiso-input" 
+                     placeholder="Ej: colaborador@invenstock.com"
+                     @keyup.enter="buscarUsuario"
+                   />
+                 </div>
+                 <button class="btn-permisos" style="margin-top:0; width:auto; padding: 0 16px;" @click="buscarUsuario">
+                   Buscar
+                 </button>
+               </div>
 
                 <!-- Lista de Permisos Disponibles -->
                 <div class="permiso-lista">
@@ -413,32 +418,37 @@ const mostrarPermisos = ref(false)
  */
 
 // Lista de usuarios del sistema (en una aplicación real vendría del backend)
-const usuarios = ref([
-  {
-    id: 1,
-    nombre: 'Juan Pérez',
-    email: 'juan@empresa.com',
-    rol: 'operador',
-    permisos: ['ver_reportes'] // Permisos iniciales
-  },
-  {
-    id: 2,
-    nombre: 'María Gómez',
-    email: 'maria@empresa.com',
-    rol: 'invitado',
-    permisos: []
-  },
-  {
-    id: 3,
-    nombre: 'Carlos Ruiz',
-    email: 'carlos@empresa.com',
-    rol: 'admin',
-    permisos: ['*'] // El admin tiene todos los permisos
-  }
-])
+const usuarios = ref([])
+const usuarioBusqueda = ref('')
+const guardando = ref(false)
+const mensaje = ref('')
+const tipoMensaje = ref('')
 
-// Usuario actualmente seleccionado para editar permisos
-const usuarioBusqueda = ref(usuarios.value[0].email)
+
+const buscarUsuario = async () => {
+  if (!usuarioBusqueda.value) return
+  mensaje.value = ''
+  tipoMensaje.value = ''
+  try {
+    const res = await api.get(`/admin/permissions?email=${usuarioBusqueda.value}`)
+    const data = res.data
+    const existe = usuarios.value.find(u => u.email === usuarioBusqueda.value)
+    if (!existe) {
+      usuarios.value.push({
+        nombre: data.nombre,
+        email: usuarioBusqueda.value,
+        permisos: data.permisos || []
+      })
+    }
+  } catch (error) {
+    if (error.response?.status === 404) {
+      mensaje.value = '⚠️ Usuario no encontrado en el sistema.'
+    } else {
+      mensaje.value = 'Error al buscar el usuario.'
+    }
+    tipoMensaje.value = 'error'
+  }
+}
 
 // Permisos disponibles que se pueden otorgar
 const permisosDisponibles = ref([
@@ -480,10 +490,7 @@ const permisosDisponibles = ref([
   }
 ])
 
-// Estado para manejar el proceso de guardado
-const guardando = ref(false)
-const mensaje = ref('')
-const tipoMensaje = ref('') // 'exito' o 'error'
+
 
 /**
  * FUNCIONES PARA LA GESTIÓN DE PERMISOS
@@ -529,28 +536,22 @@ async function guardarPermisos() {
   guardando.value = true
   mensaje.value = ''
   tipoMensaje.value = ''
-
   try {
-    // Simulamos una llamada al API (en producción sería algo como:)
-    // await api.actualizarPermisosUsuario(usuarioBusqueda.value, permisosActualizados)
-
-    // Obtener el usuario actualizado
     const usuarioActualizado = usuarios.value.find(u => u.email === usuarioBusqueda.value)
+    if (!usuarioActualizado) return
 
-    // En una aplicación real, aquí guardaríamos en el backend
-    // Por ahora, solo actualizamos localmente y mostramos mensaje
-    await new Promise(resolve => setTimeout(resolve, 1500)) // Simulamos latencia
+    await api.put('/admin/permissions', {
+      email: usuarioBusqueda.value,
+      permisos: usuarioActualizado.permisos
+    })
 
     mensaje.value = `Permisos actualizados correctamente para ${usuarioActualizado.nombre}`
     tipoMensaje.value = 'exito'
 
-    // También actualizamos el store si el usuario editado es el actual
-    if (usuarioStore.nombre === usuarioActualizado.nombre) {
-       usuarioStore.permisos = [...usuarioActualizado.permisos]
+    if (usuarioStore.perfil?.correo === usuarioBusqueda.value) {
+      usuarioStore.permisos = [...usuarioActualizado.permisos]
     }
-
   } catch (error) {
-    console.error('Error al guardar permisos:', error)
     mensaje.value = 'Error al guardar los permisos. Por favor inténtalo nuevamente.'
     tipoMensaje.value = 'error'
   } finally {
