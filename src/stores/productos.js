@@ -111,10 +111,24 @@ const cargarLotes = async () => {
   //  EDITAR PRODUCTO
 const editarProducto = async (productoEditado) => {
   try {
-    console.log('📤 Enviando al backend:', JSON.stringify(productoEditado, null, 2))
-    await api.put(`/productos/${productoEditado.id || productoEditado._id}`, productoEditado)
+    const payload = {
+      nombre:           productoEditado.nombre,
+      descripcion:      productoEditado.descripcion,
+      sku:              productoEditado.sku,
+      marca:            productoEditado.marca,
+      categoria:        typeof productoEditado.categoria === 'string'
+                          ? productoEditado.categoria.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                          : productoEditado.categoria,
+      precio:           productoEditado.precio,
+      stock:            productoEditado.stock,
+      stockMinimo:      productoEditado.stockMinimo,
+      movimientoMaximo: productoEditado.stockMax || productoEditado.movimientoMaximo,
+      usaLotes:         productoEditado.usaLotes,
+    }
+    console.log('📤 Payload limpio:', payload)
+    await api.put(`/productos/${productoEditado._id || productoEditado.id}`, payload)
     await cargarProductos()
-    const prod = productos.value.find(p => p.id === productoEditado.id || p._id === productoEditado._id)
+    const prod = productos.value.find(p => p._id === productoEditado._id || p.id === productoEditado.id)
     verificarEstadoStock(prod)
     return { success: true }
   } catch (error) {
