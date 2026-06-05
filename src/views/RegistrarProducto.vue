@@ -321,25 +321,19 @@ const productosStore = useProductosStore()
  
 const router = useRouter()
  
-// ── Imagen ──
+// ── Imagen (solo preview local, no se envía al backend) ──
 const imagenPreview = ref(null)
-const imagenArchivo = ref(null)
-
 const cargarImagen = (e) => {
   const file = e.target.files[0]
-  if (file) {
-    imagenArchivo.value = file
-    imagenPreview.value = URL.createObjectURL(file)
+  if (!file) return
+  // Validar tamaño máximo 5MB
+  if (file.size > 5 * 1024 * 1024) {
+    alert('La imagen no puede superar los 5MB.')
+    e.target.value = ''
+    return
   }
-}
-
-const imagenABase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
+  // Crear URL local solo para preview visual — no se envía al backend
+  imagenPreview.value = URL.createObjectURL(file)
 }
  
 // ── Datos del producto ──
@@ -402,12 +396,6 @@ const lote = reactive({
       }
     }
   
-    // ── Convertir imagen a Base64 si hay archivo seleccionado ──
-    let imagenBase64 = null
-    if (imagenArchivo.value) {
-      imagenBase64 = await imagenABase64(imagenArchivo.value)
-    }
-
     // ── Construir objeto para enviar ──
     const datosProducto = {
       nombre:        producto.nombre,
@@ -419,10 +407,9 @@ const lote = reactive({
       stock:         producto.stockInicial,
       stockMinimo:   producto.stockMinimo,
       stockMax:      producto.stockMax,
-      usaLotes:      usaLotes.value,
-      imagen:        imagenBase64
+      usaLotes:      usaLotes.value
+      // imagen no se envía — el backend no tiene ese campo y el límite es 10kb
     }
-    console.log('📤 Enviando al backend:', JSON.stringify(datosProducto, null, 2))
   
     // ── Si usa lotes, agregar datos del lote ──
     if (usaLotes.value) {
@@ -436,9 +423,6 @@ const lote = reactive({
       }
       
     }
-console.log('📤 Enviando al backend:', JSON.stringify(datosProducto, null, 2))
-  
-    // ── Guardar en el store global ──
   const resultado = await productosStore.agregarProducto(datosProducto)
   if (resultado.success) {
     alert(`✅ Producto "${producto.nombre}" guardado correctamente.`)
