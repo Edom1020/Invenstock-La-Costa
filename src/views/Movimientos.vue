@@ -177,7 +177,7 @@
                     </div>
                   </td>
                   <td>
-                    <span :class="['mov-badge', mov.tipo.toLowerCase()]">
+                    <span :class="['mov-badge', (mov.tipo || '').toLowerCase()]">
                       {{ mov.tipo.toUpperCase() }}
                     </span>
                   </td>

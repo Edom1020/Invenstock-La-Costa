@@ -137,7 +137,6 @@ import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
 import { ref, computed, inject, onMounted } from 'vue'
 
-
 import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
 
@@ -181,13 +180,11 @@ const categoriasConTodas = computed(() => {
 const movimientosFiltrados = computed(() => {
   return productosStore.historialMovimientos.filter(m => {
     const porTipo = filtroTipo.value === 'Todos' || m.tipo === filtroTipo.value
-    const porCategoria = filtroCategoria.value === 'Todas' || m.categoria === filtroCategoria.value
-    const porBusqueda = (m.producto?.nombre || m.producto).toLowerCase().includes(busqueda.value.toLowerCase())
+    const porCategoria = filtroCategoria.value === 'Todos' || (m.categoria?.nombre || m.categoria || '') === filtroCategoria.value
+    const porBusqueda = String(m.producto?.nombre || m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
     return porTipo && porCategoria && porBusqueda
   })
 })
-
-
 
 const getCatIcon = (categoria) => {
   const icons = {
@@ -206,11 +203,6 @@ const limpiarFiltros = () => {
   filtroTipo.value = 'Todos'
   filtroCategoria.value = 'Todas'
 }
-
-onMounted(async () => {
-  await productosStore.cargarProductos()
-  await productosStore.cargarMovimientos()
-})
 
 </script>
 
