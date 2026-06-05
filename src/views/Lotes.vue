@@ -433,9 +433,11 @@ const cerrarEliminar = () => {
 // Funciones de formato (pueden ser globales o helpers)
 const formatDate = (fecha) => {
   if (!fecha) return '-'
-  const parts = fecha.split('-')
-  if (parts.length !== 3) return fecha
-  const d = new Date(parts[0], parts[1] - 1, parts[2])
+  const clean = fecha.split('T')[0]
+  const parts = clean.split('-')
+  if (parts.length !== 3) return '-'
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+  if (isNaN(d.getTime())) return '-'
   return d.toLocaleDateString('es-ES')
 }
 

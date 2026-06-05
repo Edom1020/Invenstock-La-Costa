@@ -100,7 +100,7 @@ const cargarLotes = async () => {
         cantidad:         l.cantidad ?? 0,
         fechaEntrada:     (l.fechaEntrada || (sub ? sub.fechaEntrada : null) || '').split('T')[0] || '',
         usaVencimiento:   l.usaVencimiento !== undefined ? l.usaVencimiento : (sub ? !!sub.usaVencimiento : !!l.fechaVencimiento),
-        fechaVencimiento: (l.fechaVencimiento || (sub ? sub.fechaVencimiento : null) || ''),
+        fechaVencimiento: (l.fechaVencimiento || (sub ? sub.fechaVencimiento : null) || '').split('T')[0] || '',
         observaciones:    l.observaciones || l.observacionLote || (sub ? sub.observacion : '') || '',
         estado:           l.estado || 'activo'
       }
