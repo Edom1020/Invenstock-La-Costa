@@ -410,7 +410,7 @@ const lote = reactive({
         codigo:              lote.codigo,
         fechaEntrada:        lote.fechaEntrada,
         usaVencimiento:     lote.usaVencimiento,
-        fechaVencimiento:   lote.fechaVencimiento,
+        fechaVencimiento: lote.usaVencimiento ? lote.fechaVencimiento : null,
         diasAlerta:         lote.diasAlerta,
         observacion:        lote.observacion
       }
