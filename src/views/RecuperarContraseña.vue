@@ -43,6 +43,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import api from './api'
 
 const router = useRouter();
 const email = ref("");
@@ -68,7 +69,7 @@ const enviarEmail = async () => {
   try {
     // AQUÍ IRRÍA TU LLAMADA A LA API/BACKEND
     // Por ahora simularemos un delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+   const res = await api.post('/auth/recuperar-password', { email: email.value })
 
     // Si la API retorna éxito:
     enviado.value = true;
