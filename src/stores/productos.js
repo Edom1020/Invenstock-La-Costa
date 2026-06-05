@@ -51,6 +51,7 @@ const cargarProductos = async () => {
   try {
     cargando.value = true
     const res = await api.get('/productos?limit=100')
+    console.log('🏷️ Primer producto del backend:', JSON.stringify(res.data.data?.[0], null, 2))
     productos.value = (res.data.data || []).map(p => ({
       ...p,
       categoria: typeof p.categoria === 'string'
