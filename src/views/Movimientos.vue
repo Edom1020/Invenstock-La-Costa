@@ -167,7 +167,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="mov in historialFiltrado" :key="mov._id || mov.id">
+                <tr v-for="mov in historialPaginado" :key="mov._id || mov.id">
                   <td>
                     <div class="mov-fecha-col">{{ mov.fechaFormato }}</div>
                   </td>
@@ -191,11 +191,21 @@
             </table>
 
             <div class="mov-hist-footer">
-              <span v-if="historialFiltrado.length">Mostrando los últimos {{ historialFiltrado.length }} registros de un total de {{ productosStore.historialMovimientos.length }}</span>
+              <span v-if="historialFiltrado.length">
+                Página {{ paginaActual }} de {{ totalPaginas }} · {{ historialFiltrado.length }} registros
+              </span>
               <span v-else>No hay movimientos que coincidan con los filtros</span>
               <div class="mov-pag-arrows">
-                <button class="mov-pag-arrow">‹</button>
-                <button class="mov-pag-arrow">›</button>
+                <button
+                  class="mov-pag-arrow"
+                  :disabled="paginaActual <= 1"
+                  @click="paginaActual--"
+                >‹</button>
+                <button
+                  class="mov-pag-arrow"
+                  :disabled="paginaActual >= totalPaginas"
+                  @click="paginaActual++"
+                >›</button>
               </div>
             </div>
           </div>
@@ -241,7 +251,7 @@
 </template>
 
 <script setup>
-import { ref, computed, inject, onActivated, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
 
@@ -309,6 +319,17 @@ const historialFiltrado = computed(() => {
   })
 })
 
+const POR_PAGINA = 8
+const paginaActual = ref(1)
+const totalPaginas = computed(() => Math.max(1, Math.ceil(historialFiltrado.value.length / POR_PAGINA)))
+
+const historialPaginado = computed(() => {
+  const inicio = (paginaActual.value - 1) * POR_PAGINA
+  return historialFiltrado.value.slice(inicio, inicio + POR_PAGINA)
+})
+
+watch(historialFiltrado, () => { paginaActual.value = 1 })
+
 // KPIs de Movimientos
 const totalEntradasMes = computed(() => {
   const hoy = new Date()
@@ -327,12 +348,13 @@ const totalSalidasMes = computed(() => {
 })
 
 const puede = (permiso) => {
+  if (usuarioStore.rol === 'admin') return true
   const perms = usuarioStore.permisos || []
   if (perms.includes('*')) return true
   return perms.includes(permiso)
 }
 
-const registrarMovimiento = () => {
+const registrarMovimiento = async () => {
   errorStock.value = ''
 
   if (!form.value.productoId) {
@@ -354,7 +376,7 @@ const registrarMovimiento = () => {
   }
 
   // Llama a la acción del store para registrar el movimiento
-  const result = productosStore.registrarMovimiento({
+  const result = await productosStore.registrarMovimiento({
     productoId: form.value.productoId,
     cantidad: cantidadNum,
     fecha: form.value.fecha,
@@ -867,7 +889,8 @@ onMounted(async () => {
   transition: background 0.2s, border-color 0.2s;
 }
 
-.mov-pag-arrow:hover { background: var(--bg-input2); }
+.mov-pag-arrow:hover:not(:disabled) { background: var(--bg-input2); }
+.mov-pag-arrow:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* ── STATS FOOTER ── */
 .mov-stats-footer {
