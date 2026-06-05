@@ -67,10 +67,7 @@ const enviarEmail = async () => {
   error.value = "";
 
   try {
-    // AQUÍ IRRÍA TU LLAMADA A LA API/BACKEND
-    // Por ahora simularemos un delay
-   const res = await api.post('/auth/recuperar-password', { email: email.value })
-
+   const res = await api.post('/auth/recuperar-password', { email: email.value }, { timeout: 10000 })
     // Si la API retorna éxito:
     enviado.value = true;
 
