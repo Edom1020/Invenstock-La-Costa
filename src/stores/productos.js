@@ -109,20 +109,19 @@ const cargarLotes = async () => {
   }
 
   //  EDITAR PRODUCTO
-  const editarProducto = async (productoEditado) => {
-    try {
-      await api.put(`/productos/${productoEditado.id || productoEditado._id}`, productoEditado)
-      await cargarProductos()
-
-      // Trigger logic for sounds and notifications
-      const prod = productos.value.find(p => p.id === productoEditado.id || p._id === productoEditado._id)
-      verificarEstadoStock(prod)
-
-      return { success: true }
-    } catch (error) {
-      return { success: false, error: 'Error al editar producto' }
-    }
+const editarProducto = async (productoEditado) => {
+  try {
+    console.log('📤 Enviando al backend:', JSON.stringify(productoEditado, null, 2))
+    await api.put(`/productos/${productoEditado.id || productoEditado._id}`, productoEditado)
+    await cargarProductos()
+    const prod = productos.value.find(p => p.id === productoEditado.id || p._id === productoEditado._id)
+    verificarEstadoStock(prod)
+    return { success: true }
+  } catch (error) {
+    console.error('❌ Error respuesta backend:', error.response?.data)
+    return { success: false, error: 'Error al editar producto' }
   }
+}
 
   //  ELIMINAR PRODUCTO
   const eliminarProducto = async (id) => {
