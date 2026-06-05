@@ -135,7 +135,11 @@ const cargarLotes = async () => {
 
       if (m.producto && typeof m.producto === 'object') {
         productoNombre = m.producto.nombre || ''
-        categoriaVal   = m.producto.categoria?.nombre || m.producto.categoria || m.categoria || ''
+        // categoria viene como ObjectId crudo — cruzar con productos normalizados
+        const prodRef = productos.value.find(p => String(p._id || p.id) === String(m.producto._id))
+        categoriaVal = prodRef?.categoria ||
+          (typeof m.producto.categoria === 'object' ? m.producto.categoria?.nombre : '') ||
+          m.categoria || ''
       } else {
         const pid  = m.productoId || m.producto || ''
         const prod = pid ? productos.value.find(p => String(p._id || p.id) === String(pid)) : null
@@ -249,7 +253,6 @@ const editarProducto = async (productoEditado) => {
         producto: mov.productoId,
         tipo: mov.tipo,
         cantidad: mov.cantidad,
-        fecha: mov.fecha,
         notas: mov.notas
       })
       await cargarProductos()
