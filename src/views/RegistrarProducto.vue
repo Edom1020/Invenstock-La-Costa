@@ -402,6 +402,7 @@ const lote = reactive({
       usaLotes:      usaLotes.value,
       imagen:        imagenPreview.value
     }
+    console.log('📤 Enviando al backend:', JSON.stringify(datosProducto, null, 2))
   
     // ── Si usa lotes, agregar datos del lote ──
     if (usaLotes.value) {
