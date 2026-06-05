@@ -323,9 +323,23 @@ const router = useRouter()
  
 // ── Imagen ──
 const imagenPreview = ref(null)
+const imagenArchivo = ref(null)
+
 const cargarImagen = (e) => {
   const file = e.target.files[0]
-  if (file) imagenPreview.value = URL.createObjectURL(file)
+  if (file) {
+    imagenArchivo.value = file
+    imagenPreview.value = URL.createObjectURL(file)
+  }
+}
+
+const imagenABase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }
  
 // ── Datos del producto ──
@@ -388,6 +402,12 @@ const lote = reactive({
       }
     }
   
+    // ── Convertir imagen a Base64 si hay archivo seleccionado ──
+    let imagenBase64 = null
+    if (imagenArchivo.value) {
+      imagenBase64 = await imagenABase64(imagenArchivo.value)
+    }
+
     // ── Construir objeto para enviar ──
     const datosProducto = {
       nombre:        producto.nombre,
@@ -400,7 +420,7 @@ const lote = reactive({
       stockMinimo:   producto.stockMinimo,
       stockMax:      producto.stockMax,
       usaLotes:      usaLotes.value,
-      imagen:        imagenPreview.value
+      imagen:        imagenBase64
     }
     console.log('📤 Enviando al backend:', JSON.stringify(datosProducto, null, 2))
   
