@@ -300,7 +300,7 @@ const historialFiltrado = computed(() => {
   return productosStore.historialMovimientos.filter(m => {
     const porTipo = filtroTipo.value === 'Todos' || m.tipo === filtroTipo.value
     const porCategoria = filtroCategoria.value === 'Todas' || m.categoria === filtroCategoria.value
-    const porBusqueda = (m.producto?.nombre || m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
+    const porBusqueda = String(m.producto?.nombre || m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
     return porTipo && porCategoria && porBusqueda
   })
 })
