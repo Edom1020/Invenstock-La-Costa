@@ -75,13 +75,15 @@ const iniciarSesion = async () => {
     return;
   }
 
+  console.log('🔐 Intentando login con:', email.value)
   const resultado = await usuarioStore.iniciarSesion(email.value, password.value)
+  console.log('📦 Resultado:', resultado)
 
   if (resultado.success) {
     try {
       notificacionesStore.conectar()
     } catch (e) {
-      console.warn('Socket no disponible, continuando sin notificaciones en tiempo real.')
+      console.warn('Socket no disponible')
     }
     router.push("/dashboard");
   } else {
