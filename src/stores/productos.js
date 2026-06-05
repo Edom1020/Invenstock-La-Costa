@@ -142,16 +142,15 @@ const cargarLotes = async () => {
       }
 
       let fechaFormato = '-'
-      const fechaRaw = m.fecha || ''
+      const fechaRaw = m.fecha || m.createdAt || ''
       if (fechaRaw) {
-        const clean = String(fechaRaw).split('T')[0]
-        const [y, mo, d] = clean.split('-')
-        const dt = new Date(Number(y), Number(mo) - 1, Number(d))
+        const dt = new Date(fechaRaw)
         if (!isNaN(dt.getTime())) fechaFormato = dt.toLocaleDateString('es-ES')
       }
 
       return { ...m, producto: productoNombre, categoria: categoriaVal, fechaFormato }
     })
+    .sort((a, b) => new Date(b.fecha || b.createdAt || 0) - new Date(a.fecha || a.createdAt || 0))
   } catch (error) {
     console.error('Error al cargar movimientos:', error)
   }

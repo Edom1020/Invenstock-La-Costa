@@ -312,9 +312,9 @@ const categoriasConTodas = computed(() => {
 
 const historialFiltrado = computed(() => {
   return productosStore.historialMovimientos.filter(m => {
-    const porTipo = filtroTipo.value === 'Todos' || m.tipo === filtroTipo.value
+    const porTipo = filtroTipo.value === 'Todos' || (m.tipo || '').toLowerCase() === filtroTipo.value.toLowerCase()
     const porCategoria = filtroCategoria.value === 'Todas' || m.categoria === filtroCategoria.value
-    const porBusqueda = String(m.producto?.nombre || m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
+    const porBusqueda = String(m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
     return porTipo && porCategoria && porBusqueda
   })
 })
@@ -335,7 +335,7 @@ const totalEntradasMes = computed(() => {
   const hoy = new Date()
   const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
   return productosStore.historialMovimientos
-    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Entrada')
+    .filter(m => new Date(m.fecha || m.createdAt) >= primerDiaMes && (m.tipo || '').toLowerCase() === 'entrada')
     .reduce((sum, mov) => sum + mov.cantidad, 0)
 })
 
@@ -343,7 +343,7 @@ const totalSalidasMes = computed(() => {
   const hoy = new Date()
   const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
   return productosStore.historialMovimientos
-    .filter(m => new Date(m.fecha) >= primerDiaMes && m.tipo === 'Salida')
+    .filter(m => new Date(m.fecha || m.createdAt) >= primerDiaMes && (m.tipo || '').toLowerCase() === 'salida')
     .reduce((sum, mov) => sum + mov.cantidad, 0)
 })
 
@@ -389,7 +389,7 @@ const registrarMovimiento = async () => {
     return
   }
 
-  // Limpiar formulario
+  // Limpiar formulario y volver a página 1 para ver el nuevo movimiento
   form.value = {
     productoId: '',
     cantidad: '',
@@ -397,6 +397,7 @@ const registrarMovimiento = async () => {
     notas: ''
   }
   errorStock.value = ''
+  paginaActual.value = 1
 }
 
 const formatearCategoria = (cat) => {
