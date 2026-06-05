@@ -196,12 +196,17 @@ const editarProducto = async (productoEditado) => {
     console.log('📤 Payload limpio:', payload)
     await api.put(`/productos/${productoEditado._id || productoEditado.id}`, payload)
     await cargarProductos()
-    const prod = productos.value.find(p => p._id === productoEditado._id || p.id === productoEditado.id)
-    verificarEstadoStock(prod)
     return { success: true }
   } catch (error) {
     console.error('❌ Error respuesta backend:', JSON.stringify(error.response?.data, null, 2))
     return { success: false, error: 'Error al editar producto' }
+  } finally {
+    try {
+      const prod = productos.value.find(p => p._id === productoEditado._id || p.id === productoEditado.id)
+      verificarEstadoStock(prod)
+    } catch (e) {
+      console.warn('verificarEstadoStock error (no crítico):', e)
+    }
   }
 }
 
@@ -235,14 +240,16 @@ const editarProducto = async (productoEditado) => {
       })
       await cargarProductos()
       await cargarLotes()
-
-      // Check stock for the product associated with the edited lot
-      const prod = productos.value.find(p => p.id === loteEditado.productoId || p._id === loteEditado.productoId)
-      verificarEstadoStock(prod)
-
       return { success: true }
     } catch (error) {
       return { success: false, error: 'Error al editar lote' }
+    } finally {
+      try {
+        const prod = productos.value.find(p => p.id === loteEditado.productoId || p._id === loteEditado.productoId)
+        verificarEstadoStock(prod)
+      } catch (e) {
+        console.warn('verificarEstadoStock error (no crítico):', e)
+      }
     }
   }
 
@@ -257,15 +264,18 @@ const editarProducto = async (productoEditado) => {
       })
       await cargarProductos()
       await cargarMovimientos()
-
-      // Trigger logic for sounds and notifications
-      const prod = productos.value.find(p => p.id === mov.productoId || p._id === mov.productoId)
-      verificarEstadoStock(prod)
-
       return { success: true }
     } catch (error) {
       const mensaje = error.response?.data?.error || 'Error al registrar movimiento'
       return { success: false, error: mensaje }
+    } finally {
+      // Verificar stock fuera del flujo crítico para que nunca bloquee el resultado
+      try {
+        const prod = productos.value.find(p => p.id === mov.productoId || p._id === mov.productoId)
+        verificarEstadoStock(prod)
+      } catch (e) {
+        console.warn('verificarEstadoStock error (no crítico):', e)
+      }
     }
   }
 
