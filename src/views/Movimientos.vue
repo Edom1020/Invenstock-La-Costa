@@ -313,7 +313,8 @@ const categoriasConTodas = computed(() => {
 const historialFiltrado = computed(() => {
   return productosStore.historialMovimientos.filter(m => {
     const porTipo = filtroTipo.value === 'Todos' || (m.tipo || '').toLowerCase() === filtroTipo.value.toLowerCase()
-    const porCategoria = filtroCategoria.value === 'Todas' || m.categoria === filtroCategoria.value
+    const porCategoria = filtroCategoria.value === 'Todas' ||
+      (m.categoria || '').toLowerCase() === filtroCategoria.value.toLowerCase()
     const porBusqueda = String(m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
     return porTipo && porCategoria && porBusqueda
   })
@@ -389,7 +390,7 @@ const registrarMovimiento = async () => {
     return
   }
 
-  // Limpiar formulario y volver a página 1 para ver el nuevo movimiento
+  // Limpiar formulario, filtros y volver a página 1 para ver el nuevo movimiento
   form.value = {
     productoId: '',
     cantidad: '',
@@ -397,6 +398,8 @@ const registrarMovimiento = async () => {
     notas: ''
   }
   errorStock.value = ''
+  filtroTipo.value = 'Todos'
+  filtroCategoria.value = 'Todas'
   paginaActual.value = 1
 }
 

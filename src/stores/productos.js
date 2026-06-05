@@ -127,6 +127,8 @@ const cargarLotes = async () => {
   try {
     const res = await api.get('/movimientos')
     const data = res.data.data || res.data || []
+    console.log('📋 Movimientos backend:', data.length, 'registros. Ejemplo:', JSON.stringify(data[0]))
+
     historialMovimientos.value = data.map(m => {
       let productoNombre = ''
       let categoriaVal   = ''
@@ -150,9 +152,12 @@ const cargarLotes = async () => {
 
       return { ...m, producto: productoNombre, categoria: categoriaVal, fechaFormato }
     })
-    .sort((a, b) => new Date(b.fecha || b.createdAt || 0) - new Date(a.fecha || a.createdAt || 0))
+    // ObjectIds de MongoDB son monotónicamente crecientes — el mayor es el más reciente
+    .sort((a, b) => (String(b._id || '') > String(a._id || '') ? 1 : -1))
+
+    console.log('✅ Historial cargado:', historialMovimientos.value.length, '— primero:', historialMovimientos.value[0]?.producto, historialMovimientos.value[0]?.fechaFormato)
   } catch (error) {
-    console.error('Error al cargar movimientos:', error)
+    console.error('❌ Error al cargar movimientos:', error)
   }
 }
 
