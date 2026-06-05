@@ -56,10 +56,14 @@
             >
               ▼ Categoría: Todas
             </div>
-            <div v-for="cat in productosStore.categorias" :key="cat._id" 
-                 @click="categoriaActiva = cat.nombre.toLowerCase()">
-                 {{ cat.nombre }}
-              </div>
+            <div
+              v-for="cat in productosStore.categorias"
+              :key="cat._id"
+              :class="['pill', categoriaActiva === cat.nombre.toLowerCase() ? 'active' : '']"
+              @click="categoriaActiva = cat.nombre.toLowerCase()"
+            >
+              {{ cat.nombre }}
+            </div>
           </div>
           <span class="showing">
             Mostrando 1-{{ productosFiltrados.length }} de {{ productos.length }} productos
@@ -419,7 +423,7 @@ const categoriaPopular = computed(() => {
 const productosFiltrados = computed(() => {
   let lista = productosStore.productos
   if (categoriaActiva.value !== 'todas')
-    lista = lista.filter(p => p.categoria === categoriaActiva.value)
+    lista = lista.filter(p => (p.categoria || '').toLowerCase() === categoriaActiva.value)
   if (busqueda.value.trim())
     lista = lista.filter(p =>
       (p.nombre || '').toLowerCase().includes(busqueda.value.toLowerCase()) ||
