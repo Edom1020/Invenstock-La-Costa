@@ -163,10 +163,18 @@ const editarProducto = async (productoEditado) => {
   //  EDITAR LOTE
   const editarLote = async (loteEditado) => {
     try {
+      // lote.codigo viene del objeto lote anidado (loteEditado.lote.codigo)
+      // o del campo numero si se editó en el modal
+      const codigoLote = loteEditado.numero 
+        || loteEditado.lote?.codigo 
+        || loteEditado.lote 
+        || ''
+
       await api.put(`/productos/lotes/${loteEditado.id || loteEditado._id}`, {
-        lote: loteEditado.numero,
+        lote: codigoLote,
         sku: loteEditado.sku,
-        fechaVencimiento: loteEditado.fechaVencimiento,
+        stock: loteEditado.cantidad,
+        fechaVencimiento: loteEditado.usaVencimiento ? loteEditado.fechaVencimiento : null,
         observacionLote: loteEditado.observaciones
       })
       await cargarLotes()
