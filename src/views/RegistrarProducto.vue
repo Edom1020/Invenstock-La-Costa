@@ -57,9 +57,9 @@
                   <div class="select-wrap">
                     <select v-model="producto.categoria" class="custom-select">
                       <option value="">Seleccionar categoría...</option>
-                      <option v-for="cat in productosStore.categorias" :key="cat" :value="cat">
-                        {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
-                      </option>
+                       <option v-for="cat in productosStore.categorias" :key="cat._id" :value="cat._id">
+                            {{ cat.nombre }}
+                          </option>
                     </select>
                     <span class="select-arrow">▾</span>
                   </div>
@@ -303,7 +303,7 @@
  
  
 <script setup>
-import { ref, reactive, inject } from 'vue'
+import { ref, reactive, inject, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import { useProductosStore } from '../stores/productos' // Importar store
@@ -429,6 +429,10 @@ const lote = reactive({
   const cancelar = () => {
     router.push('/productos')
   }
+
+  onMounted(async () => {
+  await productosStore.cargarCategorias()
+})
 
 </script>
  
