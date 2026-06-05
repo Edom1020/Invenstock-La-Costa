@@ -90,14 +90,16 @@ const cargarLotes = async () => {
     //   b) lote.lote = { codigo: "A001", fechaEntrada: "...", ... }  (subdocumento)
     lotes.value = raw.map(l => {
       const sub = l.lote && typeof l.lote === 'object' ? l.lote : null
+      const productoId = l.productoId || (l.producto && typeof l.producto === 'object' ? l.producto._id : l.producto) || ''
+      const prodEncontrado = productos.value.find(p => (p._id || p.id) === productoId)
 
       return {
         ...l,
         numero:           l.numero || (sub ? sub.codigo : l.lote) || l.codigo || '',
-        productoId:       l.productoId || (l.producto && typeof l.producto === 'object' ? l.producto._id : l.producto) || '',
+        productoId,
         producto:         l.producto && typeof l.producto === 'object' ? l.producto.nombre : (l.producto || ''),
         sku:              l.sku || (l.producto && typeof l.producto === 'object' ? l.producto.sku : '') || '',
-        cantidad:         l.cantidad ?? 0,
+        cantidad:         l.cantidad || (prodEncontrado ? prodEncontrado.stock : 0),
         fechaEntrada:     (l.fechaEntrada || (sub ? sub.fechaEntrada : null) || '').split('T')[0] || '',
         usaVencimiento:   l.usaVencimiento !== undefined ? l.usaVencimiento : (sub ? !!sub.usaVencimiento : !!l.fechaVencimiento),
         fechaVencimiento: (l.fechaVencimiento || (sub ? sub.fechaVencimiento : null) || '').split('T')[0] || '',
@@ -200,8 +202,8 @@ const editarProducto = async (productoEditado) => {
         fechaVencimiento: loteEditado.usaVencimiento ? loteEditado.fechaVencimiento : null,
         observacionLote: loteEditado.observaciones
       })
-      await cargarLotes()
       await cargarProductos()
+      await cargarLotes()
 
       // Check stock for the product associated with the edited lot
       const prod = productos.value.find(p => p.id === loteEditado.productoId || p._id === loteEditado.productoId)
