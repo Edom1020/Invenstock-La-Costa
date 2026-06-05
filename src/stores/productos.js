@@ -239,6 +239,18 @@ const editarProducto = async (productoEditado) => {
     }
   }
 
+  //  ELIMINAR LOTE
+  const eliminarLote = async (id) => {
+    try {
+      await api.delete(`/productos/lotes/${id}`)
+      await cargarProductos()
+      await cargarLotes()
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Error al eliminar lote' }
+    }
+  }
+
   const agregarCategoria = (nuevaCat) => {
     const catSaneada = nuevaCat.toLowerCase().trim()
     if (catSaneada && !categorias.value.includes(catSaneada)) {
@@ -275,6 +287,7 @@ const editarProducto = async (productoEditado) => {
     editarProducto,
     eliminarProducto,
     editarLote,
+    eliminarLote,
     registrarMovimiento,
     agregarCategoria
   }
