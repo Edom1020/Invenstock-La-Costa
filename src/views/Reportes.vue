@@ -40,11 +40,11 @@
           <div class="filtros-opciones">
             <span
               v-for="cat in ['Todas', ...productosStore.categorias]"
-              :key="cat"
-              :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
-              @click="filtroCategoria = cat"
+              :key="cat?.nombre || cat"
+              :class="['filtro-pill', filtroCategoria === (cat?.nombre || cat) ? 'active' : '']"
+              @click="filtroCategoria = cat?.nombre || cat"
             >
-              {{ cat === 'Todas' ? 'Todas' : cat.charAt(0).toUpperCase() + cat.slice(1) }}
+              {{ cat === 'Todas' ? 'Todas' : String(cat?.nombre || cat || '').charAt(0).toUpperCase() + String(cat?.nombre || cat || '').slice(1) }}
             </span>
           </div>
         </div>
@@ -307,7 +307,8 @@ const alertasFiltradas = computed(() => {
     const porBusqueda = (p.nombre || '').toLowerCase().includes(busqueda.value.toLowerCase()) ||
                         (p.categoria?.nombre || p.categoria || '').toLowerCase().includes(busqueda.value.toLowerCase())
 
-    const porCategoria = filtroCategoria.value === 'Todas' || (p.categoria?.nombre || p.categoria) === filtroCategoria.value.toLowerCase()
+    const porCategoria = filtroCategoria.value === 'Todas' ||
+      (p.categoria || '').toLowerCase() === String(filtroCategoria.value || '').toLowerCase()
 
     const porEstado = filtroEstado.value === 'Todos' ||
       (filtroEstado.value === 'Crítico' && p.stock <= (p.stockMinimo * 0.5)) ||
@@ -347,8 +348,9 @@ const getCatIcon = (categoria) => {
 
 const getDonaColor = (cat) => {
   const colors = ['#1e4d7b', '#378ADD', '#93c5fd', '#60a5fa', '#94a3b8', '#cbd5e1', '#f1f5f9']
-  const index = productosStore.categorias.indexOf(cat.toLowerCase())
-  return colors[index % colors.length]
+  const catStr = String(cat || '').toLowerCase()
+  const index = productosStore.categorias.findIndex(c => (c?.nombre || c || '').toLowerCase() === catStr)
+  return colors[index >= 0 ? index % colors.length : 0]
 }
 
 // ── ABRIR MODAL REPONER ──
@@ -414,17 +416,24 @@ const updateCharts = () => {
   // 2. Datos para Gráfica de Dona (Categorías)
   const cats = productosStore.categorias
   const dataDona = cats.map(cat => {
+    const catNombre = (cat?.nombre || cat || '').toLowerCase()
     return productosStore.productos
-      .filter(p => p.categoria === cat)
+      .filter(p => (p.categoria || '').toLowerCase() === catNombre)
       .reduce((acc, p) => acc + p.stock, 0)
   })
 
-  chartDona.data.labels = cats.map(c => c.charAt(0).toUpperCase() + c.slice(1))
+  chartDona.data.labels = cats.map(c => {
+    const n = c?.nombre || c || ''
+    return n.charAt(0).toUpperCase() + n.slice(1)
+  })
   chartDona.data.datasets[0].data = dataDona
   chartDona.update()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (!productosStore.productos.length)  await productosStore.cargarProductos()
+  if (!productosStore.categorias.length) await productosStore.cargarCategorias()
+  if (!productosStore.historialMovimientos.length) await productosStore.cargarMovimientos()
 
   // BARRAS
   chartBarras = new Chart(document.getElementById('graficaBarras'), {
@@ -474,6 +483,7 @@ onMounted(() => {
     }
   })
 
+  // Actualizar gráficas con datos ya cargados
   updateCharts()
 })
 
