@@ -41,6 +41,9 @@ router.beforeEach((to, from) => {
   const userRole = usuarioStore.rol
   const isAuthenticated = usuarioStore.estaAutenticado
 
+  // DEBUG TEMPORAL
+  console.log('🔒 Navegando a:', to.path, '| rol:', userRole, '| autenticado:', isAuthenticated)
+
   if (requiresAuth && !isAuthenticated) {
     return { path: '/login' }
   }
@@ -51,7 +54,5 @@ router.beforeEach((to, from) => {
       return { path: '/' }
     }
   }
-
-  // Sin return explícito permite la navegación
 })
 export default router;

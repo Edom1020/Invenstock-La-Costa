@@ -61,8 +61,12 @@ const enviarEmail = async () => {
   error.value = "";
 
   try {
-    await api.post('/auth/recuperar-password', { email: email.value }, { timeout: 10000 })
-    enviado.value = true;
+    await fetch(`${import.meta.env.VITE_API_URL}/auth/recuperar-password`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: email.value }),
+  signal: AbortSignal.timeout(10000)
+})
     setTimeout(() => router.push("/login"), 3000);
   } catch (err) {
     if (err.response?.status === 429) {
