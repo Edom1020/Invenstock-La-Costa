@@ -9,8 +9,21 @@ export const useProductosStore = defineStore('productos', () => {
   const productos = ref([])
   const lotes = ref([])
   const historialMovimientos = ref([])
-  const categorias = ref(['electronica', 'hogar', 'comida', 'herramientas', 'ferreteria'])
   const cargando = ref(false)
+
+
+const categorias = ref([]) // { _id, nombre }
+
+const cargarCategorias = async () => {
+  try {
+    const res = await api.get('/categorias')
+    console.log('📦 Respuesta categorías:', res.data)
+    categorias.value = res.data.data || res.data || []
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+  }
+}
+
 
   // ── Lógica de Sonidos según el stock ──
   const dispararSonidoStock = (prod) => {
@@ -222,6 +235,7 @@ const editarProducto = async (productoEditado) => {
     categorias,
     cargando,
     cargarProductos,
+    cargarCategorias,
     cargarLotes,
     cargarMovimientos,
     agregarProducto,
