@@ -66,6 +66,7 @@ const cargarProductos = async () => {
     const res = await api.get('/productos?limit=100')
     productos.value = (res.data.data || []).map(p => ({
       ...p,
+      id: p._id || p.id,           // garantizar que id siempre existe
       categoriaId: p.categoria?._id || p.categoria,
       categoria: typeof p.categoria === 'object'
         ? (p.categoria?.nombre || 'sin-categoria')
@@ -83,36 +84,7 @@ const cargarProductos = async () => {
 const cargarLotes = async () => {
   try {
     const res = await api.get('/productos/lotes')
-    const raw = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.lotes || [])
-
-    // El backend puede guardar el nro de lote como:
-    //   a) lote.lote = "A001"          (string plano)
-    //   b) lote.lote = { codigo: "A001", fechaEntrada: "...", ... }  (subdocumento)
-    lotes.value = raw.map(l => {
-      const sub = l.lote && typeof l.lote === 'object' ? l.lote : null
-      const productoId = l.productoId || (l.producto && typeof l.producto === 'object' ? l.producto._id : l.producto) || ''
-      const skuLote    = l.sku || (l.producto && typeof l.producto === 'object' ? l.producto.sku : '') || ''
-
-      // Busca el producto por ID y, si no lo encuentra, por SKU como fallback
-      const prodEncontrado = productos.value.find(p =>
-        String(p._id || p.id) === String(productoId) ||
-        (skuLote && p.sku === skuLote)
-      )
-
-      return {
-        ...l,
-        numero:           l.numero || (sub ? sub.codigo : l.lote) || l.codigo || '',
-        productoId,
-        producto:         l.producto && typeof l.producto === 'object' ? l.producto.nombre : (l.producto || ''),
-        sku:              skuLote,
-        cantidad:         prodEncontrado ? prodEncontrado.stock : (l.cantidad ?? 0),
-        fechaEntrada:     (l.fechaEntrada || (sub ? sub.fechaEntrada : null) || '').split('T')[0] || '',
-        usaVencimiento:   l.usaVencimiento !== undefined ? l.usaVencimiento : (sub ? !!sub.usaVencimiento : !!l.fechaVencimiento),
-        fechaVencimiento: (l.fechaVencimiento || (sub ? sub.fechaVencimiento : null) || '').split('T')[0] || '',
-        observaciones:    l.observaciones || l.observacionLote || (sub ? sub.observacion : '') || '',
-        estado:           l.estado || 'activo'
-      }
-    })
+    lotes.value = Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.lotes || [])
   } catch (error) {
     if (error.response?.status === 403) {
       console.warn('Sin permisos para ver lotes — solo administradores')
@@ -127,41 +99,20 @@ const cargarLotes = async () => {
   try {
     const res = await api.get('/movimientos')
     const data = res.data.data || res.data || []
-    console.log('📋 Movimientos backend:', data.length, 'registros. Ejemplo:', JSON.stringify(data[0]))
-
     historialMovimientos.value = data.map(m => {
-      let productoNombre = ''
-      let categoriaVal   = ''
-
-      if (m.producto && typeof m.producto === 'object') {
-        productoNombre = m.producto.nombre || ''
-        // categoria viene como ObjectId crudo — cruzar con productos normalizados
-        const prodRef = productos.value.find(p => String(p._id || p.id) === String(m.producto._id))
-        categoriaVal = prodRef?.categoria ||
-          (typeof m.producto.categoria === 'object' ? m.producto.categoria?.nombre : '') ||
-          m.categoria || ''
-      } else {
-        const pid  = m.productoId || m.producto || ''
-        const prod = pid ? productos.value.find(p => String(p._id || p.id) === String(pid)) : null
-        productoNombre = prod?.nombre || ''
-        categoriaVal   = prod?.categoria || m.categoria || ''
+      const nombreProducto = m.producto?.nombre || (typeof m.producto === 'string' ? m.producto : 'Producto desconocido')
+      const categoriaProducto = typeof m.categoria === 'string'
+        ? m.categoria
+        : (m.producto?.categoria?.nombre || m.producto?.categoria || '')
+      return {
+        ...m,
+        producto: nombreProducto,       // siempre string — los filtros de la vista usan String(m.producto)
+        productoNombre: nombreProducto, // alias por compatibilidad
+        categoria: categoriaProducto,
       }
-
-      let fechaFormato = '-'
-      const fechaRaw = m.fecha || m.createdAt || ''
-      if (fechaRaw) {
-        const dt = new Date(fechaRaw)
-        if (!isNaN(dt.getTime())) fechaFormato = dt.toLocaleDateString('es-ES')
-      }
-
-      return { ...m, producto: productoNombre, categoria: categoriaVal, fechaFormato }
     })
-    // ObjectIds de MongoDB son monotónicamente crecientes — el mayor es el más reciente
-    .sort((a, b) => (String(b._id || '') > String(a._id || '') ? 1 : -1))
-
-    console.log('✅ Historial cargado:', historialMovimientos.value.length, '— primero:', historialMovimientos.value[0]?.producto, historialMovimientos.value[0]?.fechaFormato)
   } catch (error) {
-    console.error('❌ Error al cargar movimientos:', error)
+    console.error('Error al cargar movimientos:', error)
   }
 }
 
@@ -189,24 +140,18 @@ const editarProducto = async (productoEditado) => {
       precio:           productoEditado.precio,
       stock:            productoEditado.stock,
       stockMinimo:      productoEditado.stockMinimo,
-      stockMax:         productoEditado.stockMax || productoEditado.movimientoMaximo || 0,
-      movimientoMaximo: productoEditado.stockMax || productoEditado.movimientoMaximo || 0,
+      movimientoMaximo: productoEditado.stockMax || productoEditado.movimientoMaximo,
       usaLotes:         productoEditado.usaLotes,
     }
     console.log('📤 Payload limpio:', payload)
     await api.put(`/productos/${productoEditado._id || productoEditado.id}`, payload)
     await cargarProductos()
+    const prod = productos.value.find(p => p._id === productoEditado._id || p.id === productoEditado.id)
+    verificarEstadoStock(prod)
     return { success: true }
   } catch (error) {
     console.error('❌ Error respuesta backend:', JSON.stringify(error.response?.data, null, 2))
     return { success: false, error: 'Error al editar producto' }
-  } finally {
-    try {
-      const prod = productos.value.find(p => p._id === productoEditado._id || p.id === productoEditado.id)
-      verificarEstadoStock(prod)
-    } catch (e) {
-      console.warn('verificarEstadoStock error (no crítico):', e)
-    }
   }
 }
 
@@ -238,18 +183,16 @@ const editarProducto = async (productoEditado) => {
         fechaVencimiento: loteEditado.usaVencimiento ? loteEditado.fechaVencimiento : null,
         observacionLote: loteEditado.observaciones
       })
-      await cargarProductos()
       await cargarLotes()
+      await cargarProductos()
+
+      // Check stock for the product associated with the edited lot
+      const prod = productos.value.find(p => p.id === loteEditado.productoId || p._id === loteEditado.productoId)
+      verificarEstadoStock(prod)
+
       return { success: true }
     } catch (error) {
       return { success: false, error: 'Error al editar lote' }
-    } finally {
-      try {
-        const prod = productos.value.find(p => p.id === loteEditado.productoId || p._id === loteEditado.productoId)
-        verificarEstadoStock(prod)
-      } catch (e) {
-        console.warn('verificarEstadoStock error (no crítico):', e)
-      }
     }
   }
 
@@ -257,37 +200,23 @@ const editarProducto = async (productoEditado) => {
   const registrarMovimiento = async (mov) => {
     try {
       await api.post('/movimientos', {
-        producto: mov.productoId,
+        producto: mov.productoId,   // el backend valida body('producto'), no 'productoId'
         tipo: mov.tipo,
         cantidad: mov.cantidad,
+        fecha: mov.fecha,
         notas: mov.notas
       })
       await cargarProductos()
       await cargarMovimientos()
+
+      // Trigger logic for sounds and notifications
+      const prod = productos.value.find(p => p.id === mov.productoId || p._id === mov.productoId)
+      verificarEstadoStock(prod)
+
       return { success: true }
     } catch (error) {
       const mensaje = error.response?.data?.error || 'Error al registrar movimiento'
       return { success: false, error: mensaje }
-    } finally {
-      // Verificar stock fuera del flujo crítico para que nunca bloquee el resultado
-      try {
-        const prod = productos.value.find(p => p.id === mov.productoId || p._id === mov.productoId)
-        verificarEstadoStock(prod)
-      } catch (e) {
-        console.warn('verificarEstadoStock error (no crítico):', e)
-      }
-    }
-  }
-
-  //  ELIMINAR LOTE
-  const eliminarLote = async (id) => {
-    try {
-      await api.delete(`/productos/lotes/${id}`)
-      await cargarProductos()
-      await cargarLotes()
-      return { success: true }
-    } catch (error) {
-      return { success: false, error: 'Error al eliminar lote' }
     }
   }
 
@@ -327,7 +256,6 @@ const editarProducto = async (productoEditado) => {
     editarProducto,
     eliminarProducto,
     editarLote,
-    eliminarLote,
     registrarMovimiento,
     agregarCategoria
   }
