@@ -1,6 +1,16 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import socket, { reproducirSonido } from '../services/notificaciones.service'
+import { useConfiguracionStore } from './configuracion'
+
+function mostrarNotifEscritorio(titulo, descripcion) {
+  try {
+    const cfg = useConfiguracionStore()
+    if (!cfg.notificaciones.escritorio) return
+    if (!('Notification' in window) || Notification.permission !== 'granted') return
+    new Notification(titulo, { body: descripcion, icon: '/favicon.ico' })
+  } catch { /* silencioso si falla */ }
+}
 
 export const useNotificacionesStore = defineStore('notificaciones', () => {
 
@@ -15,7 +25,6 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
     socket.connect()
 
     socket.on('nueva_notificacion', (data) => {
-      // Determinar tipo de sonido
       let tipoSonido = 'normal'
       if (data.tipo === 'CRÍTICA' || data.tipo === 'MUY CRÍTICO') {
         tipoSonido = 'muy_critico'
@@ -25,7 +34,6 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
 
       if (data.sonarAlarma) reproducirSonido(tipoSonido)
 
-      // Mapear al formato que ya usa Notificaciones.vue
       notificaciones.value.unshift({
         id:          Date.now(),
         tipo:        mapearTipo(data.tipo),
@@ -36,6 +44,7 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
       })
 
       hayNuevas.value = true
+      mostrarNotifEscritorio(data.titulo, data.mensaje)
     })
   }
 
@@ -65,6 +74,7 @@ export const useNotificacionesStore = defineStore('notificaciones', () => {
       leida:       false
     })
     hayNuevas.value = true
+    mostrarNotifEscritorio(titulo, descripcion)
   }
 
   // Mapea los tipos del backend al formato de Notificaciones.vue

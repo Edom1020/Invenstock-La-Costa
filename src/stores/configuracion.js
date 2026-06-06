@@ -1,19 +1,34 @@
 import { defineStore } from 'pinia'
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
+
+const STORAGE_KEY = 'invenstock_config'
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
 
 export const useConfiguracionStore = defineStore('configuracion', () => {
-  // Configuración de inventario
+  const saved = loadFromStorage()
+
   const inventario = reactive({
-    stockMinimoGlobal: 15, // Stock mínimo por defecto para alertas
-    unidadMedida: 'u'      // Unidad de medida por defecto
+    stockMinimoGlobal: saved?.inventario?.stockMinimoGlobal ?? 15,
+    unidadMedida:      saved?.inventario?.unidadMedida      ?? 'u'
   })
 
-  // Otras configuraciones (ej. notificaciones, etc.)
   const notificaciones = reactive({
-    email: true,
-    escritorio: false,
-    reportes: true
+    email:     saved?.notificaciones?.email     ?? true,
+    escritorio: saved?.notificaciones?.escritorio ?? false,
+    reportes:  saved?.notificaciones?.reportes  ?? true
   })
 
-  return { inventario, notificaciones }
+  function guardar() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ inventario, notificaciones }))
+  }
+
+  watch([() => ({ ...inventario }), () => ({ ...notificaciones })], guardar, { deep: true })
+
+  return { inventario, notificaciones, guardar }
 })

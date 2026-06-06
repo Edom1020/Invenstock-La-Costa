@@ -345,7 +345,7 @@
 
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 import Notificaciones from '../components/Notificaciones.vue'
 import api from '../views/api'
@@ -383,6 +383,28 @@ const notif = reactive({ email: true, escritorio: false, reportes: true })
 onMounted(() => {
   if (configuracionStore.notificaciones) {
     Object.assign(notif, configuracionStore.notificaciones)
+  }
+  correoOriginal.value = perfil.correo
+})
+
+// Cuando el usuario activa las notificaciones de escritorio, pedir permiso al navegador
+watch(() => notif.escritorio, async (activo) => {
+  if (!activo) return
+  if (!('Notification' in window)) {
+    alert('Tu navegador no soporta notificaciones de escritorio.')
+    notif.escritorio = false
+    return
+  }
+  if (Notification.permission === 'denied') {
+    alert('Las notificaciones están bloqueadas en este navegador. Permítelas en la configuración del sitio.')
+    notif.escritorio = false
+    return
+  }
+  if (Notification.permission === 'default') {
+    const permiso = await Notification.requestPermission()
+    if (permiso !== 'granted') {
+      notif.escritorio = false
+    }
   }
 })
 
@@ -613,6 +635,9 @@ const cancelar = () => {
 }
 
 const guardarCambios = async () => {
+  // Siempre guardar notificaciones (mutación in-place para mantener reactividad)
+  Object.assign(configuracionStore.notificaciones, notif)
+
   if (perfil.correo !== correoOriginal.value) {
     try {
       await api.put('/auth/change-email', {
@@ -621,7 +646,6 @@ const guardarCambios = async () => {
       })
       correoOriginal.value = perfil.correo
       usuarioStore.actualizarPerfil(perfil)
-      configuracionStore.notificaciones = { ...notif }
       modoEdicion.value = false
       alert('✅ Correo actualizado. Se envió una notificación al correo anterior.')
     } catch (error) {
@@ -632,7 +656,6 @@ const guardarCambios = async () => {
   }
 
   usuarioStore.actualizarPerfil(perfil)
-  configuracionStore.notificaciones = { ...notif }
   modoEdicion.value = false
   alert('¡Configuración guardada!')
 }
