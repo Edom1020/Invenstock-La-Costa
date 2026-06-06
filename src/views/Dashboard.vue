@@ -185,6 +185,15 @@ const categoriasConTodas = computed(() => {
   return ['Todas', ...productosStore.categorias]
 })
 
+const mostrarFiltros = ref(false)
+const filtroTipo = ref('Todos')
+const filtroCategoria = ref('Todas')
+
+const limpiarFiltros = () => {
+  filtroTipo.value = 'Todos'
+  filtroCategoria.value = 'Todas'
+}
+
 // Para filtrar los movimientos según el término de búsqueda ingresado //
 const movimientosFiltrados = computed(() => {
   return productosStore.historialMovimientos.filter(m => {
@@ -211,15 +220,6 @@ const getCatIcon = (categoria) => {
     comida: '/images/images-dashboard/manzanaicon.png',
   }
   return icons[categoria] || '/images/images-dashboard/laptopicon.png'
-}
-
-const mostrarFiltros = ref(false)
-const filtroTipo = ref('Todos')
-const filtroCategoria = ref('Todas')
-
-const limpiarFiltros = () => {
-  filtroTipo.value = 'Todos'
-  filtroCategoria.value = 'Todas'
 }
 
 const formatearCategoria = (cat) => {
