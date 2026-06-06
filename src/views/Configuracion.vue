@@ -294,35 +294,37 @@
                 Cambiar Contraseña
               </div>
           
-              <div class="conf-password-form">
+              <form class="conf-password-form" @submit.prevent="cambiarContraseña" autocomplete="on">
                 <input
                   v-model="password.actual"
                   type="password"
                   placeholder="Contraseña actual"
                   class="conf-input-password"
+                  autocomplete="current-password"
                 />
                 <input
                   v-model="password.nueva"
                   type="password"
                   placeholder="Nueva contraseña"
                   class="conf-input-password"
+                  autocomplete="new-password"
                 />
                 <input
                   v-model="password.confirmar"
                   type="password"
                   placeholder="Confirmar contraseña"
                   class="conf-input-password"
+                  autocomplete="new-password"
                 />
-              </div>
-          
-              <div style="display:flex; gap:10px;">
-                <button class="conf-btn-update" @click="cambiarContraseña">
-                  Actualizar Contraseña
-                </button>
-                <button class="conf-btn-cancelar-pass" @click="mostrarPassword = false">
-                  Cancelar
-                </button>
-              </div>
+                <div style="display:flex; gap:10px;">
+                  <button type="submit" class="conf-btn-update">
+                    Actualizar Contraseña
+                  </button>
+                  <button type="button" class="conf-btn-cancelar-pass" @click="mostrarPassword = false">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
                     
@@ -334,6 +336,13 @@
           <button class="btn-cancelar" @click="cancelar">Cancelar</button>
           <button class="btn-primary" @click="guardarCambios">Guardar Cambios</button>
         </div>
+
+        <!-- Toast de resultado -->
+        <transition name="toast-fade">
+          <div v-if="toast.visible" class="toast-msg" :class="toast.tipo">
+            {{ toast.texto }}
+          </div>
+        </transition>
 
       </div>
     </div>
@@ -367,6 +376,16 @@ const cambiarFoto = (e) => {
 
 const modoEdicion = ref(false)
 const correoOriginal = ref('')
+
+const toast = reactive({ visible: false, texto: '', tipo: 'exito' })
+let toastTimer = null
+const mostrarToast = (texto, tipo = 'exito') => {
+  if (toastTimer) clearTimeout(toastTimer)
+  toast.texto = texto
+  toast.tipo = tipo
+  toast.visible = true
+  toastTimer = setTimeout(() => { toast.visible = false }, 3500)
+}
 
 const perfil = reactive({ ...usuarioStore.perfil })
 
@@ -412,15 +431,15 @@ const password = reactive({ actual: '', nueva: '', confirmar: '' })
 
 const cambiarContraseña = async () => {
   if (!password.actual || !password.nueva || !password.confirmar) {
-    alert('Por favor completa todos los campos.')
+    mostrarToast('Por favor completa todos los campos.', 'error')
     return
   }
   if (password.nueva !== password.confirmar) {
-    alert('Las contraseñas no coinciden.')
+    mostrarToast('Las contraseñas no coinciden.', 'error')
     return
   }
   if (password.nueva.length < 6) {
-    alert('La contraseña debe tener al menos 6 caracteres.')
+    mostrarToast('La contraseña debe tener al menos 6 caracteres.', 'error')
     return
   }
   try {
@@ -428,14 +447,14 @@ const cambiarContraseña = async () => {
       passwordActual: password.actual,
       passwordNueva: password.nueva
     })
-    alert('¡Contraseña actualizada exitosamente!')
+    mostrarToast('¡Contraseña actualizada exitosamente!')
     password.actual = ''
     password.nueva = ''
     password.confirmar = ''
     mostrarPassword.value = false
   } catch (error) {
     const msg = error.response?.data?.message || error.response?.data?.error || 'Error al cambiar la contraseña.'
-    alert('❌ ' + msg)
+    mostrarToast(msg, 'error')
   }
 }
 
@@ -635,7 +654,6 @@ const cancelar = () => {
 }
 
 const guardarCambios = async () => {
-  // Siempre guardar notificaciones (mutación in-place para mantener reactividad)
   Object.assign(configuracionStore.notificaciones, notif)
 
   if (perfil.correo !== correoOriginal.value) {
@@ -647,17 +665,17 @@ const guardarCambios = async () => {
       correoOriginal.value = perfil.correo
       usuarioStore.actualizarPerfil(perfil)
       modoEdicion.value = false
-      alert('✅ Correo actualizado. Se envió una notificación al correo anterior.')
+      mostrarToast('Correo actualizado. Se envió una notificación al correo anterior.')
     } catch (error) {
       const msg = error.response?.data?.error || 'Error al cambiar el correo.'
-      alert('❌ ' + msg)
+      mostrarToast(msg, 'error')
     }
     return
   }
 
   usuarioStore.actualizarPerfil(perfil)
   modoEdicion.value = false
-  alert('¡Configuración guardada!')
+  mostrarToast('¡Configuración guardada!')
 }
 </script>
 
@@ -1687,5 +1705,44 @@ const guardarCambios = async () => {
     padding: 12px;
     font-size: 12px;
   }
+}
+
+/* ── TOAST ── */
+.toast-msg {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 9999;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.toast-msg.exito {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.toast-msg.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
 }
 </style>

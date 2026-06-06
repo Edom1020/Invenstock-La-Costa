@@ -4,7 +4,7 @@
     <div class="card">
 
       <!-- CUADRO LOGIN -->
-      <div class="login-box">
+      <form class="login-box" @submit.prevent="iniciarSesion" autocomplete="on" novalidate>
 
         <!-- ICONO -->
         <img src="/images/Usericon.png" class="user-icon" />
@@ -13,7 +13,7 @@
         <div class="input-group">
           <label>Email</label>
           <div class="input-container">
-            <input v-model="email" type="email" />
+            <input v-model="email" type="email" autocomplete="email" />
           </div>
         </div>
 
@@ -22,9 +22,9 @@
           <label>Contraseña</label>
 
           <div class="input-container">
-            <input v-model="password" :type="showPassword ? 'text' : 'password'" />
-            <img 
-              :src="showPassword ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'" 
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" autocomplete="current-password" />
+            <img
+              :src="showPassword ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'"
               class="eye-icon"
               @click="togglePassword"
             />
@@ -33,7 +33,12 @@
           <span class="forgot" @click="irARecuperacion">¿Olvidaste tu contraseña?</span>
         </div>
 
-      </div>
+        <!-- ERROR INLINE -->
+        <transition name="err-fade">
+          <div v-if="errMsg" class="login-error">{{ errMsg }}</div>
+        </transition>
+
+      </form>
 
       <!-- BOTÓN -->
       <button class="login-btn" @click="iniciarSesion">Iniciar Sesión</button>
@@ -60,6 +65,7 @@ const notificacionesStore = useNotificacionesStore();
 const email = ref("");
 const password = ref("");
 const showPassword = ref(false);
+const errMsg = ref("");
 
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
@@ -70,14 +76,13 @@ const irARecuperacion = () => {
 };
 
 const iniciarSesion = async () => {
+  errMsg.value = ""
   if (!email.value || !password.value) {
-    alert("Por favor, completa todos los campos.");
+    errMsg.value = "Por favor, completa todos los campos."
     return;
   }
 
-  console.log('🔐 Intentando login con:', email.value)
   const resultado = await usuarioStore.iniciarSesion(email.value, password.value)
-  console.log('📦 Resultado:', resultado)
 
   if (resultado.success) {
     try {
@@ -87,7 +92,7 @@ const iniciarSesion = async () => {
     }
     router.push("/dashboard");
   } else {
-    alert(resultado.error || "Error al iniciar sesión");
+    errMsg.value = resultado.error || "Correo o contraseña incorrectos."
   }
 }
 
@@ -223,6 +228,25 @@ label {
     cursor: pointer;
     transition: 0.3s;
   }
+
+/* ERROR INLINE */
+.login-error {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #7f1d1d;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  width: 295px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.err-fade-enter-active,
+.err-fade-leave-active { transition: opacity 0.25s, transform 0.25s; }
+.err-fade-enter-from,
+.err-fade-leave-to { opacity: 0; transform: translateY(-6px); }
 
 /* ═══════════════════════════════════════════════════════════════ */
 /* ── RESPONSIVE DESIGN ── */

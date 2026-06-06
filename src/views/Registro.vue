@@ -2,7 +2,7 @@
   <div class="container">
     <div class="card">
 
-      <div class="login-box">
+      <form class="login-box" @submit.prevent="registrarse" autocomplete="on" novalidate>
 
         <!-- ICONO -->
         <img src="/images/Usericon.png" class="user-icon" />
@@ -11,7 +11,7 @@
         <div class="input-group">
           <label>Nombre</label>
           <div class="input-container">
-            <input v-model="nombre" type="text" />
+            <input v-model="nombre" type="text" autocomplete="given-name" />
           </div>
         </div>
 
@@ -19,7 +19,7 @@
         <div class="input-group">
           <label>Apellido</label>
           <div class="input-container">
-            <input v-model="apellido" type="text" />
+            <input v-model="apellido" type="text" autocomplete="family-name" />
           </div>
         </div>
 
@@ -27,7 +27,7 @@
         <div class="input-group">
           <label>Email</label>
           <div class="input-container">
-            <input v-model="email" type="email" />
+            <input v-model="email" type="email" autocomplete="email" />
           </div>
         </div>
 
@@ -35,8 +35,8 @@
         <div class="input-group">
           <label>Contraseña</label>
           <div class="input-container">
-            <input v-model="password" :type="showPassword ? 'text' : 'password'" />
-            <img 
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" autocomplete="new-password" />
+            <img
               :src="showPassword ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'"
               class="eye-icon"
               @click="togglePassword"
@@ -54,8 +54,8 @@
         <div class="input-group">
           <label>Confirmar contraseña</label>
           <div class="input-container">
-            <input v-model="confirmPassword" :type="showConfirm ? 'text' : 'password'" />
-            <img 
+            <input v-model="confirmPassword" :type="showConfirm ? 'text' : 'password'" autocomplete="new-password" />
+            <img
               :src="showConfirm ? '/images/Ver-contraseña.png' : '/images/eyeclosedicon.png'"
               class="eye-icon"
               @click="toggleConfirm"
@@ -64,7 +64,12 @@
           <p v-if="confirmPassword && password !== confirmPassword" class="error-text">Las contraseñas no coinciden</p>
         </div>
 
-      </div>
+        <!-- ERROR INLINE -->
+        <transition name="err-fade">
+          <div v-if="errMsg" class="login-error">{{ errMsg }}</div>
+        </transition>
+
+      </form>
 
       <!-- BOTÓN -->
       <button class="login-btn" @click="registrarse">Registrarse</button>
@@ -89,6 +94,7 @@ const password = ref("");
 const confirmPassword = ref("");
 const showPassword = ref(false);
 const showConfirm = ref(false);
+const errMsg = ref("");
 
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
@@ -103,8 +109,10 @@ import { useUsuarioStore } from '../stores/usuario'
 const usuarioStore = useUsuarioStore()
 
 const registrarse = async () => {
+  errMsg.value = ""
+
   if (!nombre.value || !apellido.value || !email.value) {
-    alert("Por favor, completa todos los campos.");
+    errMsg.value = "Por favor, completa todos los campos."
     return;
   }
 
@@ -114,12 +122,12 @@ const registrarse = async () => {
   const hasSpecial = /[!@#$%^&*]/.test(password.value);
 
   if (!isLengthValid || !hasUpper || !hasNumber || !hasSpecial) {
-    alert("La contraseña no cumple con los requisitos mínimos de seguridad.");
+    errMsg.value = "La contraseña no cumple con los requisitos de seguridad."
     return;
   }
 
   if (password.value !== confirmPassword.value) {
-    alert("Las contraseñas no coinciden.");
+    errMsg.value = "Las contraseñas no coinciden."
     return;
   }
 
@@ -132,10 +140,9 @@ const registrarse = async () => {
   )
 
   if (resultado.success) {
-    alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
     router.push("/login");
   } else {
-    alert(resultado.error || "Error al registrarse");
+    errMsg.value = resultado.error || "Error al registrarse."
   }
 };
 </script>
@@ -281,6 +288,25 @@ label {
 .back-btn:hover {
   transform: scale(1.05);
 }
+
+/* ERROR INLINE */
+.login-error {
+  background: rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  color: #7f1d1d;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 8px;
+  width: 295px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.err-fade-enter-active,
+.err-fade-leave-active { transition: opacity 0.25s, transform 0.25s; }
+.err-fade-enter-from,
+.err-fade-leave-to { opacity: 0; transform: translateY(-6px); }
 
 /* ═══════════════════════════════════════════════════════════════ */
 /* ── RESPONSIVE DESIGN ── */
