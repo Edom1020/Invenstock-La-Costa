@@ -91,7 +91,8 @@ const cargarLotes = async () => {
       const sub = l.lote && typeof l.lote === 'object' ? l.lote : null
 
       const fechaEntrada     = (sub?.fechaEntrada     || l.fechaEntrada     || '').split('T')[0] || ''
-      const fechaVencimiento = (sub?.fechaVencimiento || l.fechaVencimiento || '').split('T')[0] || ''
+      // El endpoint de edición actualiza l.fechaVencimiento (raíz), no el subdocumento
+      const fechaVencimiento = (l.fechaVencimiento || sub?.fechaVencimiento || '').split('T')[0] || ''
       const stock            = l.stock ?? l.cantidad ?? 0
 
       let estado = 'activo'
@@ -102,7 +103,7 @@ const cargarLotes = async () => {
         const hoy = new Date()
         const vence = new Date(fechaVencimiento)
         const diffDias = Math.ceil((vence - hoy) / (1000 * 60 * 60 * 24))
-        if (diffDias <= diasAlerta) estado = 'por vencer'
+        if (diffDias <= diasAlerta) estado = 'por-vencer'
       }
 
       return {

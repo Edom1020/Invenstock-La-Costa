@@ -90,7 +90,7 @@
             <option value="">Todos los estados</option>
             <option value="activo">Activo</option>
             <option value="agotado">Agotado</option>
-            <option value="vencido">Vencido</option>
+            <option value="por-vencer">Por Vencer</option>
           </select>
         </div>
 
@@ -445,7 +445,8 @@ const estadoTexto = (estado) => {
   const textos = {
     activo: 'Activo',
     agotado: 'Agotado',
-    vencido: 'Vencido'
+    vencido: 'Vencido',
+    'por-vencer': '⚠ Por Vencer'
   }
   return textos[estado] || estado
 }
@@ -724,6 +725,18 @@ tbody td {
 .badge-estado.vencido {
   background: rgba(245, 158, 11, 0.15);
   color: var(--naranja);
+}
+
+.badge-estado.por-vencer {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--naranja);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  animation: pulso-vencer 1.6s ease-in-out infinite;
+}
+
+@keyframes pulso-vencer {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50%       { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0); }
 }
 
 .actions {
