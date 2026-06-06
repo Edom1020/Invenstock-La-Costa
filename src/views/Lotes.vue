@@ -316,15 +316,7 @@ const lotesFiltrados = computed(() => {
 
 const lotesActivos = computed(() => lotes.value.filter(l => l.estado === 'activo' && l.cantidad > 0).length)
 const lotesAgotados = computed(() => lotes.value.filter(l => l.cantidad === 0).length)
-const lotesPorVencer = computed(() => {
-  const hoy = new Date()
-  const treintaDias = new Date(hoy.getTime() + 30 * 24 * 60 * 60 * 1000)
-  return lotes.value.filter(l => {
-    const fecha = new Date(l.fechaVencimiento)
-    // Considerar solo lotes activos y con cantidad > 0
-    return l.estado === 'activo' && l.cantidad > 0 && fecha >= hoy && fecha <= treintaDias
-  }).length
-})
+const lotesPorVencer = computed(() => lotes.value.filter(l => l.estado === 'por-vencer').length)
 
 // Función para autocompletar nombre y SKU al seleccionar un producto
 const vincularProducto = () => {
