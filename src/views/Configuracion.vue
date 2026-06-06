@@ -295,6 +295,7 @@
               </div>
           
               <form class="conf-password-form" @submit.prevent="cambiarContraseña" autocomplete="on">
+                <input type="text" :value="perfil.correo" autocomplete="username" style="display:none" readonly />
                 <input
                   v-model="password.actual"
                   type="password"
