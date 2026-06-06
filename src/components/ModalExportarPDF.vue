@@ -131,6 +131,11 @@
         </div>
       </transition>
 
+      <!-- ERROR -->
+      <transition name="filtros-fade">
+        <div v-if="errMsg" class="modal-error">{{ errMsg }}</div>
+      </transition>
+
       <!-- FOOTER BOTONES -->
       <div class="modal-footer">
         <button class="modal-btn-cancelar" @click="$emit('cerrar')">
@@ -152,6 +157,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import api from '../views/api'
 
 const emit = defineEmits(['cerrar'])
 
@@ -159,6 +165,7 @@ const usarFiltros = ref(false)
 const enviarEmail = ref(false)
 const email = ref('')
 const cargando = ref(false)
+const errMsg = ref('')
 
 const filtros = reactive({
   fechaInicio: '',
@@ -169,59 +176,58 @@ const filtros = reactive({
   orden:       'recientes',
 })
 
+const descargarPDF = (blob) => {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `reporte-invenstock-${new Date().toISOString().split('T')[0]}.pdf`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
 const generarPDF = async () => {
-  // Validación básica
+  errMsg.value = ''
+
   if (enviarEmail.value && !email.value.trim()) {
-    alert('Por favor ingresa un correo electrónico.')
+    errMsg.value = 'Por favor ingresa un correo electrónico.'
     return
   }
 
   cargando.value = true
 
   try {
-    if (!usarFiltros.value) {
-      // Sin filtros — request simple
-      // const res = await fetch('/reportes/pdf')
-      // const blob = await res.blob()
-      // descargarPDF(blob)
-      console.log('Generando PDF sin filtros...')
-    } else {
-      // Con filtros
-      const payload = {
-        ...filtros,
-        email: enviarEmail.value ? email.value : null
-      }
-      // const res = await fetch('/reportes/pdf', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(payload)
-      // })
-      // const blob = await res.blob()
-      // descargarPDF(blob)
-      console.log('Generando PDF con filtros:', payload)
+    const payload = {
+      ...(usarFiltros.value ? filtros : {}),
+      email: enviarEmail.value ? email.value.trim() : null
     }
 
-    // Simula tiempo de carga para la demo
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    alert('✅ PDF generado correctamente.')
+    const res = await api.post('/reportes/pdf', payload, {
+      responseType: 'blob'
+    })
+
+    descargarPDF(new Blob([res.data], { type: 'application/pdf' }))
+
     emit('cerrar')
 
   } catch (error) {
-    alert('❌ Error al generar el PDF. Intenta de nuevo.')
+    // Si el backend devuelve JSON de error dentro del blob, leerlo
+    if (error.response?.data instanceof Blob) {
+      const text = await error.response.data.text()
+      try {
+        const json = JSON.parse(text)
+        errMsg.value = json.error || 'Error al generar el PDF.'
+      } catch {
+        errMsg.value = 'Error al generar el PDF.'
+      }
+    } else {
+      errMsg.value = error.response?.data?.error || 'Error al generar el PDF.'
+    }
   } finally {
     cargando.value = false
   }
 }
-
-// Cuando conectes el backend descomenta esto:
-// const descargarPDF = (blob) => {
-//   const url = URL.createObjectURL(blob)
-//   const a = document.createElement('a')
-//   a.href = url
-//   a.download = 'reporte-invenstock.pdf'
-//   a.click()
-//   URL.revokeObjectURL(url)
-// }
 </script>
 
 <style>
@@ -487,6 +493,18 @@ const generarPDF = async () => {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ERROR */
+.modal-error {
+  margin: 0 24px 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* ANIMACIÓN */
