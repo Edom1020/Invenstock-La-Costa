@@ -132,22 +132,35 @@ const cargarLotes = async () => {
 }
 
   //  CARGAR MOVIMIENTOS DESDE BACKEND
- const cargarMovimientos = async () => {
+const cargarMovimientos = async () => {
   try {
     const res = await api.get('/movimientos')
     const data = res.data.data || res.data || []
     historialMovimientos.value = data.map(m => {
-      const nombreProducto = m.producto?.nombre || (typeof m.producto === 'string' ? m.producto : 'Producto desconocido')
-      const categoriaProducto = typeof m.categoria === 'string'
-        ? m.categoria
-        : (m.producto?.categoria?.nombre || m.producto?.categoria || '')
-      return {
-        ...m,
-        producto: nombreProducto,       // siempre string — los filtros de la vista usan String(m.producto)
-        productoNombre: nombreProducto, // alias por compatibilidad
-        categoria: categoriaProducto,
+      let productoNombre = '', categoriaVal = ''
+
+      if (m.producto && typeof m.producto === 'object') {
+        productoNombre = m.producto.nombre || ''
+        // m.producto.categoria es un ObjectId crudo — cruzar con productos ya cargados
+        const prodRef = productos.value.find(p => String(p._id || p.id) === String(m.producto._id))
+        categoriaVal = prodRef?.categoria || ''
+      } else {
+        const pid = m.productoId || m.producto || ''
+        const prod = pid ? productos.value.find(p => String(p._id || p.id) === String(pid)) : null
+        productoNombre = prod?.nombre || ''
+        categoriaVal = prod?.categoria || ''
       }
+
+      let fechaFormato = '-'
+      const fechaRaw = m.fecha || m.createdAt || ''
+      if (fechaRaw) {
+        const dt = new Date(fechaRaw)
+        if (!isNaN(dt.getTime())) fechaFormato = dt.toLocaleDateString('es-ES')
+      }
+
+      return { ...m, producto: productoNombre, categoria: categoriaVal, fechaFormato }
     })
+    .sort((a, b) => (String(b._id || '') > String(a._id || '') ? 1 : -1))
   } catch (error) {
     console.error('Error al cargar movimientos:', error)
   }
