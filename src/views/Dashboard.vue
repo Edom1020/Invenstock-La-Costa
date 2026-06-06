@@ -81,11 +81,11 @@
                   <div class="filtros-opciones">
                     <span
                       v-for="cat in categoriasConTodas"
-                      :key="cat"
-                      :class="['filtro-pill', filtroCategoria === cat ? 'active' : '']"
-                      @click="filtroCategoria = cat"
+                      :key="cat?.nombre || cat"
+                      :class="['filtro-pill', filtroCategoria === (cat?.nombre || cat) ? 'active' : '']"
+                      @click="filtroCategoria = cat?.nombre || cat"
                     >
-                      {{ cat === 'Todas' ? 'Todas' : cat.charAt(0).toUpperCase() + cat.slice(1) }}
+                      {{ cat === 'Todas' ? 'Todas' : formatearCategoria(cat) }}
                     </span>
                   </div>
                 </div>
@@ -162,14 +162,13 @@ const bajoStock = computed(() => {
 
 const movimientosHoy = computed(() => {
   const hoy = new Date().toISOString().split('T')[0]
-  const hoyMovs = productosStore.historialMovimientos.filter(m => m.fecha === hoy)
-  const entradas = hoyMovs.filter(m => m.tipo === 'Entrada').length
-  const salidas = hoyMovs.filter(m => m.tipo === 'Salida').length
-  return {
-    total: hoyMovs.length,
-    entradas,
-    salidas
-  }
+  const hoyMovs = productosStore.historialMovimientos.filter(m => {
+    const fecha = (m.fecha || m.createdAt || '').split('T')[0]
+    return fecha === hoy
+  })
+  const entradas = hoyMovs.filter(m => (m.tipo || '').toLowerCase() === 'entrada').length
+  const salidas  = hoyMovs.filter(m => (m.tipo || '').toLowerCase() === 'salida').length
+  return { total: hoyMovs.length, entradas, salidas }
 })
 
 const categoriasConTodas = computed(() => {
@@ -179,9 +178,9 @@ const categoriasConTodas = computed(() => {
 // Para filtrar los movimientos según el término de búsqueda ingresado //
 const movimientosFiltrados = computed(() => {
   return productosStore.historialMovimientos.filter(m => {
-    const porTipo = filtroTipo.value === 'Todos' || m.tipo === filtroTipo.value
-    const porCategoria = filtroCategoria.value === 'Todos' || (m.categoria?.nombre || m.categoria || '') === filtroCategoria.value
-    const porBusqueda = String(m.producto?.nombre || m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
+    const porTipo = filtroTipo.value === 'Todos' || (m.tipo || '').toLowerCase() === filtroTipo.value.toLowerCase()
+    const porCategoria = filtroCategoria.value === 'Todas' || (m.categoria || '').toLowerCase() === filtroCategoria.value.toLowerCase()
+    const porBusqueda = String(m.producto || '').toLowerCase().includes(busqueda.value.toLowerCase())
     return porTipo && porCategoria && porBusqueda
   })
 })
@@ -204,8 +203,14 @@ const limpiarFiltros = () => {
   filtroCategoria.value = 'Todas'
 }
 
+const formatearCategoria = (cat) => {
+  const nombre = cat?.nombre || cat || ''
+  return String(nombre).charAt(0).toUpperCase() + String(nombre).slice(1)
+}
+
 onMounted(async () => {
   await productosStore.cargarProductos()
+  await productosStore.cargarCategorias()
   await productosStore.cargarMovimientos()
 })
 
