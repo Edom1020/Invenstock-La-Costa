@@ -96,7 +96,7 @@
             <div class="chart-header">
               <div>
                 <h2 class="chart-title">Tendencia de Movimientos</h2>
-                <p class="chart-sub">Flujo de inventario diario - Noviembre 2025</p>
+                <p class="chart-sub">{{ chartSubtitle }}</p>
               </div>
               <div class="chart-legend">
                 <span class="legend-dot dark-blue"></span> Entradas
@@ -244,30 +244,41 @@ const porcentajeCrecimiento = computed(() => {
   return ((totalInventarioValor.value - valorMesAnterior) / valorMesAnterior) * 100
 })
 
-const totalEntradasMes = computed(() => {
+const getFechaInicio = () => {
   const hoy = new Date()
-  let fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+  return rangoTemporal.value === '30dias'
+    ? new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000)
+    : new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+}
 
-  if (rangoTemporal.value === '30dias') {
-    fechaInicio = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000)
-  }
-
+const totalEntradasMes = computed(() => {
+  const fechaInicio = getFechaInicio()
   return productosStore.historialMovimientos
-    .filter(m => new Date(m.fecha) >= fechaInicio && m.tipo === 'Entrada')
-    .reduce((sum, mov) => sum + mov.cantidad, 0)
+    .filter(m => {
+      const f = new Date(m.fecha || m.createdAt)
+      return !isNaN(f) && f >= fechaInicio && (m.tipo || '').toLowerCase() === 'entrada'
+    })
+    .reduce((sum, m) => sum + m.cantidad, 0)
 })
 
 const totalSalidasMes = computed(() => {
-  const hoy = new Date()
-  let fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
-
-  if (rangoTemporal.value === '30dias') {
-    fechaInicio = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000)
-  }
-
+  const fechaInicio = getFechaInicio()
   return productosStore.historialMovimientos
-    .filter(m => new Date(m.fecha) >= fechaInicio && m.tipo === 'Salida')
-    .reduce((sum, mov) => sum + mov.cantidad, 0)
+    .filter(m => {
+      const f = new Date(m.fecha || m.createdAt)
+      return !isNaN(f) && f >= fechaInicio && (m.tipo || '').toLowerCase() === 'salida'
+    })
+    .reduce((sum, m) => sum + m.cantidad, 0)
+})
+
+const chartSubtitle = computed(() => {
+  const hoy = new Date()
+  const opts = { day: '2-digit', month: 'short' }
+  if (rangoTemporal.value === '30dias') {
+    const inicio = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000)
+    return `Últimos 30 días · ${inicio.toLocaleDateString('es-ES', opts)} – ${hoy.toLocaleDateString('es-ES', { ...opts, year: 'numeric' })}`
+  }
+  return `Flujo diario · ${hoy.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`
 })
 
 const totalStockSuma = computed(() => {
@@ -403,9 +414,11 @@ const updateCharts = () => {
     const fechaStr = d.toISOString().split('T')[0]
     dias.push(d.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit' }).toUpperCase())
 
-    const movsDia = productosStore.historialMovimientos.filter(m => m.fecha === fechaStr)
-    entradas.push(movsDia.filter(m => m.tipo === 'Entrada').reduce((s, m) => s + m.cantidad, 0))
-    salidas.push(movsDia.filter(m => m.tipo === 'Salida').reduce((s, m) => s + m.cantidad, 0))
+    const movsDia = productosStore.historialMovimientos.filter(m =>
+      (m.fecha || m.createdAt || '').split('T')[0] === fechaStr
+    )
+    entradas.push(movsDia.filter(m => (m.tipo || '').toLowerCase() === 'entrada').reduce((s, m) => s + m.cantidad, 0))
+    salidas.push(movsDia.filter(m => (m.tipo || '').toLowerCase() === 'salida').reduce((s, m) => s + m.cantidad, 0))
   }
 
   chartBarras.data.labels = dias
