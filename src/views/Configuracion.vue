@@ -657,6 +657,13 @@ const cancelar = () => {
 const guardarCambios = async () => {
   Object.assign(configuracionStore.notificaciones, notif)
 
+  // Sincronizar preferencias de email/reportes con el backend
+  try {
+    await api.put('/auth/preferencias', { email: notif.email, reportes: notif.reportes })
+  } catch (e) {
+    console.warn('No se pudieron guardar las preferencias en el servidor:', e?.response?.data)
+  }
+
   if (perfil.correo !== correoOriginal.value) {
     try {
       await api.put('/auth/change-email', {
