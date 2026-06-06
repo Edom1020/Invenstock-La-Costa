@@ -66,12 +66,6 @@
               </div>
             </div>
 
-            <!-- Aviso de validación de email -->
-            <div v-if="esperandoValidacionEmail" class="email-validation-alert">
-              <p>Se ha enviado un enlace de validación al correo original. <strong>Verifica tu email</strong> para aplicar el cambio.</p>
-              <button class="btn-verify-sim" @click="confirmarCambioEmail">Simular Verificación ✅</button>
-            </div>
-
             <button class="conf-btn-edit" @click="toggleEdicion">
               {{ modoEdicion ? 'Guardar' : 'Editar Perfil' }}
             </button>
@@ -372,7 +366,6 @@ const cambiarFoto = (e) => {
 }
 
 const modoEdicion = ref(false)
-const esperandoValidacionEmail = ref(false)
 const correoOriginal = ref('')
 
 const perfil = reactive({ ...usuarioStore.perfil })
@@ -604,43 +597,41 @@ const esAdmin = computed(() => {
   return usuarioStore.rol === 'administrador' || usuarioStore.rol === 'admin'
 })
 
-const toggleEdicion = () => {
+const toggleEdicion = async () => {
   if (!modoEdicion.value) {
-    // Entrando en modo edición: Guardamos el correo actual para validarlo luego
     correoOriginal.value = perfil.correo
+    modoEdicion.value = true
   } else {
-    // Al hacer clic en "Guardar"
-    guardarCambios()
+    await guardarCambios()
   }
-  modoEdicion.value = !modoEdicion.value
-}
-
-const confirmarCambioEmail = () => {
-  usuarioStore.actualizarPerfil(perfil)
-  esperandoValidacionEmail.value = false
-  modoEdicion.value = false
-  alert('¡Correo electrónico actualizado correctamente!')
 }
 
 const cancelar = () => {
-  // Revertir a los valores originales del store
   Object.assign(perfil, usuarioStore.perfil)
-  // Revertir configuración de inventario
   Object.assign(inventario, configuracionStore.inventario)
   modoEdicion.value = false
-  esperandoValidacionEmail.value = false
 }
 
-const guardarCambios = () => {
-  // Si el correo cambió, requerimos validación
+const guardarCambios = async () => {
   if (perfil.correo !== correoOriginal.value) {
-    esperandoValidacionEmail.value = true
-    alert(`Se ha enviado un enlace de validación al correo original: ${correoOriginal.value}. Por favor, verifícalo para completar el cambio.`)
+    try {
+      await api.put('/auth/change-email', {
+        emailNuevo: perfil.correo,
+        emailAnterior: correoOriginal.value
+      })
+      correoOriginal.value = perfil.correo
+      usuarioStore.actualizarPerfil(perfil)
+      configuracionStore.notificaciones = { ...notif }
+      modoEdicion.value = false
+      alert('✅ Correo actualizado. Se envió una notificación al correo anterior.')
+    } catch (error) {
+      const msg = error.response?.data?.error || 'Error al cambiar el correo.'
+      alert('❌ ' + msg)
+    }
     return
   }
 
   usuarioStore.actualizarPerfil(perfil)
-  // Persistir preferencias de notificaciones en el store de configuración
   configuracionStore.notificaciones = { ...notif }
   modoEdicion.value = false
   alert('¡Configuración guardada!')
