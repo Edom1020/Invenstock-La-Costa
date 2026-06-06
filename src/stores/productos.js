@@ -216,6 +216,38 @@ const editarProducto = async (productoEditado) => {
     }
   }
 
+  //  AGREGAR LOTE
+  const agregarLote = async (nuevoLote) => {
+    try {
+      await api.post('/productos/lotes', {
+        productoId:      nuevoLote.productoId,
+        lote:            nuevoLote.numero,
+        sku:             nuevoLote.sku,
+        stock:           nuevoLote.cantidad,
+        fechaVencimiento: nuevoLote.usaVencimiento ? nuevoLote.fechaVencimiento : null,
+        observacionLote: nuevoLote.observaciones
+      })
+      await cargarLotes()
+      await cargarProductos()
+      return { success: true }
+    } catch (error) {
+      console.error('Error al agregar lote:', error)
+      return { success: false, error: error.response?.data?.message || 'Error al agregar lote' }
+    }
+  }
+
+  //  ELIMINAR LOTE
+  const eliminarLote = async (id) => {
+    try {
+      await api.delete(`/productos/lotes/${id}`)
+      await cargarLotes()
+      await cargarProductos()
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Error al eliminar lote' }
+    }
+  }
+
   //  EDITAR LOTE
   const editarLote = async (loteEditado) => {
     try {
@@ -305,7 +337,9 @@ const editarProducto = async (productoEditado) => {
     agregarProducto,
     editarProducto,
     eliminarProducto,
+    agregarLote,
     editarLote,
+    eliminarLote,
     registrarMovimiento,
     agregarCategoria
   }
