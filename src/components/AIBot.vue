@@ -90,7 +90,7 @@ const error = ref(null)
 const toggleModal = () => {
   modalAbierto.value = !modalAbierto.value
   if (modalAbierto.value) {
-    fetchSugerencias()
+    actualizarSugerencias()
   }
 }
 
@@ -98,68 +98,64 @@ const cerrarModal = () => {
   modalAbierto.value = false
 }
 
+// Intenta cargar desde el backend; si falla, usa datos locales silenciosamente
 const fetchSugerencias = async () => {
-  isLoading.value = true
-  error.value = null
-  
   try {
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/ai/suggestions`,
-      {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token-auth')}`
-        }
-      }
+      { headers: { 'Authorization': `Bearer ${localStorage.getItem('token-auth')}` } }
     )
-    if (!response.ok) throw new Error('Error al cargar sugerencias')
-    sugerencias.value = await response.json()
-  } catch (err) {
-    error.value = "No pudimos conectar con el asistente. Intenta de nuevo."
-    console.error(err)
-  } finally {
-    isLoading.value = false
+    if (!response.ok) throw new Error()
+    const data = await response.json()
+    if (Array.isArray(data) && data.length > 0) {
+      sugerencias.value = data
+    }
+  } catch {
+    // Backend no disponible — se queda con los datos locales
   }
 }
 
 const handleMarcarLeida = async (id, index) => {
-  if (!id) {
-    // Sin id válido, solo marcar localmente
-    sugerencias.value[index].leida = true
-    return
-  }
+  // Marcar localmente siempre
+  sugerencias.value[index].leida = true
+
+  // Intentar sincronizar con backend si tiene id real (no generado localmente)
+  if (!id || String(id).startsWith('stock-') || String(id).startsWith('ia-')) return
   try {
     await fetch(
       `${import.meta.env.VITE_API_URL}/ai/suggestions/${id}/read`,
-      {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token-auth')}` }
-      }
+      { method: 'PATCH', headers: { 'Authorization': `Bearer ${localStorage.getItem('token-auth')}` } }
     )
-    sugerencias.value[index].leida = true
-  } catch (err) {
-    console.error("Error al marcar como leída", err)
-  }
+  } catch { /* silencioso */ }
 }
 
 const marcarTodoLeido = async () => {
+  sugerencias.value.forEach(s => s.leida = true)
   try {
-    // PREPARACIÓN BACKEND:
-    // await fetch('/api/ai/suggestions/read-all', { method: 'POST' })
-    
-    sugerencias.value.forEach(s => s.leida = true)
-  } catch (err) {
-    console.error("Error al marcar todo como leído", err)
-  }
+    await fetch(
+      `${import.meta.env.VITE_API_URL}/ai/suggestions/read-all`,
+      { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token-auth')}` } }
+    )
+  } catch { /* silencioso */ }
 }
 
-const actualizarSugerencias = () => {
-  fetchSugerencias()
+const actualizarSugerencias = async () => {
+  isLoading.value = true
+  error.value = null
+  generarSugerencias()         // datos locales inmediatos
+  await fetchSugerencias()     // backend enriquece si está disponible
+  isLoading.value = false
 }
 
 const formatTiempo = (dateString) => {
   if (!dateString) return 'Reciente'
-  // Aquí se podría usar dayjs o date-fns para formato relativo real
-  return dateString 
+  const d = new Date(dateString)
+  if (isNaN(d.getTime())) return dateString  // texto ya formateado (ej: "Hace 15 min")
+  const diff = Math.floor((Date.now() - d) / 60000)
+  if (diff < 1) return 'Ahora mismo'
+  if (diff < 60) return `Hace ${diff} min`
+  if (diff < 1440) return `Hace ${Math.floor(diff / 60)}h`
+  return `Hace ${Math.floor(diff / 1440)}d`
 }
 
 // Sugerencias simuladas de IA
