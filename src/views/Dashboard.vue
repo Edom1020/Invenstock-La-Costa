@@ -102,7 +102,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="mov in movimientosFiltrados" :key="mov.id">
+              <tr v-for="mov in movimientosPaginados" :key="mov.id">
                 <td class="fecha-cell">{{ mov.fechaFormato }}</td>
                 <td>
                   <div class="prod-cell">
@@ -122,8 +122,18 @@
             </tbody>
           </table>
 
-          <div class="see-all" @click="$router.push('/movimientos')">
-              <span>Ver todos los movimientos</span>
+          <div class="dash-hist-footer">
+            <span v-if="movimientosFiltrados.length">
+              Página {{ paginaActual }} de {{ totalPaginas }} · {{ movimientosFiltrados.length }} registros
+            </span>
+            <span v-else class="dash-empty">No hay movimientos que coincidan</span>
+            <div class="dash-pag-right">
+              <div class="dash-pag-arrows">
+                <button class="dash-pag-arrow" :disabled="paginaActual <= 1" @click="paginaActual--">‹</button>
+                <button class="dash-pag-arrow" :disabled="paginaActual >= totalPaginas" @click="paginaActual++">›</button>
+              </div>
+              <span class="see-all-link" @click="$router.push('/movimientos')">Ver todos →</span>
+            </div>
           </div>
         </div>
 
@@ -135,7 +145,7 @@
 <script setup>
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
-import { ref, computed, inject, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 
 import { useTemaStore } from '../stores/tema'
 const temaStore = useTemaStore()
@@ -184,6 +194,15 @@ const movimientosFiltrados = computed(() => {
     return porTipo && porCategoria && porBusqueda
   })
 })
+
+const POR_PAGINA = 8
+const paginaActual = ref(1)
+const totalPaginas = computed(() => Math.max(1, Math.ceil(movimientosFiltrados.value.length / POR_PAGINA)))
+const movimientosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * POR_PAGINA
+  return movimientosFiltrados.value.slice(inicio, inicio + POR_PAGINA)
+})
+watch(movimientosFiltrados, () => { paginaActual.value = 1 })
 
 const getCatIcon = (categoria) => {
   const icons = {
@@ -521,19 +540,51 @@ tbody tr td {
   color: var(--txt-titulo);
 }
 
-.see-all {
-  text-align: center;
-  margin-top: 20px;
-  padding-top: 16px;
+.dash-hist-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid var(--borde);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--txt-titulo);
-  cursor: pointer;
-  transition: color 0.3s;
+  font-size: 11px;
+  color: var(--txt-muted);
+  transition: border-color 0.3s, color 0.3s;
 }
 
-.see-all:hover { color: var(--azul); }
+.dash-pag-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-pag-arrows { display: flex; gap: 6px; }
+
+.dash-pag-arrow {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--borde);
+  background: var(--bg-card);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--txt-normal);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dash-pag-arrow:hover:not(:disabled) { background: var(--bg-input); }
+.dash-pag-arrow:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.see-all-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--azul);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.see-all-link:hover { opacity: 0.75; }
+
+.dash-empty { color: var(--txt-muted); font-size: 12px; }
 
 /* Corregir el color de los textos que se quedan en negro */
 .layout.dark-mode .page-title,
