@@ -351,9 +351,10 @@
 
 
 <script setup>
-import { ref, reactive, computed} from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 import Notificaciones from '../components/Notificaciones.vue'
+import api from '../views/api'
 
 // Para mostrar la foto de perfil en el topbar y configuración, usamos el store de usuario //
 import { useUsuarioStore } from '../stores/usuario'
@@ -386,9 +387,15 @@ const temaStore = useTemaStore()
 
 const notif = reactive({ email: true, escritorio: false, reportes: true })
 
+onMounted(() => {
+  if (configuracionStore.notificaciones) {
+    Object.assign(notif, configuracionStore.notificaciones)
+  }
+})
+
 const password = reactive({ actual: '', nueva: '', confirmar: '' })
 
-const cambiarContraseña = () => {
+const cambiarContraseña = async () => {
   if (!password.actual || !password.nueva || !password.confirmar) {
     alert('Por favor completa todos los campos.')
     return
@@ -401,10 +408,20 @@ const cambiarContraseña = () => {
     alert('La contraseña debe tener al menos 6 caracteres.')
     return
   }
-  alert('¡Contraseña actualizada exitosamente!')
-  password.actual = ''
-  password.nueva = ''
-  password.confirmar = ''
+  try {
+    await api.put('/auth/change-password', {
+      passwordActual: password.actual,
+      passwordNueva: password.nueva
+    })
+    alert('¡Contraseña actualizada exitosamente!')
+    password.actual = ''
+    password.nueva = ''
+    password.confirmar = ''
+    mostrarPassword.value = false
+  } catch (error) {
+    const msg = error.response?.data?.message || error.response?.data?.error || 'Error al cambiar la contraseña.'
+    alert('❌ ' + msg)
+  }
 }
 
 //Mostrar contraseña en formulario de seguridad
@@ -623,6 +640,8 @@ const guardarCambios = () => {
   }
 
   usuarioStore.actualizarPerfil(perfil)
+  // Persistir preferencias de notificaciones en el store de configuración
+  configuracionStore.notificaciones = { ...notif }
   modoEdicion.value = false
   alert('¡Configuración guardada!')
 }
