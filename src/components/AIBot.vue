@@ -143,7 +143,7 @@ const actualizarSugerencias = async () => {
   isLoading.value = true
   error.value = null
   generarSugerencias()         // datos locales inmediatos
-  await fetchSugerencias()     // backend enriquece si está disponible
+  await fetchSugerencias()     
   isLoading.value = false
 }
 
@@ -199,7 +199,7 @@ function generarSugerencias() {
   sugerencias.value = [...alertasStockBajo, ...sugerenciasIA]
 }
 
-// OPCIONAL: Escuchar cambios en el inventario para actualizar el contador del bot automáticamente
+
 watch(() => productosStore.productos, () => {
   // Solo regeneramos si hay cambios significativos en el stock
   generarSugerencias()

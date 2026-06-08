@@ -26,7 +26,7 @@ export const useUsuarioStore = defineStore('usuario', () => {
         localStorage.setItem('usuario-perfil-invenstock', JSON.stringify(perfil.value))
     }
 
-    // 🔥 LOGIN REAL
+    //  LOGIN REAL
     const iniciarSesion = async (email, password) => {
         try {
             const res = await api.post('/auth/login', { email, password })

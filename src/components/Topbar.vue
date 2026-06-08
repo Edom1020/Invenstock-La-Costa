@@ -13,7 +13,7 @@
     <!-- LADO DERECHO: Acciones de usuario -->
     <div class="topbar-right">
 
-      <!-- Tu componente de notificaciones con el dropdown -->
+      <!-- componente de notificaciones con el dropdown -->
       <Notificaciones />
 
       <!-- NUEVO: Botón de IA -->

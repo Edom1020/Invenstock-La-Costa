@@ -469,7 +469,7 @@ const mostrarPermisos = ref(false)
  * ========================================================================
  */
 
-// Lista de usuarios del sistema (en una aplicación real vendría del backend)
+// Lista de usuarios del sistema 
 const usuarios = ref([])
 const usuarioBusqueda = ref('')
 const guardando = ref(false)

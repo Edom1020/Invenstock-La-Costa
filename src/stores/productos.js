@@ -291,7 +291,7 @@ const editarProducto = async (productoEditado) => {
       await cargarProductos()
       await cargarMovimientos()
 
-      // Trigger logic for sounds and notifications
+      // Trigger  para sonidos y  notificationes
       const prod = productos.value.find(p => p.id === mov.productoId || p._id === mov.productoId)
       verificarEstadoStock(prod)
 
