@@ -651,6 +651,7 @@ const toggleEdicion = async () => {
 const cancelar = () => {
   Object.assign(perfil, usuarioStore.perfil)
   Object.assign(inventario, configuracionStore.inventario)
+  Object.assign(notif, configuracionStore.notificaciones)
   modoEdicion.value = false
 }
 
