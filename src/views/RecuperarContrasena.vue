@@ -61,22 +61,35 @@ const enviarEmail = async () => {
   error.value = "";
 
   try {
-    await fetch(`${import.meta.env.VITE_API_URL}/auth/recuperar-password`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: email.value }),
-  signal: AbortSignal.timeout(10000)
-})
-    setTimeout(() => router.push("/login"), 3000);
-  } catch (err) {
-    if (err.response?.status === 429) {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/recuperar-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.value }),
+      signal: AbortSignal.timeout(10000)
+    })
+
+    if (res.status === 429) {
       error.value = "Demasiados intentos. Espera unos minutos antes de intentarlo de nuevo.";
-      // Cooldown de 60 segundos
       cooldown.value = 60
       const interval = setInterval(() => {
         cooldown.value--
         if (cooldown.value <= 0) clearInterval(interval)
       }, 1000)
+      return
+    }
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      error.value = data.error || "Error al enviar el email. Intenta nuevamente.";
+      return
+    }
+
+    enviado.value = true;
+    setTimeout(() => router.push("/login"), 3000);
+
+  } catch (err) {
+    if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+      error.value = "El servidor tardó demasiado. Intenta de nuevo en unos momentos.";
     } else {
       error.value = "Error al enviar el email. Intenta nuevamente.";
     }
