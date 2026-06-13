@@ -933,6 +933,8 @@ tbody td {
   .pagination { padding: 12px 16px; }
   .pag-btn { padding: 5px 12px; font-size: 12px; }
   .pag-num { width: 28px; height: 28px; font-size: 12px; }
+  .table-card { overflow-x: auto; }
+  table { min-width: 700px; }
 }
 
 /* ── MOBILE (máx 480px) ── */
