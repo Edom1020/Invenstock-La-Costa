@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import api from '../views/api'
+import { useConfiguracionStore } from './configuracion'
 
 export const useUsuarioStore = defineStore('usuario', () => {
     const fotoPerfil = ref(localStorage.getItem('fotoPerfil-invenstock') || '/images/User/capibara.png')
@@ -48,6 +49,14 @@ export const useUsuarioStore = defineStore('usuario', () => {
             localStorage.setItem('rol-usuario', usuario.rol)
             localStorage.setItem('permisos-usuario', JSON.stringify(usuario.permisos || []))
             localStorage.setItem('usuario-perfil-invenstock', JSON.stringify(perfil.value))
+
+            if (usuario.preferencias) {
+                const configStore = useConfiguracionStore()
+                Object.assign(configStore.notificaciones, {
+                    email:    usuario.preferencias.email    ?? configStore.notificaciones.email,
+                    reportes: usuario.preferencias.reportes ?? configStore.notificaciones.reportes,
+                })
+            }
 
             return { success: true }
         } catch (error) {

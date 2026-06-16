@@ -400,11 +400,22 @@ const temaStore = useTemaStore()
 
 const notif = reactive({ email: true, escritorio: false, reportes: true })
 
-onMounted(() => {
+onMounted(async () => {
   if (configuracionStore.notificaciones) {
     Object.assign(notif, configuracionStore.notificaciones)
   }
   correoOriginal.value = perfil.correo
+
+  try {
+    const res = await api.get('/auth/preferencias')
+    if (res.data) {
+      notif.email    = res.data.email    ?? notif.email
+      notif.reportes = res.data.reportes ?? notif.reportes
+      Object.assign(configuracionStore.notificaciones, notif)
+    }
+  } catch {
+    // Si el endpoint no existe aún, se usan los valores de localStorage
+  }
 })
 
 // Cuando el usuario activa las notificaciones de escritorio, pedir permiso al navegador
