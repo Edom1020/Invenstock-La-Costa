@@ -204,11 +204,22 @@ const generarPDF = async () => {
     return
   }
 
+  if (usarFiltros.value && filtros.fechaInicio && filtros.fechaFin && filtros.fechaInicio > filtros.fechaFin) {
+    errMsg.value = 'La fecha de inicio no puede ser mayor que la fecha de fin.'
+    return
+  }
+
   cargando.value = true
 
   try {
+    const filtrosLimpios = usarFiltros.value ? {
+      ...filtros,
+      fechaInicio: filtros.fechaInicio || undefined,
+      fechaFin:    filtros.fechaFin    || undefined,
+    } : {}
+
     const payload = {
-      ...(usarFiltros.value ? filtros : {}),
+      ...filtrosLimpios,
       email: enviarEmail.value ? email.value.trim() : null
     }
 
