@@ -445,9 +445,7 @@ const estadoTexto = (estado) => {
 
 onMounted(async () => {
   await productosStore.cargarProductos()
-  if (usuarioStore.rol === 'administrador' || usuarioStore.rol === 'admin') {
-    await productosStore.cargarLotes()
-  }
+  await productosStore.cargarLotes()
 })
 </script>
 
