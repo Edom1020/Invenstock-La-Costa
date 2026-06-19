@@ -110,7 +110,7 @@ const cargarLotes = async () => {
         ...l,
         _id:             l._id || l.id,
         id:              l._id || l.id,
-        productoId:      l._id || l.id,
+        productoId:      l.productoId || l._id || l.id,
         numero:          l.numero || sub?.codigo || l.codigo || '',
         producto:        l.producto || '',
         sku:             l.sku || '',
