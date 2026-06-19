@@ -218,7 +218,7 @@
 
           <div class="modal-footer">
             <button class="btn-cancelar" @click="cerrarModal">Cancelar</button>
-            <button class="btn-guardar" @click="guardarLote">{{ modoEdicion ? 'Actualizar' : 'Crear' }} Lote</button>
+            <button class="btn-guardar" :disabled="guardando" @click="guardarLote">{{ guardando ? 'Guardando...' : (modoEdicion ? 'Actualizar' : 'Crear') + ' Lote' }}</button>
           </div>
         </div>
       </div>
@@ -271,6 +271,7 @@ const modoEdicion = ref(false)
 const modalEliminarVisible = ref(false)
 const loteAEliminar = ref(null)
 const errorModal = ref('')
+const guardando = ref(false)
 
 const loteTrabajo = ref({
   productoId: '',
@@ -379,7 +380,7 @@ const cerrarModal = () => {
   }
 }
 
-const guardarLote = () => {
+const guardarLote = async () => {
   const faltantes = []
   if (!loteTrabajo.value.productoId)                                               faltantes.push('Producto')
   if (!loteTrabajo.value.numero?.trim())                                           faltantes.push('Número de Lote')
@@ -391,14 +392,27 @@ const guardarLote = () => {
     return
   }
 
+  console.log('[DEBUG] Payload a enviar:', JSON.parse(JSON.stringify(loteTrabajo.value)))
+
+  guardando.value = true
+  errorModal.value = ''
+
+  let resultado
   if (modoEdicion.value) {
-    productosStore.editarLote(loteTrabajo.value)
+    resultado = await productosStore.editarLote(loteTrabajo.value)
   } else {
-    // Cuando se crea un lote desde aquí, no tiene productoId, lo cual es un caso de uso válido.
-    // Podríamos añadir un selector de producto en el modal si queremos asociarlo.
-    productosStore.agregarLote(loteTrabajo.value)
+    resultado = await productosStore.agregarLote(loteTrabajo.value)
   }
-  cerrarModal()
+
+  guardando.value = false
+
+  console.log('[DEBUG] Resultado del store:', resultado)
+
+  if (resultado?.success) {
+    cerrarModal()
+  } else {
+    errorModal.value = resultado?.error || 'Ocurrió un error al guardar el lote.'
+  }
 }
 
 const confirmarEliminar = (lote) => {
