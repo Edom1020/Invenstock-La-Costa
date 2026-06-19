@@ -64,9 +64,9 @@
               <div class="modal-select-wrap">
                 <select v-model="filtros.categoria" class="modal-select">
                   <option value="todas">Todas</option>
-                  <option value="electronica">Electrónica</option>
-                  <option value="hogar">Hogar</option>
-                  <option value="comida">Comida</option>
+                  <option v-for="cat in productosStore.categorias" :key="cat._id" :value="cat._id">
+                    {{ cat.nombre }}
+                  </option>
                 </select>
                 <span class="modal-arrow">▾</span>
               </div>
@@ -156,8 +156,17 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import api from '../views/api'
+import { useProductosStore } from '../stores/productos'
+
+const productosStore = useProductosStore()
+
+onMounted(async () => {
+  if (!productosStore.categorias.length) {
+    await productosStore.cargarCategorias()
+  }
+})
 
 const emit = defineEmits(['cerrar'])
 
