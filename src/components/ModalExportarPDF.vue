@@ -64,7 +64,7 @@
               <div class="modal-select-wrap">
                 <select v-model="filtros.categoria" class="modal-select">
                   <option value="todas">Todas</option>
-                  <option v-for="cat in productosStore.categorias" :key="cat._id" :value="cat._id">
+                  <option v-for="cat in productosStore.categorias" :key="cat._id" :value="cat.nombre">
                     {{ cat.nombre }}
                   </option>
                 </select>
