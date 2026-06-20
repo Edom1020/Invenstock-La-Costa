@@ -229,6 +229,8 @@ const editarProducto = async (productoEditado) => {
       })
       await cargarLotes()
       await cargarProductos()
+      const prod = productos.value.find(p => p.id === nuevoLote.productoId || p._id === nuevoLote.productoId)
+      verificarEstadoStock(prod)
       return { success: true }
     } catch (error) {
       console.error('Error al agregar lote:', error)
