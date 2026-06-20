@@ -58,6 +58,8 @@ export const useUsuarioStore = defineStore('usuario', () => {
                 })
             }
 
+            await cargarPerfil()
+
             return { success: true }
         } catch (error) {
             const mensaje = error.response?.data?.error || 'Error al iniciar sesión'

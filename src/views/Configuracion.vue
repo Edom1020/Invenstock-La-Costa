@@ -366,13 +366,14 @@ const usuarioStore = useUsuarioStore()
 
 
 
-// Función para cambiar la foto de perfil, actualiza el store de usuario //
 const cambiarFoto = (e) => {
   const file = e.target.files?.[0]
-  if (file) {
-    const url = URL.createObjectURL(file)
-    usuarioStore.cambiarFotoPerfil(url)  
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    usuarioStore.cambiarFotoPerfil(ev.target.result)
   }
+  reader.readAsDataURL(file)
 }
 
 const modoEdicion = ref(false)
@@ -693,6 +694,7 @@ const guardarCambios = async () => {
     return
   }
 
+  await usuarioStore.guardarPerfil({ ...perfil, fotoPerfil: usuarioStore.fotoPerfil })
   usuarioStore.actualizarPerfil(perfil)
   modoEdicion.value = false
   mostrarToast('¡Configuración guardada!')
