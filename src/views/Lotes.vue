@@ -420,9 +420,11 @@ const confirmarEliminar = (lote) => {
   modalEliminarVisible.value = true
 }
 
-const eliminarLote = () => {
-  productosStore.eliminarLote(loteAEliminar.value.id)
-  cerrarEliminar()
+const eliminarLote = async () => {
+  const resultado = await productosStore.eliminarLote(loteAEliminar.value.id)
+  if (resultado?.success) {
+    cerrarEliminar()
+  }
 }
 
 const puede = (permiso) => {
